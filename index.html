@@ -7,73 +7,110 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 :root{
-  --bg:#f4f1ea;--surface:#fffdf7;--surface2:#ede9df;--surface3:#e4e0d5;
-  --border:#d4cfc2;--border2:#b8b2a2;--text:#1c1a15;--muted:#7a7468;
-  --accent:#2a5c3f;--gold:#9a7a1a;--blue:#1a3a6b;--purple:#5a1a8b;
-  --green:#1e6b3a;--yellow:#9a6b00;--red:#8b1a1a;
+  --bg:#f4f1ea;--surface:#fffdf7;--surface2:#ede9df;--border:#d4cfc2;--border2:#b8b2a2;
+  --text:#1c1a15;--muted:#7a7468;--accent:#2a5c3f;--gold:#9a7a1a;
+  --blue:#1a3a6b;--purple:#5a1a8b;--green:#1e6b3a;--yellow:#9a6b00;--red:#8b1a1a;
   --green-bg:#eaf4ed;--yellow-bg:#fdf6e3;--red-bg:#fdeaea;
   --blue-bg:#e8eef8;--purple-bg:#f0eaf8;--shadow:0 2px 12px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;
   background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(0,0,0,.015) 31px,rgba(0,0,0,.015) 32px);}
+/* HEADER */
 .app-header{background:var(--text);color:var(--bg);padding:1.1rem 2rem;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
-.app-header h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;letter-spacing:.01em;}
+.app-header h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;}
 .app-header h1 em{color:#c8b882;font-style:normal;}
 .header-meta{font-size:.68rem;color:#7a7060;font-family:'IBM Plex Mono',monospace;}
+/* SIGNAL BAR */
 .signal-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:.65rem 2rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
-.signal-bar-label{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
-.signal-btns{display:flex;gap:.3rem;}
+.sbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.sig-btns{display:flex;gap:.3rem;}
 .sig-btn{background:var(--surface);border:1px solid var(--border);border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:.3rem .9rem;cursor:pointer;color:var(--muted);transition:all .15s;}
 .sig-btn:hover{border-color:var(--accent);color:var(--accent);}
 .sig-btn.green.active{background:var(--green-bg);border-color:var(--green);color:var(--green);font-weight:500;}
 .sig-btn.yellow.active{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow);font-weight:500;}
 .sig-btn.red.active{background:var(--red-bg);border-color:var(--red);color:var(--red);font-weight:500;}
 .signal-note{font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+/* TABS */
 .tab-bar{background:var(--text);display:flex;padding:0 2rem;gap:0;border-bottom:2px solid #2a2a2a;}
 .tab-btn{background:transparent;border:none;color:#6a6258;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:.7rem 1.3rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;}
-.tab-btn:hover{color:#c8b882;}
-.tab-btn.active{color:#f4f1ea;border-bottom-color:#c8b882;}
-.tab-pane{display:none;padding:1.8rem 2rem;max-width:1120px;margin:0 auto;}
+.tab-btn:hover{color:#c8b882;} .tab-btn.active{color:#f4f1ea;border-bottom-color:#c8b882;}
+.tab-pane{display:none;padding:1.8rem 2rem;max-width:1140px;margin:0 auto;}
 .tab-pane.active{display:block;}
+/* COMMON */
 .sec-head{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin-bottom:1.1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;}
 .sec-head small{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);font-weight:400;}
 .summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:1.5rem;}
 .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.95rem 1.1rem;box-shadow:var(--shadow);}
-.sum-card .sc-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem;}
-.sum-card .sc-val{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;line-height:1;}
-.sum-card .sc-sub{font-size:.67rem;color:var(--muted);margin-top:.18rem;}
+.sc-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem;}
+.sc-val{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;line-height:1;}
+.sc-sub{font-size:.67rem;color:var(--muted);margin-top:.18rem;}
 .sc-val.green{color:var(--green);}.sc-val.yellow{color:var(--yellow);}.sc-val.red{color:var(--red);}.sc-val.blue{color:var(--blue);}.sc-val.accent{color:var(--accent);}
+.info-box{background:var(--blue-bg);border:1px solid #b8c8e8;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--blue);margin-bottom:1.1rem;}
+.warn-box{background:var(--yellow-bg);border:1px solid #ddd090;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--yellow);margin-bottom:1.1rem;}
 .tbl-wrap{overflow-x:auto;margin-bottom:1.3rem;}
-.htable{width:100%;border-collapse:collapse;font-size:.8rem;}
-.htable th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.45rem .7rem;border-bottom:2px solid var(--border2);white-space:nowrap;}
-.htable td{padding:.58rem .7rem;border-bottom:1px solid var(--border);vertical-align:middle;}
-.htable tbody tr:hover td{background:var(--surface2);}
-.htable .right{text-align:right;}
-.tc{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.83rem;color:var(--accent);}
-.tn{color:var(--muted);font-size:.76rem;max-width:170px;}
 .tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.6rem;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.04em;white-space:nowrap;}
 .tag-ira{background:var(--blue-bg);color:var(--blue);border:1px solid #b8c8e8;}
 .tag-roth{background:var(--green-bg);color:var(--green);border:1px solid #b8d8c0;}
 .tag-brok{background:var(--yellow-bg);color:var(--yellow);border:1px solid #ddd090;}
 .tag-hsa{background:var(--purple-bg);color:var(--purple);border:1px solid #d0b8e8;}
+.btn{display:inline-flex;align-items:center;gap:.4rem;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.04em;padding:.52rem 1.1rem;transition:opacity .15s,transform .1s;border:none;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{opacity:.87;}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:var(--green-bg);}
+.btn-danger{background:transparent;color:var(--red);border:1px solid #ddb8b8;font-size:.68rem;padding:.3rem .7rem;}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+/* CASH TABLE */
+.cash-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin-bottom:1.4rem;box-shadow:var(--shadow);}
+.cash-hd{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem;}
+.cash-hd-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;}
+.cash-hd-meta{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--green);font-weight:500;}
+.ctable{width:100%;border-collapse:collapse;font-size:.8rem;}
+.ctable th{font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.42rem .65rem;border-bottom:2px solid var(--border2);text-align:left;white-space:nowrap;}
+.ctable th.right{text-align:right;}
+.ctable td{padding:.52rem .65rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.ctable tbody tr:hover td{background:var(--surface2);}
+.ctable .right{text-align:right;}
+.ctable .tc{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--accent);font-size:.84rem;}
+.ctable .cd-row td:first-child{border-left:3px solid var(--gold);}
+.ctable .mmf-row td:first-child{border-left:3px solid var(--blue);}
+.ctable .etf-row td:first-child{border-left:3px solid var(--green);}
+.c-inp{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.c-inp:focus{border-color:var(--accent);}
+.c-inp.wide{width:140px;}.c-inp.mid{width:96px;}.c-inp.narrow{width:76px;}.c-inp.xnarrow{width:60px;}.c-inp.date-inp{width:120px;}
+.c-sel{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
+.c-sel:focus{border-color:var(--accent);}
+.maturity-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;padding:1px 6px;border-radius:3px;font-weight:500;}
+.maturity-badge.soon{background:var(--yellow-bg);color:var(--yellow);border:1px solid #ddd090;}
+.maturity-badge.ok{background:var(--green-bg);color:var(--green);border:1px solid #b8d8c0;}
+.maturity-badge.past{background:var(--red-bg);color:var(--red);border:1px solid #ddb8b8;}
+.add-row-btn{display:inline-flex;align-items:center;gap:.35rem;background:transparent;border:1px dashed var(--border2);border-radius:5px;padding:.35rem .85rem;font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-top:.6rem;}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.del-row-btn{background:transparent;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:0 .2rem;line-height:1;transition:color .15s;}
+.del-row-btn:hover{color:var(--red);}
+
+/* HOLDINGS TABLE */
+.htable{width:100%;border-collapse:collapse;font-size:.8rem;}
+.htable th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.45rem .7rem;border-bottom:2px solid var(--border2);white-space:nowrap;}
+.htable th.right{text-align:right;}.htable td.right{text-align:right;}
+.htable td{padding:.58rem .7rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.htable tbody tr:hover td{background:var(--surface2);}
+.tc{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.83rem;color:var(--accent);}
+.tn{color:var(--muted);font-size:.76rem;max-width:170px;}
 .yld{font-family:'IBM Plex Mono',monospace;color:var(--green);font-size:.8rem;}
 .er{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:.74rem;}
-.alloc-inp{width:60px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);text-align:right;}
-.alloc-inp:focus{outline:none;border-color:var(--accent);}
-.mono{font-family:'IBM Plex Mono',monospace;}
+.alloc-inp{width:58px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);text-align:right;outline:none;}
+.alloc-inp:focus{border-color:var(--accent);}
 .alloc-bar-row{margin-bottom:1.2rem;}
 .alloc-bar-labels{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:.3rem;}
 .alloc-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
 .alloc-bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s;}
 .alloc-bar-fill.over{background:var(--red);}
-.info-box{background:var(--blue-bg);border:1px solid #b8c8e8;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--blue);margin-bottom:1.1rem;}
-.warn-box{background:var(--yellow-bg);border:1px solid #ddd090;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--yellow);margin-bottom:1.1rem;}
-.btn{display:inline-flex;align-items:center;gap:.4rem;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.04em;padding:.52rem 1.1rem;transition:opacity .15s,transform .1s;border:none;}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{opacity:.87;}
-.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:var(--green-bg);}
-.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;}
+
+/* ACCOUNTS */
 .accounts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem;margin-bottom:1.5rem;}
 .acct-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;border-top:3px solid var(--border);box-shadow:var(--shadow);}
 .acct-card.ira{border-top-color:var(--blue);}.acct-card.roth{border-top-color:var(--green);}.acct-card.brok{border-top-color:var(--yellow);}.acct-card.hsa{border-top-color:var(--purple);}
@@ -82,10 +119,11 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .acct-field label{display:block;font-size:.6rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem;}
 .acct-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--text);outline:none;transition:border-color .2s;}
 .acct-field input:focus{border-color:var(--accent);}
-.acct-tickers{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);}
-.acct-tickers .tl{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;}
+.acct-tickers .tl{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);}
 .ticker-pills{display:flex;flex-wrap:wrap;gap:3px;}
 .ticker-pill{font-family:'IBM Plex Mono',monospace;font-size:.63rem;padding:2px 6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);}
+
+/* DCA */
 .dca-controls{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.4rem;margin-bottom:1.2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.9rem;align-items:end;}
 .dc-head{grid-column:1/-1;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .dc-field label{display:block;font-size:.6rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.22rem;}
@@ -99,10 +137,11 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .dca-rat{font-size:.68rem;color:var(--muted);line-height:1.4;}
 .pri-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.59rem;font-family:'IBM Plex Mono',monospace;}
 .pri-green{background:var(--green-bg);color:var(--green);}.pri-yellow{background:var(--yellow-bg);color:var(--yellow);}.pri-red{background:var(--red-bg);color:var(--red);}
+
+/* PROJECTION */
 .proj-controls{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:1.2rem;align-items:center;}
 .proj-btn{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.38rem .95rem;font-family:'IBM Plex Mono',monospace;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
-.proj-btn:hover{border-color:var(--accent);color:var(--accent);}
-.proj-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.proj-btn:hover{border-color:var(--accent);color:var(--accent);}.proj-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .proj-lbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-right:.2rem;}
 .chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.4rem;margin-bottom:1.2rem;box-shadow:var(--shadow);}
 .chart-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--muted);margin-bottom:.9rem;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem;}
@@ -112,70 +151,133 @@ canvas{width:100%!important;}
 .leg-item{display:flex;align-items:center;gap:.35rem;font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
 .leg-dot{width:18px;height:3px;border-radius:2px;flex-shrink:0;}
 .longevity-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;box-shadow:var(--shadow);}
-.lon-item .lon-label{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.18rem;}
+.lon-label{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.18rem;}
 .lon-val{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;}
 .lon-val.good{color:var(--green);}.lon-val.warn{color:var(--yellow);}.lon-val.bad{color:var(--red);}
 .rmd-card{background:var(--yellow-bg);border:1px solid #ddd090;border-radius:8px;padding:1rem 1.3rem;margin-top:1.2rem;font-size:.76rem;line-height:1.65;color:var(--yellow);}
+
+/* TICKER EDITOR MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:980px;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;margin:auto;}
+.modal-head{background:var(--text);color:var(--bg);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.modal-head h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;}
+.modal-close{background:transparent;border:none;color:#c8b882;font-size:1.3rem;cursor:pointer;line-height:1;}
+.modal-body{padding:1.2rem 1.5rem;overflow-x:auto;max-height:70vh;overflow-y:auto;}
+.modal-foot{padding:.9rem 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;background:var(--surface2);}
+.modal-foot-note{font-size:.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.ed-table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:860px;}
+.ed-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.38rem .45rem;border-bottom:2px solid var(--border2);white-space:nowrap;}
+.ed-table td{padding:.38rem .45rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.ed-table tbody tr:hover td{background:var(--surface2);}
+.ed-inp{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--text);outline:none;transition:border-color .2s;width:100%;}
+.ed-inp:focus{border-color:var(--accent);}
+.ed-inp.tk{width:62px;text-transform:uppercase;font-weight:500;color:var(--accent);}
+.ed-inp.nm{width:155px;}.ed-inp.cat{width:105px;}.ed-inp.it{width:145px;}.ed-inp.num{width:52px;text-align:right;}
+.ed-sel{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.73rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;width:90px;}
+.ed-sel:focus{border-color:var(--accent);}
+.ed-del{background:transparent;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:0 .3rem;transition:color .15s;}
+.ed-del:hover{color:var(--red);}
+.add-ticker-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);}
+
 .disclaimer{font-size:.66rem;color:var(--muted);line-height:1.55;border-top:1px solid var(--border);padding-top:.85rem;margin-top:1rem;}
-@media(max-width:650px){.tab-pane{padding:1.2rem 1rem;}.app-header,.signal-bar{padding:.9rem 1rem;}.tab-bar{padding:0 .5rem;overflow-x:auto;}.tab-btn{padding:.6rem .8rem;font-size:.62rem;}}
+@media(max-width:650px){.tab-pane{padding:1.2rem 1rem;}.app-header,.signal-bar{padding:.9rem 1rem;}.tab-bar{padding:0 .4rem;overflow-x:auto;}.tab-btn{padding:.6rem .8rem;font-size:.62rem;}}
 </style>
 </head>
 <body>
+
 <div class="app-header">
   <h1>Portfolio <em>Manager</em></h1>
   <span class="header-meta">Conservative Income &middot; Age 69 &middot; Horizon to 95</span>
 </div>
+
 <div class="signal-bar">
-  <span class="signal-bar-label">Market Signal (Tool 1):</span>
+  <span class="sbl">Market Signal (Tool 1):</span>
   <div class="signal-btns">
     <button class="sig-btn green"  id="sig-green"  onclick="setSignal('green')">&#x1F7E2; Full DCA</button>
     <button class="sig-btn yellow" id="sig-yellow" onclick="setSignal('yellow')">&#x1F7E1; Half DCA</button>
     <button class="sig-btn red"    id="sig-red"    onclick="setSignal('red')">&#x1F534; Hold Cash</button>
   </div>
-  <span class="signal-note" id="signal-note">Select today's signal from Market Signal Tool 1 before viewing DCA Plan</span>
-</div>
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="showTab('holdings',this)">01 Holdings</button>
-  <button class="tab-btn"       onclick="showTab('accounts',this)">02 Accounts</button>
-  <button class="tab-btn"       onclick="showTab('dca',this)">03 DCA Plan</button>
-  <button class="tab-btn"       onclick="showTab('projection',this)">04 Projection</button>
+  <span class="signal-note" id="signal-note">Select today's signal from Market Signal Tool 1</span>
 </div>
 
-<!-- TAB 1: HOLDINGS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('holdings',this)">01 Holdings</button>
+  <button class="tab-btn"        onclick="showTab('accounts',this)">02 Accounts</button>
+  <button class="tab-btn"        onclick="showTab('dca',this)">03 DCA Plan</button>
+  <button class="tab-btn"        onclick="showTab('projection',this)">04 Projection</button>
+</div>
+
+<!-- ====== TAB 1: HOLDINGS ====== -->
 <div class="tab-pane active" id="tab-holdings">
   <div class="sec-head">My Holdings<small id="alloc-label">Total: 0%</small></div>
+
+  <!-- CASH & EQUIVALENTS TABLE -->
+  <div class="cash-section">
+    <div class="cash-hd">
+      <span class="cash-hd-title">Cash &amp; Equivalents</span>
+      <span class="cash-hd-meta" id="cash-total-label">Total: $0 &nbsp;&middot;&nbsp; Est. income: $0/yr</span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="ctable">
+        <thead>
+          <tr>
+            <th>Ticker</th><th>Name / Description</th><th>Type</th><th>Account</th>
+            <th class="right">Shares / Units</th><th class="right">Price / NAV ($)</th>
+            <th class="right">Balance ($)</th><th class="right">Yield %</th>
+            <th class="right">Ann. Income</th><th>Maturity</th><th>Note</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="cash-tbody"></tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addCashRow()">+ Add Row</button>
+  </div>
+
+  <!-- ALLOCATION BAR -->
   <div class="alloc-bar-row">
-    <div class="alloc-bar-labels"><span>Allocation used</span><span id="alloc-pct-text">0 / 100%</span></div>
+    <div class="alloc-bar-labels"><span>Holdings allocation used</span><span id="alloc-pct-text">0 / 100%</span></div>
     <div class="alloc-bar"><div class="alloc-bar-fill" id="alloc-bar-fill" style="width:0%"></div></div>
   </div>
+
+  <!-- HOLDINGS SUMMARY -->
   <div class="summary-row">
-    <div class="sum-card"><div class="sc-label">Portfolio Value</div><div class="sc-val blue" id="sv-port">$0</div><div class="sc-sub">All accounts combined</div></div>
-    <div class="sum-card"><div class="sc-label">Annual Income</div><div class="sc-val" id="sv-income">$0</div><div class="sc-sub">Dividends + interest</div></div>
-    <div class="sum-card"><div class="sc-label">Income Target (4%)</div><div class="sc-val" id="sv-target">$0</div><div class="sc-sub">Need to cover expenses</div></div>
+    <div class="sum-card"><div class="sc-label">Total Portfolio</div><div class="sc-val blue" id="sv-port">$0</div><div class="sc-sub">Accounts + cash</div></div>
+    <div class="sum-card"><div class="sc-label">Annual Income</div><div class="sc-val" id="sv-income">$0</div><div class="sc-sub">Holdings + cash</div></div>
+    <div class="sum-card"><div class="sc-label">Income Target (4%)</div><div class="sc-val" id="sv-target">$0</div></div>
     <div class="sum-card"><div class="sc-label">Coverage</div><div class="sc-val" id="sv-cov">0%</div><div class="sc-sub">Income vs target</div></div>
-    <div class="sum-card"><div class="sc-label">Blended Yield</div><div class="sc-val" id="sv-yield">0%</div><div class="sc-sub">Weighted avg yield</div></div>
-    <div class="sum-card"><div class="sc-label">Blended ER</div><div class="sc-val" id="sv-er">0%</div><div class="sc-sub">Weighted avg cost</div></div>
+    <div class="sum-card"><div class="sc-label">Blended Yield</div><div class="sc-val" id="sv-yield">0%</div></div>
+    <div class="sum-card"><div class="sc-label">Cash as % of Total</div><div class="sc-val" id="sv-cashpct">0%</div><div class="sc-sub">vs target allocation</div></div>
   </div>
+
+  <!-- HOLDINGS TABLE -->
   <div class="tbl-wrap">
     <table class="htable">
-      <thead><tr><th>Ticker</th><th>Name</th><th>Category</th><th>Best Account</th><th>Income Type</th><th class="right">Yield%</th><th class="right">ER%</th><th class="right">Alloc%</th><th class="right">$ Value</th><th class="right">Ann. Income</th></tr></thead>
+      <thead><tr>
+        <th>Ticker</th><th>Name</th><th>Category</th><th>Best Account</th><th>Income Type</th>
+        <th class="right">Yield%</th><th class="right">ER%</th>
+        <th class="right">Alloc%</th><th class="right">$ Value</th><th class="right">Ann. Income</th>
+      </tr></thead>
       <tbody id="htable-body"></tbody>
     </table>
   </div>
-  <div class="info-box">
-    <strong>Tax placement rules used above:</strong> Ordinary income funds (SGOV, VTIP, BSV, JEPI, QQQI, PFF) belong in IRA &mdash; income compounds without annual tax drag. Qualified dividend funds (SCHD, SPDW, XLE) are tax-efficient in Brokerage &mdash; taxed at 0&ndash;15% and eligible for foreign tax credits (SPDW). VTI grows tax-free forever in Roth &mdash; the most powerful placement over 26 years. Gold (IAU) avoids the 28% collectibles rate by staying in IRA.
+
+  <div class="info-box" id="tax-info-box">
+    <strong>Tax placement:</strong> Ordinary income funds (SGOV, VTIP, BSV, JEPI, QQQI, PFF) shelter in IRA. Qualified dividend funds (SCHD, SPDW, XLE) are efficient in Brokerage. VTI grows tax-free in Roth. Gold (IAU) avoids the 28% collectibles rate inside IRA.
   </div>
+
   <div class="btn-row">
     <button class="btn btn-primary" onclick="recalc()">&#8635; Recalculate</button>
-    <button class="btn btn-outline" onclick="resetAllocs()">Reset to Defaults</button>
+    <button class="btn btn-outline" onclick="resetAllocs()">Reset Defaults</button>
+    <button class="btn btn-outline" onclick="openTickerEditor()" style="margin-left:auto">&#9998; Edit Tickers / Universe</button>
   </div>
-  <div class="disclaimer">All values persist via browser storage. Hover over any fund name to see the account placement rationale. Not financial advice.</div>
+  <div class="disclaimer">All values persist via browser storage. Hover fund name for tax rationale. Not financial advice.</div>
 </div>
 
-<!-- TAB 2: ACCOUNTS -->
+<!-- ====== TAB 2: ACCOUNTS ====== -->
 <div class="tab-pane" id="tab-accounts">
   <div class="sec-head">Account Balances</div>
-  <div class="info-box">Enter your current balance in each account. The DCA tab will distribute your budget across accounts proportionally, respecting tax placement rules.</div>
+  <div class="info-box">Enter your current balance in each account. The DCA tab distributes your budget using these balances and tax placement rules.</div>
   <div class="accounts-grid">
     <div class="acct-card ira">
       <div class="acct-name">Traditional IRA</div>
@@ -209,12 +311,10 @@ canvas{width:100%!important;}
     <div class="sum-card"><div class="sc-label">Tax-Free (Roth)</div><div class="sc-val green" id="as-free">0%</div></div>
     <div class="sum-card"><div class="sc-label">Taxable (Brokerage)</div><div class="sc-val" id="as-taxable">0%</div></div>
   </div>
-  <div class="rmd-card">
-    <strong>RMD Notice:</strong> Required Minimum Distributions begin at age 73. On a $600K IRA the current RMD is approximately <strong>$22,600/year</strong> (IRS factor 26.5). This is ordinary income and may push you into a higher bracket. Consider Roth conversions in lower-income years to reduce future RMD burden.
-  </div>
+  <div class="rmd-card"><strong>RMD Notice:</strong> Required Minimum Distributions begin at age 73. On a $600K IRA the current RMD is approximately <strong>$22,600/year</strong> (IRS factor 26.5). This is ordinary income and may push you into a higher bracket. Consider Roth conversions in lower-income years.</div>
 </div>
 
-<!-- TAB 3: DCA PLAN -->
+<!-- ====== TAB 3: DCA PLAN ====== -->
 <div class="tab-pane" id="tab-dca">
   <div class="sec-head">DCA Plan<small>Dollar-Cost Averaging by Account &amp; Ticker</small></div>
   <div class="dca-controls">
@@ -224,21 +324,18 @@ canvas{width:100%!important;}
         <option value="green">Full DCA (100%)</option>
         <option value="yellow">Half DCA (50%)</option>
         <option value="red">Hold Cash (0%)</option>
-      </select>
-    </div>
+      </select></div>
     <div class="dc-field"><label>Monthly Budget ($)</label><input type="number" id="dc-budget" value="2000" min="0" step="100" oninput="buildDCA();saveSettings()"></div>
     <div class="dc-field"><label>Frequency</label>
       <select id="dc-freq" onchange="buildDCA();saveSettings()">
         <option value="monthly">Monthly</option><option value="biweekly">Bi-weekly</option><option value="weekly">Weekly</option>
-      </select>
-    </div>
+      </select></div>
     <div class="dc-field"><label>Priority</label>
       <select id="dc-priority" onchange="buildDCA();saveSettings()">
         <option value="income">Maximize Income</option><option value="balanced">Balanced</option><option value="growth">Maximize Growth</option>
-      </select>
-    </div>
+      </select></div>
   </div>
-  <div id="dca-signal-banner" class="info-box">Select a signal above to begin.</div>
+  <div id="dca-signal-banner" class="info-box">Select a signal above.</div>
   <div class="tbl-wrap">
     <table class="dca-table">
       <thead><tr><th>Ticker</th><th>Account</th><th>Why This Account</th><th>Alloc%</th><th>DCA Amount</th><th>Priority</th></tr></thead>
@@ -255,7 +352,7 @@ canvas{width:100%!important;}
   <div id="dca-warn" class="warn-box" style="display:none"></div>
 </div>
 
-<!-- TAB 4: PROJECTION -->
+<!-- ====== TAB 4: PROJECTION ====== -->
 <div class="tab-pane" id="tab-projection">
   <div class="sec-head">12-Month Projection<small>Income vs. Total Return</small></div>
   <div class="proj-controls">
@@ -271,57 +368,104 @@ canvas{width:100%!important;}
     <canvas id="proj-canvas" height="300"></canvas>
     <div class="proj-legend">
       <div class="leg-item"><div class="leg-dot" style="background:#1e6b3a"></div>Total Return (balance)</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#9a7a1a"></div>Cumulative Income received</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9a7a1a"></div>Cumulative Income</div>
       <div class="leg-item"><div class="leg-dot" style="background:rgba(139,26,26,.5)"></div>Balance with SS Cut</div>
     </div>
   </div>
   <div class="longevity-card">
-    <div class="lon-item"><div class="lon-label">Portfolio Survives To</div><div class="lon-val" id="lon-age">-</div></div>
-    <div class="lon-item"><div class="lon-label">Balance at Age 95</div><div class="lon-val" id="lon-95">-</div></div>
-    <div class="lon-item"><div class="lon-label">Min Return Needed</div><div class="lon-val" id="lon-req">-</div></div>
-    <div class="lon-item"><div class="lon-label">Income vs Target</div><div class="lon-val" id="lon-gap">-</div></div>
-    <div class="lon-item"><div class="lon-label">SS Cut Annual Impact</div><div class="lon-val" id="lon-ss">-</div></div>
+    <div><div class="lon-label">Portfolio Survives To</div><div class="lon-val" id="lon-age">-</div></div>
+    <div><div class="lon-label">Balance at Age 95</div><div class="lon-val" id="lon-95">-</div></div>
+    <div><div class="lon-label">Min Return Needed</div><div class="lon-val" id="lon-req">-</div></div>
+    <div><div class="lon-label">Income vs Target</div><div class="lon-val" id="lon-gap">-</div></div>
+    <div><div class="lon-label">SS Cut Impact</div><div class="lon-val" id="lon-ss">-</div></div>
   </div>
-  <div class="info-box" style="margin-top:1.1rem">
-    <strong>Sequence of returns is your #1 risk.</strong> A Down -15% scenario in year 1 forces you to sell depressed assets to fund the $44K withdrawal. Your SGOV (T-bills) and JEPI income exist to prevent this &mdash; they fund withdrawals for years 1-3 without touching equities. That buffer is the difference between recovering and a permanent impairment.
+  <div class="info-box" style="margin-top:1.1rem"><strong>Sequence of returns is your #1 risk.</strong> A Down -15% year 1 forces selling depressed assets to fund the $44K withdrawal. SGOV and JEPI income exist to prevent this &mdash; they fund withdrawals for years 1-3 without touching equities.</div>
+  <div class="disclaimer">Simplified linear projections. Not financial advice.</div>
+</div>
+
+<!-- ====== TICKER EDITOR MODAL ====== -->
+<div class="modal-overlay" id="ticker-modal" onclick="if(event.target===this)closeTickerEditor()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>Edit Holdings Universe</h2>
+      <button class="modal-close" onclick="closeTickerEditor()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" style="margin-bottom:.9rem;font-size:.72rem">
+        <strong>These are your tickers</strong> &mdash; I suggested them based on your profile, but every field is fully editable. Change any ticker, name, yield, ER, category, income type, or account placement to match your actual situation. Override account placement if you hold a position somewhere different than recommended.
+      </div>
+      <table class="ed-table">
+        <thead><tr>
+          <th>Ticker</th><th>Name</th><th>Category</th><th>Account</th>
+          <th>Income Type</th><th style="text-align:right">Yield%</th>
+          <th style="text-align:right">ER%</th><th style="text-align:right">Alloc%</th><th></th>
+        </tr></thead>
+        <tbody id="ed-tbody"></tbody>
+      </table>
+      <div class="add-ticker-row">
+        <input class="ed-inp tk" id="new-t" placeholder="TICKER" maxlength="8" style="width:68px" oninput="this.value=this.value.toUpperCase()">
+        <input class="ed-inp nm" id="new-n" placeholder="Fund name" style="width:190px">
+        <input class="ed-inp cat" id="new-cat" placeholder="Category" style="width:100px">
+        <select class="ed-sel" id="new-acct" style="width:95px">
+          <option>IRA</option><option>Roth</option><option>Brokerage</option><option>HSA</option>
+        </select>
+        <input class="ed-inp it" id="new-it" placeholder="Income type" style="width:130px">
+        <input class="ed-inp num" id="new-y" type="number" placeholder="Yld%" min="0" max="50" step="0.1" style="width:60px">
+        <input class="ed-inp num" id="new-er" type="number" placeholder="ER%" min="0" max="5" step="0.01" style="width:55px">
+        <button class="btn btn-primary" onclick="addNewTicker()" style="padding:.35rem .9rem;font-size:.7rem">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="saveTickerEdits()">Save &amp; Apply</button>
+      <span class="modal-foot-note">Changes apply to all tabs immediately &middot; Saved to browser storage</span>
+    </div>
   </div>
-  <div class="disclaimer">Projections use simplified linear assumptions. Actual returns are non-linear and sequence-dependent. Not financial advice.</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const HOLDINGS=[
-  {t:'SGOV',n:'iShares 0-3 Month Treasury',     cat:'T-Bills',        acct:'IRA',       it:'Ordinary Income',           y:5.1, er:0.09,a:10,why:'Ordinary income sheltered from annual tax in IRA. Cash-equivalent safety buffer.'},
-  {t:'VTIP',n:'Vanguard Short-Term TIPS',        cat:'TIPS',           acct:'IRA',       it:'Ordinary + Inflation Adj',  y:4.2, er:0.04,a:8, why:'Inflation adjustments taxable annually - IRA shields this. Core 26-yr inflation hedge.'},
-  {t:'BSV', n:'Vanguard Short-Term Bond',        cat:'Short Bond',     acct:'IRA',       it:'Ordinary Income',           y:4.6, er:0.04,a:10,why:'Steady ordinary income sheltered in IRA prevents annual tax drag on bond interest.'},
-  {t:'SCHD',n:'Schwab US Dividend Equity',       cat:'Dividend Equity',acct:'Brokerage', it:'Qualified Dividends',       y:3.7, er:0.06,a:15,why:'Qualified dividends taxed at 0-15% in brokerage. No benefit to sheltering. Tax-loss harvesting available.'},
-  {t:'JEPI',n:'JPMorgan Equity Premium Income',  cat:'Covered Call',   acct:'IRA',       it:'Ordinary Income (ELNs)',    y:7.4, er:0.35,a:10,why:'High ordinary income from equity-linked notes must stay in IRA to avoid top-bracket annual taxation.'},
-  {t:'VTI', n:'Vanguard Total Stock Market',     cat:'US Equity',      acct:'Roth',      it:'Qualified Dividends',       y:1.4, er:0.03,a:18,why:'Long-term growth compounding completely tax-free in Roth over 26 years is the most powerful placement available.'},
-  {t:'SPDW',n:'SPDR Portfolio Developed World',  cat:'Intl Developed', acct:'Brokerage', it:'Qualified Dividends',       y:3.2, er:0.04,a:8, why:'Foreign tax credit only available in taxable brokerage. Sheltering in IRA permanently loses this annual credit.'},
-  {t:'IAU', n:'iShares Gold Trust',              cat:'Gold',           acct:'IRA',       it:'None (price return)',        y:0,   er:0.25,a:7, why:'Gold taxed at 28% collectibles rate if in brokerage. IRA avoids this. SS + inflation hedge position.'},
-  {t:'XLE', n:'Energy Select Sector SPDR',       cat:'Energy',         acct:'Brokerage', it:'Qualified Dividends',       y:3.4, er:0.09,a:4, why:'Qualified dividends are tax-efficient in brokerage. Inflation hedge in taxable account.'},
-  {t:'QQQI',n:'NEOS NASDAQ 100 High Income',     cat:'Covered Call',   acct:'IRA',       it:'60/40 Cap Gains (options)', y:14.0,er:0.68,a:5, why:'High income best sheltered in IRA. 60/40 options treatment helps but income level still warrants IRA placement.'},
-  {t:'PFF', n:'iShares Preferred & Income Secs', cat:'Preferred Stock',acct:'IRA',       it:'Ordinary Income',           y:6.2, er:0.46,a:5, why:'Preferred dividends taxed as ordinary income. IRA is the correct home for this income type.'},
+// ─── HOLDINGS DATA (my suggestions — fully overridable via Edit Tickers) ───
+let HOLDINGS=[
+  {t:'SGOV', n:'iShares 0-3 Month Treasury',     cat:'T-Bills',        acct:'IRA',       it:'Ordinary Income',           y:5.1, er:0.09,a:10,why:'Ordinary income sheltered in IRA. Cash-equivalent safety buffer.'},
+  {t:'VTIP', n:'Vanguard Short-Term TIPS',        cat:'TIPS',           acct:'IRA',       it:'Ordinary + Inflation Adj',  y:4.2, er:0.04,a:8, why:'Inflation adjustments taxable annually — IRA shields this. 26-yr inflation hedge.'},
+  {t:'BSV',  n:'Vanguard Short-Term Bond',        cat:'Short Bond',     acct:'IRA',       it:'Ordinary Income',           y:4.6, er:0.04,a:10,why:'Steady ordinary income — IRA prevents annual tax drag on bond interest.'},
+  {t:'SCHD', n:'Schwab US Dividend Equity',       cat:'Dividend Equity',acct:'Brokerage', it:'Qualified Dividends',       y:3.7, er:0.06,a:15,why:'Qualified divs taxed 0-15% in brokerage. Tax-loss harvesting available.'},
+  {t:'JEPI', n:'JPMorgan Equity Premium Income',  cat:'Covered Call',   acct:'IRA',       it:'Ordinary Income (ELNs)',    y:7.4, er:0.35,a:10,why:'High ordinary income from equity-linked notes — must stay in IRA.'},
+  {t:'VTI',  n:'Vanguard Total Stock Market',     cat:'US Equity',      acct:'Roth',      it:'Qualified Dividends',       y:1.4, er:0.03,a:18,why:'Long-term growth compounding completely tax-free in Roth over 26 years.'},
+  {t:'SPDW', n:'SPDR Portfolio Developed World',  cat:'Intl Developed', acct:'Brokerage', it:'Qualified Dividends',       y:3.2, er:0.04,a:8, why:'Foreign tax credit only in taxable brokerage — sheltering in IRA loses it.'},
+  {t:'IAU',  n:'iShares Gold Trust',              cat:'Gold',           acct:'IRA',       it:'None (price return)',        y:0,   er:0.25,a:7, why:'Gold taxed at 28% collectibles rate in brokerage — IRA avoids this.'},
+  {t:'XLE',  n:'Energy Select Sector SPDR',       cat:'Energy',         acct:'Brokerage', it:'Qualified Dividends',       y:3.4, er:0.09,a:4, why:'Qualified dividends efficient in brokerage. Inflation hedge.'},
+  {t:'QQQI', n:'NEOS NASDAQ 100 High Income',     cat:'Covered Call',   acct:'IRA',       it:'60/40 Cap Gains (options)', y:14.0,er:0.68,a:5, why:'High income best sheltered in IRA. 60/40 options treatment helps.'},
+  {t:'PFF',  n:'iShares Preferred & Income Secs', cat:'Preferred Stock',acct:'IRA',       it:'Ordinary Income',           y:6.2, er:0.46,a:5, why:'Preferred dividends = ordinary income. IRA is the correct home.'},
 ];
-const ACCT_RATIONALE={
-  'IRA':      'Tax-deferred: ordinary income not taxed annually',
-  'Roth':     'Tax-free growth: best for long-term high-growth assets',
-  'Brokerage':'Qualified divs at 0-15%; foreign tax credit preserved',
-  'HSA':      'Triple tax advantage: healthcare or stealth IRA after 65',
+
+// ─── CASH POSITIONS (editable rows) ───
+let CASH=[
+  {id:1,ticker:'SGOV', name:'iShares 0-3 Mo Treasury ETF',    type:'ETF',     acct:'IRA',       shares:0,price:100.00,balance:0,   yield:5.1, maturity:'',      note:''},
+  {id:2,ticker:'SWVXX',name:'Schwab Value Advantage MMF',      type:'MMF',     acct:'Brokerage', shares:0,price:1.00,  balance:0,   yield:4.8, maturity:'',      note:''},
+  {id:3,ticker:'CD',   name:'Certificate of Deposit',          type:'CD',      acct:'IRA',       shares:1,price:0,    balance:0,   yield:4.5, maturity:'2025-06-15',note:'June maturity — plan redeployment'},
+];
+let cashNextId=4;
+
+const ACCT_RAT={
+  IRA:      'Tax-deferred: ordinary income not taxed annually',
+  Roth:     'Tax-free growth: best for long-term high-growth assets',
+  Brokerage:'Qualified divs at 0-15%; foreign tax credit preserved',
+  HSA:      'Triple tax advantage: healthcare or stealth IRA after 65',
 };
+
 let scenario='flat',ssCut=false,signal='green',projChart=null;
-const SK={allocs:'pm_allocs',balances:'pm_balances',settings:'pm_settings',signal:'pm_signal'};
+const SK={h:'pm_h2',cash:'pm_cash2',bal:'pm_bal2',set:'pm_set2',sig:'pm_sig2'};
+
+// ─── STORAGE ───
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function sl(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
-function saveAllocs(){ss(SK.allocs,HOLDINGS.map((_,i)=>{const e=document.getElementById('alloc-'+i);return e?parseFloat(e.value)||0:HOLDINGS[i].a;}));}
-function loadAllocs(){const a=sl(SK.allocs,null);if(a)HOLDINGS.forEach((h,i)=>{if(a[i]!==undefined)h.a=a[i];});}
-function saveAccts(){ss(SK.balances,{ira:+document.getElementById('bal-ira').value||0,roth:+document.getElementById('bal-roth').value||0,brok:+document.getElementById('bal-brok').value||0,hsa:+document.getElementById('bal-hsa').value||0,pIra:+document.getElementById('pct-ira').value||0,pRoth:+document.getElementById('pct-roth').value||0,pBrok:+document.getElementById('pct-brok').value||0,pHsa:+document.getElementById('pct-hsa').value||0});}
-function loadAccts(){const b=sl(SK.balances,null);if(!b)return;['ira','roth','brok','hsa'].forEach(k=>{const e=document.getElementById('bal-'+k);if(e&&b[k]!==undefined)e.value=b[k];});['pIra','pRoth','pBrok','pHsa'].forEach((k,i)=>{const ids=['pct-ira','pct-roth','pct-brok','pct-hsa'];const e=document.getElementById(ids[i]);if(e&&b[k]!==undefined)e.value=b[k];});}
-function saveSettings(){ss(SK.settings,{budget:document.getElementById('dc-budget').value,freq:document.getElementById('dc-freq').value,pri:document.getElementById('dc-priority').value,sig:document.getElementById('dc-signal').value});}
-function loadSettings(){const s=sl(SK.settings,null);if(!s)return;if(s.budget)document.getElementById('dc-budget').value=s.budget;if(s.freq)document.getElementById('dc-freq').value=s.freq;if(s.pri)document.getElementById('dc-priority').value=s.pri;if(s.sig)document.getElementById('dc-signal').value=s.sig;}
-function getPortfolio(){const ira=+document.getElementById('bal-ira').value||600000,roth=+document.getElementById('bal-roth').value||140000,brok=+document.getElementById('bal-brok').value||320000,hsa=+document.getElementById('bal-hsa').value||50000;return{ira,roth,brok,hsa,total:ira+roth+brok+hsa};}
+function sl(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function fmt(n){if(Math.abs(n)>=1e6)return'$'+(n/1e6).toFixed(2)+'M';return'$'+Math.round(n).toLocaleString();}
-function fmtP(n){return n.toFixed(2)+'%';}
+function fmtP(n){return(+n).toFixed(2)+'%';}
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function gn(id){return parseFloat(gv(id))||0;}
+
+// ─── TABS ───
 function showTab(id,btn){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -331,45 +475,209 @@ function showTab(id,btn){
   if(id==='projection')buildProjection();
   if(id==='accounts')updateAcctSummary();
 }
+
+// ─── SIGNAL ───
 function setSignal(s){
   signal=s;
   ['green','yellow','red'].forEach(c=>document.getElementById('sig-'+c).classList.remove('active'));
   document.getElementById('sig-'+s).classList.add('active');
   document.getElementById('dc-signal').value=s;
-  const notes={green:'Full DCA active - deploy full monthly budget across all positions per allocation weights.',yellow:'Half DCA - deploy 50% of budget, hold remainder in money market until signal clears.',red:'Hold Cash - no DCA this period. Protect income reserve. Revisit next week.'};
+  const notes={green:'Full DCA active — deploy full monthly budget across all positions.',yellow:'Half DCA — deploy 50%, hold remainder in money market.',red:'Hold Cash — no DCA this period. Protect income reserve.'};
   document.getElementById('signal-note').textContent=notes[s];
-  ss(SK.signal,s);
+  ss(SK.sig,s);
   buildDCA();
 }
+
+// ─── PERSISTENCE ───
+function saveAll(){
+  ss(SK.h,HOLDINGS);
+  // cash saved inline via saveCash()
+}
+function saveAccts(){
+  ss(SK.bal,{ira:gn('bal-ira'),roth:gn('bal-roth'),brok:gn('bal-brok'),hsa:gn('bal-hsa'),
+    pIra:gn('pct-ira'),pRoth:gn('pct-roth'),pBrok:gn('pct-brok'),pHsa:gn('pct-hsa')});
+}
+function loadAccts(){
+  const b=sl(SK.bal,null);if(!b)return;
+  ['ira','roth','brok','hsa'].forEach(k=>{const e=document.getElementById('bal-'+k);if(e&&b[k]!==undefined)e.value=b[k];});
+  [{k:'pIra',id:'pct-ira'},{k:'pRoth',id:'pct-roth'},{k:'pBrok',id:'pct-brok'},{k:'pHsa',id:'pct-hsa'}].forEach(({k,id})=>{const e=document.getElementById(id);if(e&&b[k]!==undefined)e.value=b[k];});
+}
+function saveSettings(){
+  ss(SK.set,{budget:gv('dc-budget'),freq:gv('dc-freq'),pri:gv('dc-priority'),sig:gv('dc-signal')});
+}
+function loadSettings(){
+  const s=sl(SK.set,null);if(!s)return;
+  if(s.budget)document.getElementById('dc-budget').value=s.budget;
+  if(s.freq)document.getElementById('dc-freq').value=s.freq;
+  if(s.pri)document.getElementById('dc-priority').value=s.pri;
+  if(s.sig)document.getElementById('dc-signal').value=s.sig;
+}
+
+// ─── PORTFOLIO TOTALS ───
+function getPortfolio(){
+  const ira=gn('bal-ira'),roth=gn('bal-roth'),brok=gn('bal-brok'),hsa=gn('bal-hsa');
+  return{ira,roth,brok,hsa,total:ira+roth+brok+hsa};
+}
+function getCashTotal(){
+  return CASH.reduce((s,c)=>s+c.balance,0);
+}
+function getCashIncome(){
+  return CASH.reduce((s,c)=>s+(c.balance*c.yield/100),0);
+}
+
+// ─────────────────────────────────────────────
+//  CASH & EQUIVALENTS
+// ─────────────────────────────────────────────
+function renderCash(){
+  const tbody=document.getElementById('cash-tbody');
+  tbody.innerHTML='';
+  CASH.forEach(c=>{
+    const isCD=c.type==='CD';
+    // Maturity badge
+    let matBadge='';
+    if(isCD&&c.maturity){
+      const days=Math.round((new Date(c.maturity)-new Date())/86400000);
+      const cls=days<0?'past':days<60?'soon':'ok';
+      const label=days<0?'Matured':days+'d left';
+      matBadge=`<span class="maturity-badge ${cls}">${label}</span>`;
+    }
+    const rowCls=isCD?'cd-row':c.type==='MMF'?'mmf-row':'etf-row';
+    const tr=document.createElement('tr');
+    tr.className=rowCls;
+    tr.innerHTML=`
+      <td class="tc"><input class="c-inp xnarrow" value="${c.ticker}" oninput="cashField(${c.id},'ticker',this.value.toUpperCase());this.value=this.value.toUpperCase()"></td>
+      <td><input class="c-inp wide" value="${c.name}" oninput="cashField(${c.id},'name',this.value)"></td>
+      <td><select class="c-sel" onchange="cashField(${c.id},'type',this.value)" style="width:78px">
+        ${['ETF','MMF','CD','Treasury','Savings'].map(t=>`<option ${c.type===t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><select class="c-sel" onchange="cashField(${c.id},'acct',this.value)" style="width:88px">
+        ${['IRA','Roth','Brokerage','HSA'].map(a=>`<option ${c.acct===a?'selected':''}>${a}</option>`).join('')}
+      </select></td>
+      <td class="right"><input class="c-inp narrow" type="number" value="${c.shares}" min="0" step="0.001" oninput="cashShareChange(${c.id},this.value)" style="width:80px"></td>
+      <td class="right"><input class="c-inp narrow" type="number" value="${c.price}" min="0" step="0.01" oninput="cashPriceChange(${c.id},this.value)" style="width:76px"></td>
+      <td class="right"><input class="c-inp mid" type="number" value="${c.balance}" min="0" step="100" oninput="cashBalChange(${c.id},this.value)" style="width:96px"></td>
+      <td class="right"><input class="c-inp xnarrow" type="number" value="${c.yield}" min="0" max="20" step="0.05" oninput="cashField(${c.id},'yield',+this.value);renderCashMeta()" style="width:60px"></td>
+      <td class="right mono" style="font-size:.78rem;color:var(--green)" id="cash-inc-${c.id}">${fmt(c.balance*c.yield/100)}</td>
+      <td>${isCD?`<input class="c-inp date-inp" type="date" value="${c.maturity}" oninput="cashField(${c.id},'maturity',this.value);renderCash()">${matBadge}`:'<span style="color:var(--muted);font-size:.7rem">--</span>'}</td>
+      <td><input class="c-inp" value="${c.note||''}" oninput="cashField(${c.id},'note',this.value)" placeholder="Note..." style="width:130px;font-size:.72rem"></td>
+      <td><button class="del-row-btn" onclick="deleteCashRow(${c.id})" title="Remove">&#10005;</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  renderCashMeta();
+}
+
+function cashField(id,field,val){
+  const c=CASH.find(x=>x.id===id);if(!c)return;
+  c[field]=val;
+  saveCash();
+}
+
+function cashShareChange(id,val){
+  const c=CASH.find(x=>x.id===id);if(!c)return;
+  c.shares=parseFloat(val)||0;
+  if(c.price>0){c.balance=+(c.shares*c.price).toFixed(2);}
+  // Update balance input
+  const tr=document.querySelector(`tr [oninput*="cashShareChange(${id}"]`)?.closest('tr');
+  if(tr){const inputs=tr.querySelectorAll('input[type=number]');if(inputs[2])inputs[2].value=c.balance.toFixed(2);}
+  saveCash();renderCashMeta();renderHoldings();
+}
+
+function cashPriceChange(id,val){
+  const c=CASH.find(x=>x.id===id);if(!c)return;
+  c.price=parseFloat(val)||0;
+  if(c.shares>0){c.balance=+(c.shares*c.price).toFixed(2);}
+  const row=document.getElementById('cash-inc-'+id);
+  if(row)row.textContent=fmt(c.balance*c.yield/100);
+  saveCash();renderCashMeta();renderHoldings();
+}
+
+function cashBalChange(id,val){
+  const c=CASH.find(x=>x.id===id);if(!c)return;
+  c.balance=parseFloat(val)||0;
+  // If MMF (price=1), update shares
+  if(c.price===1||c.type==='MMF'){c.shares=c.balance;c.price=1;}
+  const row=document.getElementById('cash-inc-'+id);
+  if(row)row.textContent=fmt(c.balance*c.yield/100);
+  saveCash();renderCashMeta();renderHoldings();
+}
+
+function renderCashMeta(){
+  const total=getCashTotal(),inc=getCashIncome();
+  document.getElementById('cash-total-label').textContent=
+    'Total: '+fmt(total)+'  ·  Est. income: '+fmt(inc)+'/yr';
+}
+
+function addCashRow(){
+  CASH.push({id:cashNextId++,ticker:'NEW',name:'New Position',type:'MMF',acct:'Brokerage',
+    shares:0,price:1,balance:0,yield:4.5,maturity:'',note:''});
+  renderCash();
+}
+
+function deleteCashRow(id){
+  CASH=CASH.filter(c=>c.id!==id);
+  renderCash();saveCash();renderHoldings();
+}
+
+function saveCash(){
+  ss(SK.cash,CASH);
+}
+function loadCash(){
+  const saved=sl(SK.cash,null);
+  if(saved&&saved.length){CASH=saved;cashNextId=Math.max(...saved.map(c=>c.id))+1;}
+}
+
+// ─────────────────────────────────────────────
+//  HOLDINGS
+// ─────────────────────────────────────────────
 function renderHoldings(){
   const pf=getPortfolio();
-  const body=document.getElementById('htable-body');
-  body.innerHTML='';
+  const cashTotal=getCashTotal();
+  const grandTotal=pf.total; // account balances already include cash in most cases
+  const tbody=document.getElementById('htable-body');
+  tbody.innerHTML='';
   let ta=0,ti=0,wY=0,wER=0;
   HOLDINGS.forEach((h,i)=>{
     ta+=h.a;
-    const d=pf.total*h.a/100,inc=d*h.y/100;
+    const d=grandTotal*h.a/100,inc=d*h.y/100;
     ti+=inc;wY+=h.y*h.a;wER+=h.er*h.a;
     const tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
     const tr=document.createElement('tr');
-    tr.innerHTML='<td class="tc">'+h.t+'</td><td class="tn" title="'+h.why+'">'+h.n+'</td><td style="font-size:.74rem;color:var(--muted)">'+h.cat+'</td><td><span class="tag '+tc+'">'+h.acct+'</span></td><td style="font-size:.7rem;color:var(--muted)">'+h.it+'</td><td class="right yld">'+(h.y>0?fmtP(h.y):'--')+'</td><td class="right er">'+fmtP(h.er)+'</td><td class="right"><input class="alloc-inp" id="alloc-'+i+'" type="number" value="'+h.a+'" min="0" max="100" step="0.5" oninput="HOLDINGS['+i+'].a=parseFloat(this.value)||0;recalc()"></td><td class="right mono" style="font-size:.78rem">'+fmt(d)+'</td><td class="right mono" style="font-size:.78rem;color:var(--green)">'+(h.y>0?fmt(inc):'--')+'</td>';
-    body.appendChild(tr);
+    tr.innerHTML='<td class="tc">'+h.t+'</td>'
+      +'<td class="tn" title="'+h.why+'">'+h.n+'</td>'
+      +'<td style="font-size:.74rem;color:var(--muted)">'+h.cat+'</td>'
+      +'<td><span class="tag '+tc+'">'+h.acct+'</span></td>'
+      +'<td style="font-size:.7rem;color:var(--muted)">'+h.it+'</td>'
+      +'<td class="right yld">'+(h.y>0?fmtP(h.y):'--')+'</td>'
+      +'<td class="right er">'+fmtP(h.er)+'</td>'
+      +'<td class="right"><input class="alloc-inp" id="alloc-'+i+'" type="number" value="'+h.a+'" min="0" max="100" step="0.5" oninput="HOLDINGS['+i+'].a=parseFloat(this.value)||0;recalc()"></td>'
+      +'<td class="right mono" style="font-size:.78rem">'+fmt(d)+'</td>'
+      +'<td class="right mono" style="font-size:.78rem;color:var(--green)">'+(h.y>0?fmt(inc):'--')+'</td>';
+    tbody.appendChild(tr);
   });
+  // totals
+  ti+=getCashIncome();
+  const totalIncomePlusCache=ti;
   const fill=document.getElementById('alloc-bar-fill');
   fill.style.width=Math.min(ta,100)+'%';
   fill.className='alloc-bar-fill'+(ta>100?' over':'');
   document.getElementById('alloc-pct-text').textContent=ta.toFixed(1)+' / 100%';
   document.getElementById('alloc-label').textContent='Total: '+ta.toFixed(1)+'%';
-  const need=pf.total*0.04,cov=ti/need*100,bY=wY/Math.max(ta,1),bER=wER/Math.max(ta,1);
-  document.getElementById('sv-port').textContent=fmt(pf.total);
-  const svi=document.getElementById('sv-income');svi.textContent=fmt(ti);svi.className='sc-val '+(ti>=need?'green':'yellow');
+  const need=grandTotal*0.04,cov=totalIncomePlusCache/need*100;
+  const bY=wY/Math.max(ta,1);
+  document.getElementById('sv-port').textContent=fmt(grandTotal+cashTotal);
+  const svi=document.getElementById('sv-income');svi.textContent=fmt(totalIncomePlusCache);svi.className='sc-val '+(totalIncomePlusCache>=need?'green':'yellow');
   document.getElementById('sv-target').textContent=fmt(need);
   const svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='sc-val '+(cov>=100?'green':cov>=80?'yellow':'red');
   const svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='sc-val '+(bY>=4?'green':'yellow');
-  document.getElementById('sv-er').textContent=fmtP(bER);
+  const cashPct=cashTotal/(grandTotal||1)*100;
+  const scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='sc-val '+(cashPct>30?'yellow':cashPct>20?'accent':'green');
 }
-function recalc(){renderHoldings();saveAllocs();}
-function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach((v,i)=>HOLDINGS[i].a=v);renderHoldings();saveAllocs();}
+
+function recalc(){renderHoldings();saveAll();}
+function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach((v,i)=>HOLDINGS[i].a=v);renderHoldings();saveAll();}
+
+// ─── ACCOUNTS ───
 function updateAcctSummary(){
   const pf=getPortfolio();
   document.getElementById('as-total').textContent=fmt(pf.total);
@@ -379,21 +687,23 @@ function updateAcctSummary(){
   document.getElementById('as-taxable').textContent=(pf.brok/pf.total*100).toFixed(0)+'%';
   const g={IRA:[],Roth:[],Brokerage:[],HSA:[]};
   HOLDINGS.forEach(h=>{if(g[h.acct])g[h.acct].push(h.t);});
-  if(!g.HSA.length)g.HSA=['SGOV','BSV'];
   [['IRA','tp-ira'],['Roth','tp-roth'],['Brokerage','tp-brok'],['HSA','tp-hsa']].forEach(([a,id])=>{
     const el=document.getElementById(id);
     if(el)el.innerHTML=(g[a]||[]).map(t=>'<span class="ticker-pill">'+t+'</span>').join('');
   });
 }
+
+// ─── DCA ───
 function buildDCA(){
-  const sig=document.getElementById('dc-signal').value;
-  const budget=parseFloat(document.getElementById('dc-budget').value)||2000;
-  const freq=document.getElementById('dc-freq').value;
-  const pri=document.getElementById('dc-priority').value;
+  const sig=gv('dc-signal'),budget=gn('dc-budget'),freq=gv('dc-freq'),pri=gv('dc-priority');
   const pb=freq==='weekly'?budget/4.33:freq==='biweekly'?budget/2:budget;
   const mult=sig==='green'?1:sig==='yellow'?.5:0;
   const dep=pb*mult;
-  const banners={green:'<strong>Full DCA active.</strong> Markets are favorable. Deploy full budget proportionally across all positions per allocation weights.',yellow:'<strong>Half DCA.</strong> Elevated uncertainty - deploying 50% of budget. Remaining cash holds in money market until signal clears.',red:'<strong>Hold Cash - No DCA this period.</strong> Market conditions unfavorable. Protect your income reserve. Revisit next week after checking Market Signal.'};
+  const banners={
+    green:'<strong>Full DCA active.</strong> Deploy full budget proportionally across all positions per allocation weights.',
+    yellow:'<strong>Half DCA.</strong> Deploying 50% — remaining cash holds in money market until signal clears.',
+    red:'<strong>Hold Cash.</strong> No DCA this period. Protect income reserve. Check Market Signal weekly.',
+  };
   const banner=document.getElementById('dca-signal-banner');
   banner.innerHTML=banners[sig];banner.className=sig==='red'?'warn-box':'info-box';
   let sorted=[...HOLDINGS.map((h,i)=>({...h,i}))];
@@ -407,9 +717,8 @@ function buildDCA(){
     tots[h.acct]=(tots[h.acct]||0)+amt;
     const tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
     const pc=rank<4?'pri-green':rank<8?'pri-yellow':'pri-red';
-    const pl=rank<4?'High':rank<8?'Medium':'Lower';
     const tr=document.createElement('tr');
-    tr.innerHTML='<td class="tc">'+h.t+'</td><td><span class="tag '+tc+'">'+h.acct+'</span></td><td class="dca-rat">'+ACCT_RATIONALE[h.acct]+'</td><td class="mono" style="font-size:.76rem;text-align:right">'+h.a+'%</td><td class="dca-amt" style="text-align:right">'+(sig==='red'?'$0':fmt(amt))+'</td><td><span class="pri-badge '+pc+'">'+pl+'</span></td>';
+    tr.innerHTML='<td class="tc">'+h.t+'</td><td><span class="tag '+tc+'">'+h.acct+'</span></td><td class="dca-rat">'+ACCT_RAT[h.acct]+'</td><td class="mono" style="text-align:right;font-size:.76rem">'+h.a+'%</td><td class="dca-amt" style="text-align:right">'+(sig==='red'?'$0':fmt(amt))+'</td><td><span class="pri-badge '+pc+'">'+(rank<4?'High':rank<8?'Medium':'Lower')+'</span></td>';
     body.appendChild(tr);
   });
   document.getElementById('dc-total').textContent=fmt(dep);
@@ -418,9 +727,11 @@ function buildDCA(){
   document.getElementById('dc-brok').textContent=fmt(tots.Brokerage||0);
   document.getElementById('dc-hsa').textContent=fmt(tots.HSA||0);
   const warn=document.getElementById('dca-warn');
-  if(sig==='red'){warn.style.display='block';warn.innerHTML='<strong>No DCA this period.</strong> Check whether any positions have drifted more than 3% from targets and need trimming. Return to Market Signal to monitor for green light.';}
+  if(sig==='red'){warn.style.display='block';warn.innerHTML='<strong>No DCA this period.</strong> Check whether any positions drifted 3%+ from targets and need trimming. Return to Market Signal to monitor for green light.';}
   else warn.style.display='none';
 }
+
+// ─── PROJECTION ───
 function setScenario(s,btn){
   scenario=s;
   document.querySelectorAll('.proj-btn:not(#ss-btn)').forEach(b=>b.classList.remove('active'));
@@ -434,7 +745,7 @@ function toggleSS(){
   buildProjection();
 }
 function buildProjection(){
-  const pf=getPortfolio(),total=pf.total;
+  const pf=getPortfolio(),total=pf.total+getCashTotal();
   const ta=HOLDINGS.reduce((s,h)=>s+h.a,0)||100;
   const blendY=HOLDINGS.reduce((s,h)=>s+h.y*h.a,0)/ta/100;
   const aw=total*0.04,ssE=ssCut?aw*0.2:0;
@@ -447,8 +758,7 @@ function buildProjection(){
     if(m<12){
       const mg=(1+gr)**(1/12)-1,mi=bal*blendY/12,mw=(aw+ssE)/12;
       ci+=mi;bal=bal*(1+mg)-mw;
-      const miSS=balSS*blendY/12,mwSS=(aw+aw*.2)/12;
-      ciSS+=miSS;balSS=balSS*(1+mg)-mwSS;
+      const miS=balSS*blendY/12;ciSS+=miS;balSS=balSS*(1+gr)**(1/12)-((aw+aw*.2)/12);
     }
   }
   const lr=Math.max(gr,.04);
@@ -456,12 +766,12 @@ function buildProjection(){
   for(let y=0;y<50;y++){lb=lb*(1+lr)-aw;if(lb<=0){la=69+y;break;}if(y===49)la=119;}
   let b95=total;for(let y=0;y<26;y++)b95=b95*(1+lr)-aw;
   const ai=total*blendY,gap=ai-aw;
-  const lonAge=document.getElementById('lon-age');lonAge.textContent=la>=119?'119+ yrs':'Age '+la;lonAge.className='lon-val '+(la>=95?'good':la>=85?'warn':'bad');
-  const lon95=document.getElementById('lon-95');lon95.textContent=fmt(b95);lon95.className='lon-val '+(b95>0?'good':'bad');
+  const la_el=document.getElementById('lon-age');la_el.textContent=la>=119?'119+ yrs':'Age '+la;la_el.className='lon-val '+(la>=95?'good':la>=85?'warn':'bad');
+  const b95_el=document.getElementById('lon-95');b95_el.textContent=fmt(b95);b95_el.className='lon-val '+(b95>0?'good':'bad');
   document.getElementById('lon-req').textContent=fmtP(aw/total*100);
   const lg=document.getElementById('lon-gap');lg.textContent=(gap>=0?'+':'')+fmt(gap)+'/yr';lg.className='lon-val '+(gap>=0?'good':'bad');
-  const ls=document.getElementById('lon-ss');ls.textContent=ssCut?'-'+fmt(ssE)+'/yr':'Not modeled';ls.className='lon-val '+(ssCut?'bad':'good');
-  document.getElementById('chart-subtitle').textContent=(scenario==='flat'?'Flat 0%':scenario==='up'?'Up +10%':'Down -15%')+' scenario'+(ssCut?' + SS Cut 20%':'');
+  const ls=document.getElementById('lon-ss');ls.textContent=ssCut?'-'+fmt(ssE)+'/yr':'Not modeled';ls.className='lon-val '+(ssCut?'bad':'green');
+  document.getElementById('chart-subtitle').textContent=(scenario==='flat'?'Flat 0%':scenario==='up'?'Up +10%':'Down -15%')+(ssCut?' + SS Cut 20%':'');
   if(projChart)projChart.destroy();
   const ctx=document.getElementById('proj-canvas').getContext('2d');
   const ds=[
@@ -471,10 +781,64 @@ function buildProjection(){
   if(ssCut)ds.push({label:'Balance (SS Cut)',data:bsd,borderColor:'rgba(139,26,26,.55)',fill:false,tension:.35,pointRadius:2,borderDash:[3,3],yAxisID:'y'});
   projChart=new Chart(ctx,{type:'line',data:{labels,datasets:ds},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.raw)}}},scales:{y:{ticks:{callback:v=>fmt(v),color:'#7a7468',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{color:'#e4e0d5'}},x:{ticks:{color:'#7a7468',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{display:false}}}}});
 }
+
+// ─── TICKER EDITOR ───
+function openTickerEditor(){renderEditorTable();document.getElementById('ticker-modal').classList.add('open');}
+function closeTickerEditor(){document.getElementById('ticker-modal').classList.remove('open');}
+function renderEditorTable(){
+  const tbody=document.getElementById('ed-tbody');
+  tbody.innerHTML='';
+  HOLDINGS.forEach((h,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td><input class="ed-inp tk" id="e-t-'+i+'" value="'+h.t+'" style="width:64px" oninput="this.value=this.value.toUpperCase()"></td>'
+      +'<td><input class="ed-inp nm" id="e-n-'+i+'" value="'+h.n+'"></td>'
+      +'<td><input class="ed-inp cat" id="e-c-'+i+'" value="'+h.cat+'"></td>'
+      +'<td><select class="ed-sel" id="e-a-'+i+'" title="'+h.why+'">'
+        +['IRA','Roth','Brokerage','HSA'].map(a=>'<option '+(h.acct===a?'selected':'')+'>'+a+'</option>').join('')
+      +'</select></td>'
+      +'<td><input class="ed-inp it" id="e-it-'+i+'" value="'+h.it+'"></td>'
+      +'<td><input class="ed-inp num" id="e-y-'+i+'" type="number" value="'+h.y+'" min="0" max="50" step="0.1" style="width:58px"></td>'
+      +'<td><input class="ed-inp num" id="e-er-'+i+'" type="number" value="'+h.er+'" min="0" max="5" step="0.01" style="width:54px"></td>'
+      +'<td><input class="ed-inp num" id="e-al-'+i+'" type="number" value="'+h.a+'" min="0" max="100" step="0.5" style="width:52px"></td>'
+      +'<td><button class="ed-del" onclick="deleteHolding('+i+')" title="Remove">&#128465;</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+function deleteHolding(i){
+  if(HOLDINGS.length<=1){alert('Keep at least one holding.');return;}
+  if(!confirm('Remove '+HOLDINGS[i].t+'?'))return;
+  HOLDINGS.splice(i,1);renderEditorTable();
+}
+function addNewTicker(){
+  const t=gv('new-t').trim().toUpperCase(),n=gv('new-n').trim();
+  if(!t||!n){alert('Ticker and name required.');return;}
+  HOLDINGS.push({t,n,cat:gv('new-cat')||'Custom',acct:gv('new-acct')||'Brokerage',
+    it:gv('new-it')||'See prospectus',y:parseFloat(gv('new-y'))||0,er:parseFloat(gv('new-er'))||0,a:0,why:'User-defined position'});
+  ['new-t','new-n','new-cat','new-it','new-y','new-er'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderEditorTable();
+}
+function saveTickerEdits(){
+  HOLDINGS.forEach((h,i)=>{
+    const g=(id,def)=>{const e=document.getElementById(id);return e?e.value:def;};
+    h.t=g('e-t-'+i,h.t).toUpperCase()||h.t;
+    h.n=g('e-n-'+i,h.n)||h.n;
+    h.cat=g('e-c-'+i,h.cat)||h.cat;
+    h.acct=g('e-a-'+i,h.acct)||h.acct;
+    h.it=g('e-it-'+i,h.it)||h.it;
+    h.y=parseFloat(g('e-y-'+i,h.y))||h.y;
+    h.er=parseFloat(g('e-er-'+i,h.er))||h.er;
+    h.a=parseFloat(g('e-al-'+i,h.a))||h.a;
+  });
+  saveAll();renderHoldings();updateAcctSummary();closeTickerEditor();
+}
+
+// ─── INIT ───
 function init(){
-  loadAllocs();loadAccts();loadSettings();
-  const s=sl(SK.signal,'green');setSignal(s);
-  renderHoldings();updateAcctSummary();
+  const h=sl(SK.h,null);if(h&&h.length)HOLDINGS=h;
+  loadCash();loadAccts();loadSettings();
+  const s=sl(SK.sig,'green');setSignal(s);
+  renderCash();renderHoldings();updateAcctSummary();
 }
 init();
 </script>
