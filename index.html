@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Portfolio Manager v3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
@@ -437,7 +436,7 @@ const ACCT_RAT={
 };
 
 let scenario='flat',ssCut=false,signal='green',projChart=null;
-const SK={h:'pm_h3',cash:'pm_cash3',bal:'pm_bal3',set:'pm_set3',sig:'pm_sig3',cur:'pm_cur3'};
+const SK={h:'pm_h2',cash:'pm_cash2',bal:'pm_bal2',set:'pm_set2',sig:'pm_sig2',cur:'pm_cur3'};
 
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function sl(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
@@ -793,11 +792,12 @@ function deleteHolding(i){
 
 function abbrevIT(it){
   if(!it)return it;
-  return it.replace(/qualified dividend(s)?/gi,'QDI')
-           .replace(/ordinary income/gi,'Ordinary')
-           .replace(/\(equity.linked notes?\)/gi,'(ELNs)')
-           .replace(/equity.linked notes?/gi,'ELNs')
-           .replace(/covered calls?/gi,'Cov. Call');
+  let s=it.trim();
+  if(/qualified dividend/i.test(s)) s=s.replace(/qualified dividends?/gi,'QDI');
+  if(/ordinary income/i.test(s)) s=s.replace(/ordinary income/gi,'Ordinary');
+  if(/equity.linked note/i.test(s)) s=s.replace(/equity.linked notes?/gi,'ELNs');
+  if(/covered call/i.test(s)) s=s.replace(/covered calls?/gi,'Cov. Call');
+  return s;
 }
 
 function addNewTicker(){
