@@ -222,7 +222,7 @@ canvas{width:100%!important;}
       <table class="ctable">
         <thead>
           <tr>
-            <th>Ticker</th><th>Name / Description</th><th>Type</th><th>Account</th>
+            <th>Ticker</th><th>Name / Description</th><th>Type</th>
             <th class="right">Shares / Units</th><th class="right">Price / NAV ($)</th>
             <th class="right">Balance ($)</th><th class="right">Yield %</th>
             <th class="right">Ann. Income</th><th>Maturity</th><th>Note</th><th></th>
@@ -236,7 +236,7 @@ canvas{width:100%!important;}
 
   <!-- ALLOCATION BAR -->
   <div class="alloc-bar-row">
-    <div class="alloc-bar-labels"><span>Holdings allocation used</span><span id="alloc-pct-text">0 / 100%</span></div>
+    <div class="alloc-bar-labels"><span>Target allocation</span><span id="alloc-pct-text">Target: 0% &nbsp;/&nbsp; Current: 0%</span></div>
     <div class="alloc-bar"><div class="alloc-bar-fill" id="alloc-bar-fill" style="width:0%"></div></div>
   </div>
 
@@ -256,15 +256,13 @@ canvas{width:100%!important;}
       <thead><tr>
         <th>Ticker</th><th>Name</th><th>Category</th><th>Best Account</th><th>Income Type</th>
         <th class="right">Yield%</th><th class="right">ER%</th>
-        <th class="right">Alloc%</th><th class="right">$ Value</th><th class="right">Ann. Income</th>
+        <th class="right">Target%</th><th class="right">Current%</th><th class="right">$ Value</th><th class="right">Ann. Income</th>
       </tr></thead>
       <tbody id="htable-body"></tbody>
     </table>
   </div>
 
-  <div class="info-box" id="tax-info-box">
-    <strong>Tax placement:</strong> Ordinary income funds (SGOV, VTIP, BSV, JEPI, QQQI, PFF) shelter in IRA. Qualified dividend funds (SCHD, SPDW, XLE) are efficient in Brokerage. VTI grows tax-free in Roth. Gold (IAU) avoids the 28% collectibles rate inside IRA.
-  </div>
+  <div class="info-box" id="tax-info-box"></div>
 
   <div class="btn-row">
     <button class="btn btn-primary" onclick="recalc()">&#8635; Recalculate</button>
@@ -553,9 +551,6 @@ function renderCash(){
       <td><select class="c-sel" onchange="cashField(${c.id},'type',this.value)" style="width:78px">
         ${['ETF','MMF','CD','Treasury','Savings'].map(t=>`<option ${c.type===t?'selected':''}>${t}</option>`).join('')}
       </select></td>
-      <td><select class="c-sel" onchange="cashField(${c.id},'acct',this.value)" style="width:88px">
-        ${['IRA','Roth','Brokerage','HSA'].map(a=>`<option ${c.acct===a?'selected':''}>${a}</option>`).join('')}
-      </select></td>
       <td class="right"><input class="c-inp narrow" type="number" value="${c.shares}" min="0" step="0.001" oninput="cashShareChange(${c.id},this.value)" style="width:80px"></td>
       <td class="right"><input class="c-inp narrow" type="number" value="${c.price}" min="0" step="0.01" oninput="cashPriceChange(${c.id},this.value)" style="width:76px"></td>
       <td class="right"><input class="c-inp mid" type="number" value="${c.balance}" min="0" step="100" oninput="cashBalChange(${c.id},this.value)" style="width:96px"></td>
@@ -633,18 +628,51 @@ function loadCash(){
 // ─────────────────────────────────────────────
 //  HOLDINGS
 // ─────────────────────────────────────────────
+function saveCurPct(){
+  const cur={};
+  HOLDINGS.forEach((h,i)=>{
+    const e=document.getElementById('cur-'+i);
+    cur[h.t]=e?parseFloat(e.value)||0:h.cur||0;
+  });
+  ss('pm_curpct',cur);
+}
+function loadCurPct(){
+  const cur=sl('pm_curpct',{});
+  HOLDINGS.forEach(h=>{h.cur=cur[h.t]||0;});
+}
+
+function buildTaxBox(){
+  // Dynamically build tax placement message from current holdings
+  const byAcct={IRA:[],Roth:[],Brokerage:[],HSA:[]};
+  HOLDINGS.forEach(h=>{if(byAcct[h.acct])byAcct[h.acct].push(h.t);});
+  const parts=[];
+  if(byAcct.IRA.length)    parts.push('<strong>IRA</strong> (ordinary/sheltered income): '+byAcct.IRA.join(', '));
+  if(byAcct.Roth.length)   parts.push('<strong>Roth</strong> (tax-free growth): '+byAcct.Roth.join(', '));
+  if(byAcct.Brokerage.length) parts.push('<strong>Brokerage</strong> (QDI/foreign tax credit): '+byAcct.Brokerage.join(', '));
+  if(byAcct.HSA.length)    parts.push('<strong>HSA</strong> (triple tax): '+byAcct.HSA.join(', '));
+  const el=document.getElementById('tax-info-box');
+  if(el) el.innerHTML='<strong>Tax placement:</strong> '+parts.join(' &nbsp;&middot;&nbsp; ')+'. Hover any fund name for the detailed rationale. Override placements via <em>Edit Tickers</em>.';
+}
+
 function renderHoldings(){
+  loadCurPct();
   const pf=getPortfolio();
   const cashTotal=getCashTotal();
-  const grandTotal=pf.total; // account balances already include cash in most cases
+  const grandTotal=pf.total;
   const tbody=document.getElementById('htable-body');
   tbody.innerHTML='';
-  let ta=0,ti=0,wY=0,wER=0;
+  let ta=0,ti=0,wY=0,wER=0,tCur=0;
   HOLDINGS.forEach((h,i)=>{
     ta+=h.a;
+    const cur=h.cur||0;
+    tCur+=cur;
     const d=grandTotal*h.a/100,inc=d*h.y/100;
     ti+=inc;wY+=h.y*h.a;wER+=h.er*h.a;
     const tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
+    // Drift indicator: current vs target
+    const drift=cur-h.a;
+    const driftStr=cur>0?(drift>=0?'+':'')+drift.toFixed(1)+'%':'';
+    const driftColor=Math.abs(drift)>5?'color:var(--red)':Math.abs(drift)>2?'color:var(--yellow)':'color:var(--muted)';
     const tr=document.createElement('tr');
     tr.innerHTML='<td class="tc">'+h.t+'</td>'
       +'<td class="tn" title="'+h.why+'">'+h.n+'</td>'
@@ -653,28 +681,48 @@ function renderHoldings(){
       +'<td style="font-size:.7rem;color:var(--muted)">'+h.it+'</td>'
       +'<td class="right yld">'+(h.y>0?fmtP(h.y):'--')+'</td>'
       +'<td class="right er">'+fmtP(h.er)+'</td>'
-      +'<td class="right"><input class="alloc-inp" id="alloc-'+i+'" type="number" value="'+h.a+'" min="0" max="100" step="0.5" oninput="HOLDINGS['+i+'].a=parseFloat(this.value)||0;recalc()"></td>'
+      +'<td class="right"><input class="alloc-inp" id="alloc-'+i+'" type="number" value="'+h.a+'" min="0" max="100" step="0.5" oninput="HOLDINGS['+i+'].a=Math.min(100,parseFloat(this.value)||0);this.value=HOLDINGS['+i+'].a;recalc()"></td>'
+      +'<td class="right"><input class="alloc-inp" id="cur-'+i+'" type="number" value="'+(cur||'')+'" min="0" max="100" step="0.5" placeholder="--" oninput="HOLDINGS['+i+'].cur=Math.min(100,parseFloat(this.value)||0);this.value=HOLDINGS['+i+'].cur;saveCurPct();updateDrift('+i+')" style="background:var(--surface2)">'
+      +(driftStr?'<span style="font-size:.62rem;'+driftColor+';margin-left:3px">'+driftStr+'</span>':'')
+      +'</td>'
       +'<td class="right mono" style="font-size:.78rem">'+fmt(d)+'</td>'
       +'<td class="right mono" style="font-size:.78rem;color:var(--green)">'+(h.y>0?fmt(inc):'--')+'</td>';
     tbody.appendChild(tr);
   });
   // totals
   ti+=getCashIncome();
-  const totalIncomePlusCache=ti;
+  const totalIncome=ti;
   const fill=document.getElementById('alloc-bar-fill');
   fill.style.width=Math.min(ta,100)+'%';
   fill.className='alloc-bar-fill'+(ta>100?' over':'');
-  document.getElementById('alloc-pct-text').textContent=ta.toFixed(1)+' / 100%';
-  document.getElementById('alloc-label').textContent='Total: '+ta.toFixed(1)+'%';
-  const need=grandTotal*0.04,cov=totalIncomePlusCache/need*100;
+  document.getElementById('alloc-pct-text').textContent='Target: '+ta.toFixed(1)+'%  /  Current: '+tCur.toFixed(1)+'%';
+  document.getElementById('alloc-label').textContent='Target: '+ta.toFixed(1)+'%';
+  const need=grandTotal*0.04,cov=totalIncome/need*100;
   const bY=wY/Math.max(ta,1);
   document.getElementById('sv-port').textContent=fmt(grandTotal+cashTotal);
-  const svi=document.getElementById('sv-income');svi.textContent=fmt(totalIncomePlusCache);svi.className='sc-val '+(totalIncomePlusCache>=need?'green':'yellow');
+  const svi=document.getElementById('sv-income');svi.textContent=fmt(totalIncome);svi.className='sc-val '+(totalIncome>=need?'green':'yellow');
   document.getElementById('sv-target').textContent=fmt(need);
   const svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='sc-val '+(cov>=100?'green':cov>=80?'yellow':'red');
   const svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='sc-val '+(bY>=4?'green':'yellow');
   const cashPct=cashTotal/(grandTotal||1)*100;
   const scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='sc-val '+(cashPct>30?'yellow':cashPct>20?'accent':'green');
+  buildTaxBox();
+}
+
+function updateDrift(i){
+  // Re-render just the drift indicator for one row without full re-render
+  const h=HOLDINGS[i];
+  const cur=h.cur||0;
+  const drift=cur-h.a;
+  const driftStr=cur>0?(drift>=0?'+':'')+drift.toFixed(1)+'%':'';
+  const driftColor=Math.abs(drift)>5?'color:var(--red)':Math.abs(drift)>2?'color:var(--yellow)':'color:var(--muted)';
+  const curInput=document.getElementById('cur-'+i);
+  if(curInput){
+    let next=curInput.nextSibling;
+    // Remove old drift spans
+    while(next&&next.tagName==='SPAN'){const tmp=next.nextSibling;next.remove();next=tmp;}
+    if(driftStr){const sp=document.createElement('span');sp.style.cssText='font-size:.62rem;'+driftColor+';margin-left:3px';sp.textContent=driftStr;curInput.parentNode.insertBefore(sp,curInput.nextSibling);}
+  }
 }
 
 function recalc(){renderHoldings();saveAll();}
@@ -959,7 +1007,7 @@ async function lookupNewTicker(){
 // ─── INIT ───
 function init(){
   const h=sl(SK.h,null);if(h&&h.length)HOLDINGS=h;
-  loadCash();loadAccts();loadSettings();
+  loadCash();loadAccts();loadSettings();loadCurPct();
   const s=sl(SK.sig,'green');setSignal(s);
   renderCash();renderHoldings();updateAcctSummary();
 }
