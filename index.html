@@ -460,12 +460,12 @@ function setSignal(s){
 function saveH(){ss(SK.h,H);}
 function saveCurPct(){
   var cur={};
-  H.forEach(function(h,i){var e=document.getElementById('cur-'+i);cur[h.t]=e?parseFloat(e.value)||0:h.cur||0;});
+  H.forEach(function(h,i){var e=document.getElementById('cur-'+i);var v=e?e.value.trim():'';cur[h.t]=v===''?null:parseFloat(v)||0;});
   ss(SK.cur,cur);
 }
 function loadCurPct(){
   var cur=sl(SK.cur,{});
-  H.forEach(function(h){h.cur=cur[h.t]||0;});
+  H.forEach(function(h){h.cur=cur[h.t]!==undefined?cur[h.t]:null;});
 }
 function saveAccts(){
   ss(SK.bal,{ira:gn('bal-ira'),roth:gn('bal-roth'),brok:gn('bal-brok'),hsa:gn('bal-hsa'),
@@ -623,11 +623,11 @@ function renderH(){
   var ta=0,ti=0,wY=0,tCur=0;
   H.forEach(function(h,i){
     ta+=h.a;
-    var cur=h.cur||0; tCur+=cur;
+    var cur=h.cur!==null&&h.cur!==undefined?h.cur:null; tCur+=(cur||0);
     var d=grandTotal*h.a/100, inc=d*h.y/100;
     ti+=inc; wY+=h.y*h.a;
     var tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
-    var drift=cur>0?cur-h.a:null;
+    var drift=cur!==null?cur-h.a:null;
     var tr=document.createElement('tr');
     // Ticker
     el('td',{className:'tc',textContent:h.t},tr);
@@ -650,15 +650,16 @@ function renderH(){
     // Current%
     var tdCur=el('td',{className:'r'},tr);
     var iCur=el('input',{type:'number',className:'ai cur',min:0,max:100,step:0.5,id:'cur-'+i,title:'Your actual current %'},tdCur);
-    if(cur>0)iCur.value=cur;
+    if(cur!==null)iCur.value=cur;
     iCur.placeholder='--';
     iCur.addEventListener('input',function(){
-      H[i].cur=Math.min(100,parseFloat(this.value)||0);
-      this.value=H[i].cur||'';
+      var v=this.value.trim();
+      H[i].cur=v===''?null:Math.min(100,parseFloat(v)||0);
+      if(H[i].cur===null)this.value=''; else if(H[i].cur===0)this.value='0';
       saveCurPct();
       var sp=document.getElementById('drift-'+i);
       if(sp){
-        var d2=H[i].cur>0?H[i].cur-H[i].a:null;
+        var d2=H[i].cur!==null?H[i].cur-H[i].a:null;
         if(d2!==null){sp.textContent=(d2>=0?'+':'')+d2.toFixed(1)+'%';sp.style.color=Math.abs(d2)>5?'var(--red)':Math.abs(d2)>2?'var(--yellow)':'var(--muted)';}
         else sp.textContent='';
       }
