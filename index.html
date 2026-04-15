@@ -624,8 +624,11 @@ function renderH(){
   H.forEach(function(h,i){
     ta+=h.a;
     var cur=h.cur!==null&&h.cur!==undefined?h.cur:null; tCur+=(cur||0);
+    var hasPos=cur!==null&&cur>0;
     var d=grandTotal*h.a/100, inc=d*h.y/100;
-    ti+=inc; wY+=h.y*h.a;
+    var dShow=hasPos?grandTotal*cur/100:d;
+    var incShow=hasPos?dShow*h.y/100:inc;
+    if(hasPos) ti+=incShow; wY+=h.y*h.a;
     var tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
     var drift=cur!==null?cur-h.a:null;
     var tr=document.createElement('tr');
@@ -670,10 +673,13 @@ function renderH(){
     } else {
       el('span',{id:'drift-'+i,className:'drift',textContent:''},tdCur);
     }
-    // $ Value
-    el('td',{className:'r mono',textContent:fmt(d),style:'font-size:.78rem'},tr);
-    // Income
-    el('td',{className:'r mono',textContent:h.y>0?fmt(inc):'--',style:'font-size:.78rem;color:var(--green)'},tr);
+    // $ Value — use cur% if entered and non-zero, target% if null (not started = blank)
+    var hasPos = cur!==null && cur>0;
+    var dShow = hasPos ? grandTotal*cur/100 : d;
+    var incShow = hasPos ? dShow*h.y/100 : inc;
+    el('td',{className:'r mono',textContent:cur===null||cur===0?'--':fmt(dShow),style:'font-size:.78rem'},tr);
+    // Income — blank when not started, green when holding
+    el('td',{className:'r mono',textContent:(cur===null||cur===0||h.y===0)?'--':fmt(incShow),style:'font-size:.78rem;color:var(--green)'},tr);
     tbody.appendChild(tr);
   });
   ti+=getCashIncome();
