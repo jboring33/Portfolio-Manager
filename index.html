@@ -673,12 +673,9 @@ function renderH(){
     } else {
       el('span',{id:'drift-'+i,className:'drift',textContent:''},tdCur);
     }
-    // $ Value — use cur% if entered and non-zero, target% if null (not started = blank)
-    var hasPos = cur!==null && cur>0;
-    var dShow = hasPos ? grandTotal*cur/100 : d;
-    var incShow = hasPos ? dShow*h.y/100 : inc;
+    // $ Value — blank if cur is null or 0 (not started), otherwise use cur%
     el('td',{className:'r mono',textContent:cur===null||cur===0?'--':fmt(dShow),style:'font-size:.78rem'},tr);
-    // Income — blank when not started, green when holding
+    // Income — blank if not started or no yield
     el('td',{className:'r mono',textContent:(cur===null||cur===0||h.y===0)?'--':fmt(incShow),style:'font-size:.78rem;color:var(--green)'},tr);
     tbody.appendChild(tr);
   });
