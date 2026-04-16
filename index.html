@@ -207,8 +207,8 @@ canvas{width:100%!important;}
     <div class="alloc-bar"><div class="alloc-bar-fill" id="alloc-bar-fill" style="width:0%"></div></div>
   </div>
   <div class="summary-row">
-    <div class="sum-card"><div class="sc-label">Total Portfolio</div><div class="sc-val blue" id="sv-port">$0</div><div class="sc-sub">Accounts + cash</div></div>
-    <div class="sum-card"><div class="sc-label">Annual Income</div><div class="sc-val" id="sv-income">$0</div><div class="sc-sub">Holdings + cash</div></div>
+    <div class="sum-card"><div class="sc-label">Total Portfolio</div><div class="sc-val blue" id="sv-port">$0</div><div class="sc-sub">Cash + ticker values</div></div>
+    <div class="sum-card"><div class="sc-label">Annual Income</div><div class="sc-val" id="sv-income">$0</div><div class="sc-sub">From holdings + cash</div></div>
     <div class="sum-card"><div class="sc-label">Income Target (4%)</div><div class="sc-val" id="sv-target">$0</div></div>
     <div class="sum-card"><div class="sc-label">Coverage</div><div class="sc-val" id="sv-cov">0%</div><div class="sc-sub">Income vs target</div></div>
     <div class="sum-card"><div class="sc-label">Blended Yield</div><div class="sc-val" id="sv-yield">0%</div></div>
@@ -219,7 +219,8 @@ canvas{width:100%!important;}
       <thead><tr>
         <th>Ticker</th><th>Name</th><th>Category</th><th>Best Account</th><th>Income Type</th>
         <th class="r">Yield%</th><th class="r">ER%</th>
-        <th class="r">Target%</th><th class="r">Current%</th>
+        <th class="r">Target%</th><th class="r">Current Value $</th>
+        <th class="r" style="color:var(--red)">Current %</th>
         <th class="r">$ Value</th><th class="r">Ann. Income</th>
       </tr></thead>
       <tbody id="htable-body"></tbody>
@@ -228,8 +229,7 @@ canvas{width:100%!important;}
   <div class="info-box" id="tax-info-box"></div>
   <div class="btn-row">
     <button class="btn btn-primary" onclick="recalc()">&#8635; Recalculate</button>
-    <button class="btn btn-outline" id="edit-defaults-btn">&#9998; Edit Defaults</button>
-    <button class="btn btn-outline" id="profile-btn">&#127775; Profile &amp; Allocation</button>
+    <button class="btn btn-outline" id="profile-btn">&#127775; Profile</button>
     <button class="btn btn-outline" id="edit-tickers-btn" style="margin-left:auto">&#9998; Edit Tickers</button>
   </div>
   <div class="disclaimer">Values persist via browser storage. Hover fund name for tax rationale. Not financial advice.</div>
@@ -348,44 +348,37 @@ canvas{width:100%!important;}
 <div class="modal-overlay" id="profile-modal">
   <div class="modal-box" style="max-width:680px">
     <div class="modal-head">
-      <h2>Profile &amp; Target Allocation</h2>
+      <h2>Profile</h2>
       <button class="modal-close" id="profile-close-btn">&#10005;</button>
     </div>
     <div class="modal-body" style="max-height:80vh">
       <div class="info-box" style="margin-bottom:1rem;font-size:.73rem">
-        Update your profile below, then click <strong>Recalculate Targets</strong> to get suggested target allocations based on your situation. You can override any suggestion before saving.
+        Set your profile details. Annual Income Need drives the Income Target shown on the Holdings screen. Target allocations are edited directly in the main holdings table.
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
-        <div class="acct-field"><label>Age</label><input type="number" id="p-age" value="69" min="50" max="100" step="1"></div>
-        <div class="acct-field"><label>Target Horizon (live to age)</label><input type="number" id="p-horizon" value="95" min="70" max="110" step="1"></div>
-        <div class="acct-field"><label>Total Portfolio ($)</label><input type="number" id="p-port" value="1110000" min="0" step="10000"></div>
-        <div class="acct-field"><label>Annual Income Need ($)</label><input type="number" id="p-income" value="44000" min="0" step="1000"></div>
+        <div class="acct-field"><label>Age</label><input type="number" id="p-age" value="69" min="50" max="100" step="1" oninput="saveProfile()"></div>
+        <div class="acct-field"><label>Target Horizon (live to age)</label><input type="number" id="p-horizon" value="95" min="70" max="110" step="1" oninput="saveProfile()"></div>
+        <div class="acct-field"><label>Total Portfolio ($)</label><input type="number" id="p-port" value="1110000" min="0" step="10000" oninput="saveProfile();renderH()"></div>
+        <div class="acct-field"><label>Annual Income Need ($)</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProfile();renderH()"></div>
         <div class="acct-field"><label>Risk Tolerance</label>
-          <select id="p-risk" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none">
+          <select id="p-risk" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none" onchange="saveProfile()">
             <option value="conservative" selected>Conservative</option>
             <option value="moderate">Moderate</option>
             <option value="growth">Growth-oriented</option>
           </select>
         </div>
         <div class="acct-field"><label>Income Priority</label>
-          <select id="p-priority" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none">
+          <select id="p-priority" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none" onchange="saveProfile()">
             <option value="income" selected>Maximize income (cover needs)</option>
             <option value="balanced">Balanced income + growth</option>
             <option value="growth">Growth first, income secondary</option>
           </select>
         </div>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:1rem;margin-bottom:1rem">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem">Suggested Target Allocations</div>
-        <div id="profile-alloc-table" style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);padding:.5rem">
-          Click "Recalculate Targets" to generate suggestions based on your profile.
-        </div>
-      </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-outline" id="profile-calc-btn">&#127775; Recalculate Targets</button>
-      <button class="btn btn-primary" id="profile-save-btn">Apply Targets &amp; Close</button>
-      <span class="modal-foot-note">Targets are suggestions — edit any value before applying</span>
+      <button class="btn btn-primary" id="profile-save-btn">Save &amp; Close</button>
+      <span class="modal-foot-note">Changes save automatically as you type</span>
     </div>
   </div>
 </div>
@@ -453,7 +446,8 @@ var ACCT_RAT = {
 };
 
 var scenario = 'flat', ssCut = false, signal = 'green', projChart = null;
-var SK = {h:'pm_h2', cash:'pm_cash2', bal:'pm_bal2', set:'pm_set2', sig:'pm_sig2', cur:'pm_cur2'};
+var SK = {h:'pm_h2', cash:'pm_cash2', bal:'pm_bal2', set:'pm_set2', sig:'pm_sig2', cur:'pm_cur2', prof:'pm_prof2'};
+var PROFILE = {age:69, horizon:95, port:1110000, income:44000, risk:'conservative', priority:'income'};
 
 // ── STORAGE ──
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -507,12 +501,12 @@ function setSignal(s){
 function saveH(){ss(SK.h,H);}
 function saveCurPct(){
   var cur={};
-  H.forEach(function(h,i){var e=document.getElementById('cur-'+i);var v=e?e.value.trim():'';cur[h.t]=v===''?null:parseFloat(v)||0;});
+  H.forEach(function(h){cur[h.t]=h.curVal!==undefined?h.curVal:null;});
   ss(SK.cur,cur);
 }
 function loadCurPct(){
   var cur=sl(SK.cur,{});
-  H.forEach(function(h){h.cur=cur[h.t]!==undefined?cur[h.t]:null;});
+  H.forEach(function(h){h.curVal=cur[h.t]!==undefined?cur[h.t]:null;});
 }
 function saveAccts(){
   ss(SK.bal,{ira:gn('bal-ira'),roth:gn('bal-roth'),brok:gn('bal-brok'),hsa:gn('bal-hsa'),
@@ -524,6 +518,27 @@ function loadAccts(){
   [{k:'pIra',id:'pct-ira'},{k:'pRoth',id:'pct-roth'},{k:'pBrok',id:'pct-brok'},{k:'pHsa',id:'pct-hsa'}].forEach(function(x){var e=document.getElementById(x.id);if(e&&b[x.k]!==undefined)e.value=b[x.k];});
 }
 function saveSettings(){ss(SK.set,{budget:gv('dc-budget'),freq:gv('dc-freq'),pri:gv('dc-priority'),sig:gv('dc-signal')});}
+function saveProfile(){
+  var p={
+    age:parseFloat(gv('p-age'))||69,
+    horizon:parseFloat(gv('p-horizon'))||95,
+    port:parseFloat(gv('p-port'))||1110000,
+    income:parseFloat(gv('p-income'))||44000,
+    risk:gv('p-risk')||'conservative',
+    priority:gv('p-priority')||'income'
+  };
+  PROFILE=p; ss(SK.prof,p);
+}
+function loadProfile(){
+  var p=sl(SK.prof,null);
+  if(p){
+    PROFILE=p;
+    var set=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;};
+    set('p-age',p.age); set('p-horizon',p.horizon);
+    set('p-port',p.port); set('p-income',p.income);
+    set('p-risk',p.risk); set('p-priority',p.priority);
+  }
+}
 function loadSettings(){
   var s=sl(SK.set,null);if(!s)return;
   if(s.budget)document.getElementById('dc-budget').value=s.budget;
@@ -701,24 +716,28 @@ function buildTaxBox(){
 function renderH(){
   loadCurPct();
   var pf=getPF(), cashTotal=getCashTotal(), grandTotal=pf.total;
+  var portTotal=PROFILE.port||grandTotal||1; // from Profile screen
   var tbody=document.getElementById('htable-body');
   tbody.innerHTML='';
-  var ta=0,ti=0,wY=0,tCur=0;
+  var ta=0,ti=0,wY=0,tCurVal=0,tCurInc=0;
   H.forEach(function(h,i){
     ta+=h.a;
-    var cur=h.cur!==null&&h.cur!==undefined?h.cur:null; tCur+=(cur||0);
-    var hasPos=cur!==null&&cur>0;
-    var d=grandTotal*h.a/100, inc=d*h.y/100;
-    var dShow=hasPos?grandTotal*cur/100:d;
-    var incShow=hasPos?dShow*h.y/100:inc;
-    if(hasPos) ti+=incShow; wY+=h.y*h.a;
+    // curVal = current dollar value entered by user (null = not entered, 0 = entered as zero)
+    var curVal=h.curVal!==null&&h.curVal!==undefined?h.curVal:null;
+    var hasPos=curVal!==null&&curVal>0;
+    var curPct=hasPos?(curVal/portTotal*100):null; // calculated, not stored
+    // Target $ value (for display in $ Value col)
+    var d=portTotal*h.a/100;
+    var incShow=hasPos?curVal*h.y/100:0;
+    if(hasPos){ti+=incShow; tCurVal+=curVal; tCurInc+=incShow;}
+    wY+=h.y*h.a;
     var tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
-    var drift=cur!==null?cur-h.a:null;
+    var drift=curPct!==null?curPct-h.a:null;
     var tr=document.createElement('tr');
     // Ticker
     el('td',{className:'tc',textContent:h.t},tr);
     // Name
-    var tdN=el('td',{className:'tn',title:h.why,textContent:h.n},tr);
+    el('td',{className:'tn',title:h.why,textContent:h.n},tr);
     // Category
     el('td',{textContent:h.cat,style:'font-size:.74rem;color:var(--muted)'},tr);
     // Account tag
@@ -733,67 +752,92 @@ function renderH(){
     var tdTgt=el('td',{className:'r'},tr);
     var iTgt=el('input',{type:'number',className:'ai',value:h.a,min:0,max:100,step:0.5,id:'alloc-'+i},tdTgt);
     iTgt.addEventListener('input',function(){H[i].a=Math.min(100,parseFloat(this.value)||0);this.value=H[i].a;recalc();});
-    // Current%
-    var tdCur=el('td',{className:'r'},tr);
-    var iCur=el('input',{type:'number',className:'ai cur',min:0,max:100,step:0.5,id:'cur-'+i,title:'Your actual current %'},tdCur);
-    if(cur!==null)iCur.value=cur;
-    iCur.placeholder='--';
-    iCur.addEventListener('input',function(){
+    // Current Value $ — editable dollar amount, wide field
+    var tdCurVal=el('td',{className:'r'},tr);
+    var iCurVal=el('input',{type:'number',className:'ai cur',min:0,step:100,id:'curval-'+i,title:'Your current dollar value in this position'},tdCurVal);
+    iCurVal.style.width='110px';
+    if(curVal!==null) iCurVal.value=curVal;
+    iCurVal.placeholder='--';
+    iCurVal.addEventListener('input',function(){
       var v=this.value.trim();
-      H[i].cur=v===''?null:Math.min(100,parseFloat(v)||0);
-      if(H[i].cur===null)this.value=''; else if(H[i].cur===0)this.value='0';
+      H[i].curVal=v===''?null:Math.max(0,parseFloat(v)||0);
+      if(H[i].curVal===null) this.value='';
       saveCurPct();
-      var sp=document.getElementById('drift-'+i);
-      if(sp){
-        var d2=H[i].cur!==null?H[i].cur-H[i].a:null;
-        if(d2!==null){sp.textContent=(d2>=0?'+':'')+d2.toFixed(1)+'%';sp.style.color=Math.abs(d2)>5?'var(--red)':Math.abs(d2)>2?'var(--yellow)':'var(--muted)';}
-        else sp.textContent='';
-      }
+      renderH(); // recalc everything
     });
-    if(drift!==null){
-      var sp=el('span',{id:'drift-'+i,className:'drift',textContent:(drift>=0?'+':'')+drift.toFixed(1)+'%'},tdCur);
-      sp.style.color=Math.abs(drift)>5?'var(--red)':Math.abs(drift)>2?'var(--yellow)':'var(--muted)';
+    // Current % — calculated read-only, shown in red when drifting
+    var tdCurPct=el('td',{className:'r'},tr);
+    if(curPct!==null){
+      var pctColor=drift!==null&&Math.abs(drift)>5?'var(--red)':drift!==null&&Math.abs(drift)>2?'var(--yellow)':'var(--text)';
+      var pctSpan=el('span',{textContent:curPct.toFixed(1)+'%',id:'curpct-'+i},tdCurPct);
+      pctSpan.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:'+pctColor;
+      if(drift!==null){
+        var driftSpan=el('span',{textContent:' ('+(drift>=0?'+':'')+drift.toFixed(1)+'%)',className:'drift'},tdCurPct);
+        driftSpan.style.color=pctColor;
+      }
     } else {
-      el('span',{id:'drift-'+i,className:'drift',textContent:''},tdCur);
+      el('span',{textContent:'--',style:'color:var(--muted);font-size:.78rem;font-family:"IBM Plex Mono",monospace'},tdCurPct);
     }
-    // $ Value — blank if cur is null or 0 (not started), otherwise use cur%
-    el('td',{className:'r mono',textContent:cur===null||cur===0?'--':fmt(dShow),style:'font-size:.78rem'},tr);
-    // Income — blank if not started or no yield
-    el('td',{className:'r mono',textContent:(cur===null||cur===0||h.y===0)?'--':fmt(incShow),style:'font-size:.78rem;color:var(--green)'},tr);
+    // Target $ Value (based on Target% × portfolio)
+    el('td',{className:'r mono',textContent:fmt(d),style:'font-size:.78rem'},tr);
+    // Ann. Income — blank if not started or no yield
+    el('td',{className:'r mono',textContent:hasPos&&h.y>0?fmt(incShow):'--',style:'font-size:.78rem;color:var(--green)'},tr);
     tbody.appendChild(tr);
   });
+  // Totals row
+  var tfoot=tbody.parentNode.querySelector('tfoot')||document.createElement('tfoot');
+  tfoot.innerHTML='';
+  tbody.parentNode.appendChild(tfoot);
+  var tftr=document.createElement('tr');
+  tftr.style.cssText='background:var(--surface2);font-weight:600';
+  var bs='padding:.48rem .7rem;font-family:"IBM Plex Mono",monospace;border-top:2px solid var(--border2)';
+  // Blank cells for: Ticker, Name, Cat, Acct, IncType, Yield, ER, Target%
+  for(var k=0;k<8;k++) el('td',{style:bs},tftr);
+  // Current Value $ total
+  var tfCV=el('td',{style:bs+';text-align:right;font-size:.78rem',id:'h-total-curval'},tftr);
+  tfCV.textContent=tCurVal>0?fmt(tCurVal):'--';
+  // Current % — blank (no single total makes sense)
+  el('td',{style:bs},tftr);
+  // Target $ Value total
+  var tgtTotal=portTotal*ta/100;
+  el('td',{style:bs+';text-align:right;font-size:.78rem;font-family:"IBM Plex Mono",monospace'},tftr).textContent=fmt(tgtTotal);
+  // Ann. Income total
+  var tfInc=el('td',{style:bs+';text-align:right;font-size:.78rem;color:var(--green)',id:'h-total-inc'},tftr);
+  tfInc.textContent=tCurInc>0?fmt(tCurInc):'--';
+  tfoot.appendChild(tftr);
+
   ti+=getCashIncome();
-  // tickerTotal: sum of $ values for tickers where cur% is entered and > 0
-  // If no cur% entered anywhere, tickerTotal = 0 and portfolio = cash only
-  var tickerTotal=0;
-  H.forEach(function(h){
-    var c=h.cur!==null&&h.cur!==undefined?h.cur:null;
-    if(c!==null&&c>0) tickerTotal+=grandTotal*c/100;
-  });
-  var portTotal=cashTotal+tickerTotal;
-  // If nothing entered yet, show cashTotal as the total
-  if(portTotal===0&&cashTotal===0) portTotal=grandTotal*ta/100; // fallback to target-based
-  // Alloc bar: ticker $ value as % of total (cash + tickers)
-  var barPct=(cashTotal+tickerTotal)>0?tickerTotal/(cashTotal+tickerTotal)*100:0;
+  var totalPortfolio=cashTotal+tCurVal;
+  var barPct=totalPortfolio>0?tCurVal/totalPortfolio*100:0;
   var fill=document.getElementById('alloc-bar-fill');
   fill.style.width=Math.min(barPct,100)+'%';
   fill.className='alloc-bar-fill'+(barPct>100?' over':'');
-  document.getElementById('alloc-pct-text').textContent='Target: '+ta.toFixed(1)+'%  /  Current: '+tCur.toFixed(1)+'%';
+  document.getElementById('alloc-pct-text').textContent='Target: '+ta.toFixed(1)+'%';
   document.getElementById('alloc-label').textContent='Target: '+ta.toFixed(1)+'%';
-  var need=portTotal*0.04, cov=ti/need*100, bY=wY/Math.max(ta,1);
-  document.getElementById('sv-port').textContent=fmt(portTotal);
+  // Income target from Profile
+  var need=PROFILE.income||0;
+  var cov=need>0?ti/need*100:0;
+  var bY=wY/Math.max(ta,1);
+  document.getElementById('sv-port').textContent=fmt(totalPortfolio);
   var svi=document.getElementById('sv-income');svi.textContent=fmt(ti);svi.className='sc-val '+(ti>=need?'green':'yellow');
   document.getElementById('sv-target').textContent=fmt(need);
   var svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='sc-val '+(cov>=100?'green':cov>=80?'yellow':'red');
   var svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='sc-val '+(bY>=4?'green':'yellow');
-  var cashPct=cashTotal/(grandTotal||1)*100;
+  var cashPct=totalPortfolio>0?cashTotal/totalPortfolio*100:0;
   var scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='sc-val '+(cashPct>30?'yellow':cashPct>15?'accent':'green');
   buildTaxBox();
 }
 
-function recalc(){renderH();saveH();}
+function recalc(){
+  // Recalculate current % for each row from curVal / PROFILE.port
+  var portTotal=PROFILE.port||1;
+  H.forEach(function(h){
+    // curVal is the source of truth; curPct is derived in renderH
+    // nothing to recompute here — renderH does it live
+  });
+  renderH();saveH();
+}
 function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach(function(v,i){if(H[i])H[i].a=v;});renderH();saveH();}
-function editDefaults(){openProfileModal();}
 
 // ── ACCOUNTS ──
 function updateAcctSummary(){
@@ -1148,76 +1192,23 @@ function lookupNewTicker(){
 }
 
 // ── PROFILE & ALLOCATION ──
-var profileSuggestions = {}; // ticker -> suggested target%
-
 function openProfileModal(){
-  // Pre-fill portfolio total from account balances
-  var pf=getPF();
-  if(pf.total>0) document.getElementById('p-port').value=pf.total;
+  // Pre-fill from saved profile
+  var set=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;};
+  set('p-age',PROFILE.age); set('p-horizon',PROFILE.horizon);
+  set('p-port',PROFILE.port); set('p-income',PROFILE.income);
+  set('p-risk',PROFILE.risk); set('p-priority',PROFILE.priority);
   document.getElementById('profile-modal').classList.add('open');
 }
 function closeProfileModal(){ document.getElementById('profile-modal').classList.remove('open'); }
+function saveProfileAndClose(){ saveProfile(); closeProfileModal(); renderH(); }
 
-function calcProfileTargets(){
-  var port   = parseFloat(document.getElementById('p-port').value)||1110000;
-  var income = parseFloat(document.getElementById('p-income').value)||44000;
 
-  // Simple even-distribution starting point across active tickers
-  // User can override each value in the Override% column before applying
-  var n=H.length;
-  var evenPct=Math.round(100/n*10)/10;
-  H.forEach(function(h){ profileSuggestions[h.t]=h.a>0?h.a:evenPct; });
-
-  // Render the suggestion table
-  var rows='<table style="width:100%;border-collapse:collapse">';
-  rows+='<tr><th style="text-align:left;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Ticker</th>';
-  rows+='<th style="text-align:left;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Name</th>';
-  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Current Target%</th>';
-  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Suggested%</th>';
-  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Override%</th></tr>';
-
-  H.forEach(function(h,i){
-    var sug = profileSuggestions[h.t]!==undefined ? profileSuggestions[h.t] : h.a;
-    var diff = sug - h.a;
-    var diffStr = diff===0?'':((diff>0?'+':'')+diff.toFixed(1)+'%');
-    var diffColor = diff>3?'color:var(--green)':diff<-3?'color:var(--red)':'color:var(--muted)';
-    rows+='<tr style="border-bottom:1px solid var(--border)">';
-    rows+='<td style="font-family:monospace;font-weight:500;color:var(--accent);padding:.32rem .4rem">'+h.t+'</td>';
-    rows+='<td style="font-size:.72rem;color:var(--muted);padding:.32rem .4rem">'+h.n+'</td>';
-    rows+='<td style="text-align:right;font-family:monospace;font-size:.78rem;padding:.32rem .4rem">'+h.a.toFixed(1)+'%</td>';
-    rows+='<td style="text-align:right;font-family:monospace;font-size:.78rem;padding:.32rem .4rem"><span style="'+diffColor+'">'+sug.toFixed(1)+'% <small>'+diffStr+'</small></span></td>';
-    rows+='<td style="text-align:right;padding:.32rem .4rem"><input type="number" id="psug-'+i+'" value="'+sug.toFixed(1)+'" min="0" max="100" step="0.5" style="width:58px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-family:monospace;font-size:.78rem;text-align:right;outline:none"></td>';
-    rows+='</tr>';
-  });
-  rows+='</table>';
-
-  // Summary line
-  var incomeYield=0,totalPct=0;
-  H.forEach(function(h,i){
-    var s=profileSuggestions[h.t]!==undefined?profileSuggestions[h.t]:h.a;
-    totalPct+=s; incomeYield+=h.y*s;
-  });
-  var blendedYield=incomeYield/Math.max(totalPct,1);
-  var projIncome=port*blendedYield/100;
-  rows+='<div style="margin-top:.8rem;padding:.7rem .9rem;background:var(--green-bg);border-radius:6px;font-size:.74rem;color:var(--green);font-family:monospace">';
-  rows+='Total: '+totalPct.toFixed(1)+'%  &middot;  Blended yield: '+blendedYield.toFixed(2)+'%  &middot;  Projected income: '+fmt(projIncome)+'/yr  &middot;  Need: '+fmt(income)+'/yr';
-  rows+='</div>';
-
-  document.getElementById('profile-alloc-table').innerHTML=rows;
-}
-
-function applyProfileTargets(){
-  H.forEach(function(h,i){
-    var e=document.getElementById('psug-'+i);
-    if(e&&e.value.trim()!=='') h.a=Math.min(100,parseFloat(e.value)||0);
-  });
-  saveH(); renderH(); updateAcctSummary(); closeProfileModal();
-}
 
 // ── INIT ──
 function init(){
   var saved=sl(SK.h,null);if(saved&&saved.length)H=saved;
-  loadCash();loadAccts();loadSettings();loadCurPct();
+  loadCash();loadAccts();loadSettings();loadCurPct();loadProfile();
   var s=sl(SK.sig,'green');setSignal(s);
   renderCash();renderH();updateAcctSummary();
   // Wire buttons via addEventListener (no inline onclick needed)
@@ -1227,10 +1218,8 @@ function init(){
   document.getElementById('save-tickers-btn').addEventListener('click',saveTickerEdits);
   document.getElementById('ticker-modal').addEventListener('click',function(e){if(e.target===this)closeTickerEditor();});
   document.getElementById('profile-btn').addEventListener('click',openProfileModal);
-  document.getElementById('edit-defaults-btn').addEventListener('click',editDefaults);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
-  document.getElementById('profile-calc-btn').addEventListener('click',calcProfileTargets);
-  document.getElementById('profile-save-btn').addEventListener('click',applyProfileTargets);
+  document.getElementById('profile-save-btn').addEventListener('click',saveProfileAndClose);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
 }
 
