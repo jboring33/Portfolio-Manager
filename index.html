@@ -642,20 +642,31 @@ function renderCash(){
   else { tfoot=document.createElement('tfoot'); tbody.parentNode.appendChild(tfoot); }
   var tftr=document.createElement('tr');
   tftr.style.cssText='background:var(--surface2);font-weight:500';
-  var tfCells=['','Totals','','','','',''];
-  tfCells.forEach(function(txt){
-    el('td',{textContent:txt,style:'padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--muted);border-top:2px solid var(--border2)'},tftr);
-  });
-  // Balance total cell
-  var tfBal=el('td',{style:'text-align:right;padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.78rem;font-weight:600;border-top:2px solid var(--border2)'},tftr);
+  var bs='padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;border-top:2px solid var(--border2)';
+  // Col 0: Ticker - label
+  el('td',{textContent:'Totals',style:bs+';font-size:.72rem;color:var(--muted)'},tftr);
+  // Col 1: Name - blank
+  el('td',{style:bs},tftr);
+  // Col 2: Type - blank
+  el('td',{style:bs},tftr);
+  // Col 3: Shares - blank
+  el('td',{style:bs},tftr);
+  // Col 4: Price - blank
+  el('td',{style:bs},tftr);
+  // Col 5: Balance total
+  var tfBal=el('td',{style:bs+';text-align:right;font-size:.78rem;font-weight:600'},tftr);
   tfBal.id='cash-bal-total';
-  // Annual income total cell
-  var tfInc=el('td',{style:'text-align:right;padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.78rem;font-weight:600;color:var(--green);border-top:2px solid var(--border2)'},tftr);
+  // Col 6: Yield - blank
+  el('td',{style:bs},tftr);
+  // Col 7: Annual Income total
+  var tfInc=el('td',{style:bs+';text-align:right;font-size:.78rem;font-weight:600;color:var(--green)'},tftr);
   tfInc.id='cash-inc-total';
-  // Maturity and Note blanks
-  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
-  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
-  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
+  // Col 8: Maturity - blank
+  el('td',{style:bs},tftr);
+  // Col 9: Note - blank
+  el('td',{style:bs},tftr);
+  // Col 10: Delete - blank
+  el('td',{style:bs},tftr);
   tfoot.appendChild(tftr);
   renderCashMeta();
 }
@@ -752,11 +763,18 @@ function renderH(){
     tbody.appendChild(tr);
   });
   ti+=getCashIncome();
-  // Total portfolio = cash + sum of ticker $ values (grandTotal * ta/100)
-  var tickerTotal=grandTotal*ta/100;
+  // tickerTotal: sum of $ values for tickers where cur% is entered and > 0
+  // If no cur% entered anywhere, tickerTotal = 0 and portfolio = cash only
+  var tickerTotal=0;
+  H.forEach(function(h){
+    var c=h.cur!==null&&h.cur!==undefined?h.cur:null;
+    if(c!==null&&c>0) tickerTotal+=grandTotal*c/100;
+  });
   var portTotal=cashTotal+tickerTotal;
-  // Alloc bar: ticker $ value as % of total portfolio (not raw target %)
-  var barPct=portTotal>0?tickerTotal/portTotal*100:ta;
+  // If nothing entered yet, show cashTotal as the total
+  if(portTotal===0&&cashTotal===0) portTotal=grandTotal*ta/100; // fallback to target-based
+  // Alloc bar: ticker $ value as % of total (cash + tickers)
+  var barPct=(cashTotal+tickerTotal)>0?tickerTotal/(cashTotal+tickerTotal)*100:0;
   var fill=document.getElementById('alloc-bar-fill');
   fill.style.width=Math.min(barPct,100)+'%';
   fill.className='alloc-bar-fill'+(barPct>100?' over':'');
@@ -1013,67 +1031,120 @@ function saveTickerEdits(){
 
 // ── API LOOKUP ──
 var API='https://api.anthropic.com/v1/messages';
+
 function lookupTicker(ticker,cb,errCb){
-  var prompt='Look up ticker '+ticker+' and return ONLY raw JSON no markdown: {"name":"full fund name","category":"short category","acct":"IRA or Roth or Brokerage or HSA","it":"QDI or Ordinary or ELNs or 60/40 Options or None","sec_yield":number_or_null,"er":number,"why":"one sentence tax rationale"}. Use SEC 30-day yield. ER as percent e.g. 0.35.';
-  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})})
-  .then(function(r){return r.json();})
+  var prompt='Look up ETF or fund ticker symbol '+ticker+'. Return ONLY a raw JSON object with no markdown fences or explanation: {"name":"Full fund name","category":"Short category e.g. T-Bills/Bond/Equity/Gold/Preferred/Covered Call","acct":"Best tax account: IRA or Roth or Brokerage or HSA","it":"Abbreviated income type: QDI or Ordinary or ELNs or 60/40 Options or None","sec_yield":number_or_null,"er":number,"why":"One sentence tax placement rationale"}. For sec_yield use the SEC 30-day standardized yield as a number (e.g. 5.1 not 0.051). For er use the expense ratio as a percent number (e.g. 0.35 not 0.0035). If SEC yield not available use null.';
+  fetch(API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:500,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:prompt}]
+    })
+  })
+  .then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status+' - '+r.statusText);
+    return r.json();
+  })
   .then(function(data){
-    var raw='';(data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
+    if(data.error) throw new Error(data.error.message||'API error');
+    var raw='';
+    (data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
     var s=raw.indexOf('{'),e=raw.lastIndexOf('}');
-    if(s<0||e<0)throw new Error('No JSON');
-    cb(JSON.parse(raw.slice(s,e+1)));
-  }).catch(errCb);
+    if(s<0||e<0) throw new Error('No JSON found in response');
+    var parsed=JSON.parse(raw.slice(s,e+1));
+    cb(parsed);
+  })
+  .catch(function(err){
+    errCb(err);
+  });
 }
-function applyLookup(d,prefix){
-  function sv(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
-  sv(prefix+'n',d.name);sv(prefix+'cat',d.category);sv(prefix+'it',d.it);
-  if(d.sec_yield!=null)sv(prefix+'y',(+d.sec_yield).toFixed(2));
-  if(d.er)sv(prefix+'er',(+d.er).toFixed(2));
-  var aEl=document.getElementById(prefix+'acct');
-  if(aEl&&d.acct){for(var k=0;k<aEl.options.length;k++)if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}}
+
+function applyLookupToRow(d,i){
+  function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined&&v!=='')e.value=v;}
+  sv('e-n-'+i, d.name);
+  sv('e-c-'+i, d.category);
+  sv('e-it-'+i, d.it);
+  if(d.sec_yield!=null) sv('e-y-'+i, (+d.sec_yield).toFixed(2));
+  if(d.er!=null&&d.er>0) sv('e-er-'+i, (+d.er).toFixed(2));
+  var aEl=document.getElementById('e-a-'+i);
+  if(aEl&&d.acct){
+    for(var k=0;k<aEl.options.length;k++){
+      if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}
+    }
+  }
+  // Update the why tooltip on the account select
+  if(d.why&&aEl) aEl.title=d.why;
 }
+
 function lookupRow(i){
-  var tEl=document.getElementById('e-t-'+i),stEl=document.getElementById('e-status-'+i);
-  if(!tEl||!stEl)return;
-  var ticker=tEl.value.trim().toUpperCase();if(!ticker){alert('Enter a ticker first.');return;}
-  stEl.textContent='...';stEl.style.color='var(--muted)';
-  lookupTicker(ticker,function(d){applyLookup(d,'e-'+/* need per-row prefix */i+'-'); /* manual apply */ 
-    function sv(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
-    sv('e-n-'+i,d.name);sv('e-c-'+i,d.category);sv('e-it-'+i,d.it);
-    if(d.sec_yield!=null)sv('e-y-'+i,(+d.sec_yield).toFixed(2));
-    if(d.er)sv('e-er-'+i,(+d.er).toFixed(2));
-    var aEl=document.getElementById('e-a-'+i);
-    if(aEl&&d.acct){for(var k=0;k<aEl.options.length;k++)if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}}
-    stEl.textContent='OK';stEl.style.color='var(--green)';
-    setTimeout(function(){stEl.textContent='';},3000);
-  },function(){stEl.textContent='Err';stEl.style.color='var(--red)';setTimeout(function(){stEl.textContent='';},4000);});
+  var tEl=document.getElementById('e-t-'+i);
+  var stEl=document.getElementById('e-status-'+i);
+  if(!tEl||!stEl){console.error('lookupRow: missing elements for index',i);return;}
+  var ticker=tEl.value.trim().toUpperCase();
+  if(!ticker){alert('Enter a ticker symbol first.');return;}
+  stEl.textContent='...';
+  stEl.style.color='var(--muted)';
+  lookupTicker(ticker,
+    function(d){
+      applyLookupToRow(d,i);
+      stEl.textContent='OK';
+      stEl.style.color='var(--green)';
+      setTimeout(function(){stEl.textContent='';},3000);
+    },
+    function(err){
+      console.error('Lookup error for row',i,':',err);
+      var msg=err&&err.message?err.message:'unknown error';
+      if(msg.indexOf('Failed to fetch')>=0||msg.indexOf('NetworkError')>=0||msg.indexOf('CORS')>=0){
+        stEl.textContent='CORS - use within claude.ai';
+      } else {
+        stEl.textContent='Error: '+msg.slice(0,20);
+      }
+      stEl.style.color='var(--red)';
+      setTimeout(function(){stEl.textContent='';},6000);
+    }
+  );
 }
+
 function lookupNewTicker(){
-  // Read ticker directly from DOM at call time
   var tkEl=document.getElementById('new-t');
   var ticker=tkEl?(tkEl.value||'').trim().toUpperCase():'';
-  if(!ticker){alert('Enter a ticker symbol first (e.g. SCHD).');return;}
-  var btn=document.getElementById('lookup-new-btn'),st=document.getElementById('lookup-status');
+  if(!ticker){alert('Enter a ticker symbol first (e.g. IAUM).');return;}
+  var btn=document.getElementById('lookup-new-btn');
+  var st=document.getElementById('lookup-status');
   if(btn)btn.disabled=true;
   if(st){st.textContent='Searching '+ticker+'...';st.style.color='var(--muted)';}
-  lookupTicker(ticker,function(d){
-    function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined)e.value=v;}
-    sv('new-n',d.name);
-    sv('new-cat',d.category);
-    sv('new-it',d.it);
-    if(d.sec_yield!=null)sv('new-y',(+d.sec_yield).toFixed(2));
-    if(d.er)sv('new-er',(+d.er).toFixed(2));
-    var aEl=document.getElementById('new-acct');
-    if(aEl&&d.acct){for(var k=0;k<aEl.options.length;k++){if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}}}
-    if(st){st.textContent='Done - review and click + Add';st.style.color='var(--green)';}
-    setTimeout(function(){if(st)st.textContent='';},5000);
-    if(btn)btn.disabled=false;
-  },function(err){
-    console.error('Lookup error:',err);
-    if(st){st.textContent='API lookup failed - fill manually';st.style.color='var(--red)';}
-    setTimeout(function(){if(st)st.textContent='';},5000);
-    if(btn)btn.disabled=false;
-  });
+  lookupTicker(ticker,
+    function(d){
+      function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined&&v!=='')e.value=v;}
+      sv('new-n', d.name);
+      sv('new-cat', d.category);
+      sv('new-it', d.it);
+      if(d.sec_yield!=null) sv('new-y', (+d.sec_yield).toFixed(2));
+      if(d.er!=null&&d.er>0) sv('new-er', (+d.er).toFixed(2));
+      var aEl=document.getElementById('new-acct');
+      if(aEl&&d.acct){
+        for(var k=0;k<aEl.options.length;k++){
+          if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}
+        }
+      }
+      if(st){st.textContent='Filled - review then click + Add';st.style.color='var(--green)';}
+      setTimeout(function(){if(st)st.textContent='';},5000);
+      if(btn)btn.disabled=false;
+    },
+    function(err){
+      console.error('Lookup error:',err);
+      var msg=err&&err.message?err.message:'unknown';
+      var display=(msg.indexOf('Failed to fetch')>=0||msg.indexOf('CORS')>=0)
+        ?'CORS error - use within claude.ai'
+        :'Error: '+msg.slice(0,25);
+      if(st){st.textContent=display;st.style.color='var(--red)';}
+      setTimeout(function(){if(st)st.textContent='';},6000);
+      if(btn)btn.disabled=false;
+    }
+  );
 }
 
 // ── PROFILE & ALLOCATION ──
@@ -1088,67 +1159,14 @@ function openProfileModal(){
 function closeProfileModal(){ document.getElementById('profile-modal').classList.remove('open'); }
 
 function calcProfileTargets(){
-  var age    = parseFloat(document.getElementById('p-age').value)||69;
-  var horizon= parseFloat(document.getElementById('p-horizon').value)||95;
   var port   = parseFloat(document.getElementById('p-port').value)||1110000;
   var income = parseFloat(document.getElementById('p-income').value)||44000;
-  var risk   = document.getElementById('p-risk').value;
-  var pri    = document.getElementById('p-priority').value;
 
-  var incomeNeedPct = income/port*100;  // e.g. 4%
-  var yearsLeft     = horizon - age;    // e.g. 26
-
-  // Base allocation logic by risk + priority
-  // Conservative income-first: heavy fixed income + covered calls to cover income need
-  // Each tier shifts equity up, fixed income down
-  var base = {
-    'SGOV':0,'VTIP':0,'BSV':0,'SCHD':0,'JEPI':0,
-    'VTI':0,'SPDW':0,'IAU':0,'XLE':0,'QQQI':0,'PFF':0
-  };
-
-  // Step 1: how much do we need in income-generating assets?
-  // Target: income assets yield enough to cover the income need
-  // Blended yield of income assets ~5.5%, so income assets needed = incomeNeedPct / 0.055
-  var incomeAssetPct = Math.min(65, Math.round(incomeNeedPct / 0.055 * 10)/10);
-
-  // Step 2: adjust by risk tolerance
-  var equityBoost = risk==='growth'?15:risk==='moderate'?8:0;
-  var safetyBoost = risk==='conservative'?5:0;
-
-  // Step 3: build allocations
-  if(pri==='income'){
-    // Maximize income: T-bills as cash buffer, covered calls, dividends, preferred
-    base.SGOV = Math.round(Math.max(8, Math.min(15, incomeNeedPct * 0.8)));
-    base.VTIP = 8;
-    base.BSV  = Math.round(Math.max(7, Math.min(12, incomeNeedPct * 0.7)));
-    base.JEPI = Math.round(Math.max(8, Math.min(14, incomeNeedPct * 1.0)));
-    base.QQQI = 4;
-    base.PFF  = 5;
-    base.SCHD = Math.round(Math.max(10, 18 - equityBoost/2));
-    base.VTI  = Math.round(Math.max(10, 16 + equityBoost - safetyBoost));
-    base.SPDW = 6;
-    base.IAU  = 6 + safetyBoost;
-    base.XLE  = 3;
-  } else if(pri==='balanced'){
-    base.SGOV = 8; base.VTIP = 7; base.BSV = 8;
-    base.JEPI = 9; base.QQQI = 4; base.PFF = 4;
-    base.SCHD = 14; base.VTI = 20 + equityBoost;
-    base.SPDW = 8; base.IAU = 6; base.XLE = 4;
-  } else {
-    // Growth first
-    base.SGOV = 6; base.VTIP = 5; base.BSV = 5;
-    base.JEPI = 7; base.QQQI = 3; base.PFF = 3;
-    base.SCHD = 15; base.VTI = 28 + equityBoost;
-    base.SPDW = 10; base.IAU = 5; base.XLE = 5;
-  }
-
-  // Normalize to 100%
-  var total=0; for(var k in base) total+=base[k];
-  var scale=100/total;
-  for(var k in base) base[k]=Math.round(base[k]*scale*10)/10;
-
-  // Assign to H array (for tickers in our list)
-  H.forEach(function(h){ if(base[h.t]!==undefined) profileSuggestions[h.t]=base[h.t]; });
+  // Simple even-distribution starting point across active tickers
+  // User can override each value in the Override% column before applying
+  var n=H.length;
+  var evenPct=Math.round(100/n*10)/10;
+  H.forEach(function(h){ profileSuggestions[h.t]=h.a>0?h.a:evenPct; });
 
   // Render the suggestion table
   var rows='<table style="width:100%;border-collapse:collapse">';
