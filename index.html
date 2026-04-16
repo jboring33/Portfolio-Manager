@@ -228,7 +228,8 @@ canvas{width:100%!important;}
   <div class="info-box" id="tax-info-box"></div>
   <div class="btn-row">
     <button class="btn btn-primary" onclick="recalc()">&#8635; Recalculate</button>
-    <button class="btn btn-outline" onclick="resetAllocs()">Reset Defaults</button>
+    <button class="btn btn-outline" id="edit-defaults-btn">&#9998; Edit Defaults</button>
+    <button class="btn btn-outline" id="profile-btn">&#127775; Profile &amp; Allocation</button>
     <button class="btn btn-outline" id="edit-tickers-btn" style="margin-left:auto">&#9998; Edit Tickers</button>
   </div>
   <div class="disclaimer">Values persist via browser storage. Hover fund name for tax rationale. Not financial advice.</div>
@@ -341,6 +342,52 @@ canvas{width:100%!important;}
   </div>
   <div class="info-box" style="margin-top:1.1rem"><strong>Sequence of returns risk:</strong> A Down -15% year 1 forces selling depressed assets to fund the $44K withdrawal. SGOV and JEPI income exist to fund withdrawals in years 1-3 without touching equities.</div>
   <div class="disclaimer">Simplified linear projections. Not financial advice.</div>
+</div>
+
+<!-- PROFILE & ALLOCATION MODAL -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal-box" style="max-width:680px">
+    <div class="modal-head">
+      <h2>Profile &amp; Target Allocation</h2>
+      <button class="modal-close" id="profile-close-btn">&#10005;</button>
+    </div>
+    <div class="modal-body" style="max-height:80vh">
+      <div class="info-box" style="margin-bottom:1rem;font-size:.73rem">
+        Update your profile below, then click <strong>Recalculate Targets</strong> to get suggested target allocations based on your situation. You can override any suggestion before saving.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+        <div class="acct-field"><label>Age</label><input type="number" id="p-age" value="69" min="50" max="100" step="1"></div>
+        <div class="acct-field"><label>Target Horizon (live to age)</label><input type="number" id="p-horizon" value="95" min="70" max="110" step="1"></div>
+        <div class="acct-field"><label>Total Portfolio ($)</label><input type="number" id="p-port" value="1110000" min="0" step="10000"></div>
+        <div class="acct-field"><label>Annual Income Need ($)</label><input type="number" id="p-income" value="44000" min="0" step="1000"></div>
+        <div class="acct-field"><label>Risk Tolerance</label>
+          <select id="p-risk" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none">
+            <option value="conservative" selected>Conservative</option>
+            <option value="moderate">Moderate</option>
+            <option value="growth">Growth-oriented</option>
+          </select>
+        </div>
+        <div class="acct-field"><label>Income Priority</label>
+          <select id="p-priority" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none">
+            <option value="income" selected>Maximize income (cover needs)</option>
+            <option value="balanced">Balanced income + growth</option>
+            <option value="growth">Growth first, income secondary</option>
+          </select>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:1rem;margin-bottom:1rem">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem">Suggested Target Allocations</div>
+        <div id="profile-alloc-table" style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);padding:.5rem">
+          Click "Recalculate Targets" to generate suggestions based on your profile.
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" id="profile-calc-btn">&#127775; Recalculate Targets</button>
+      <button class="btn btn-primary" id="profile-save-btn">Apply Targets &amp; Close</button>
+      <span class="modal-foot-note">Targets are suggestions — edit any value before applying</span>
+    </div>
+  </div>
 </div>
 
 <!-- TICKER EDITOR MODAL -->
@@ -589,12 +636,37 @@ function renderCash(){
 
     tbody.appendChild(tr);
   });
+  // Totals row
+  var tfoot = tbody.parentNode.querySelector('tfoot');
+  if(tfoot) tfoot.innerHTML='';
+  else { tfoot=document.createElement('tfoot'); tbody.parentNode.appendChild(tfoot); }
+  var tftr=document.createElement('tr');
+  tftr.style.cssText='background:var(--surface2);font-weight:500';
+  var tfCells=['','Totals','','','','',''];
+  tfCells.forEach(function(txt){
+    el('td',{textContent:txt,style:'padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--muted);border-top:2px solid var(--border2)'},tftr);
+  });
+  // Balance total cell
+  var tfBal=el('td',{style:'text-align:right;padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.78rem;font-weight:600;border-top:2px solid var(--border2)'},tftr);
+  tfBal.id='cash-bal-total';
+  // Annual income total cell
+  var tfInc=el('td',{style:'text-align:right;padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;font-size:.78rem;font-weight:600;color:var(--green);border-top:2px solid var(--border2)'},tftr);
+  tfInc.id='cash-inc-total';
+  // Maturity and Note blanks
+  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
+  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
+  el('td',{style:'border-top:2px solid var(--border2)'},tftr);
+  tfoot.appendChild(tftr);
   renderCashMeta();
 }
 
 function renderCashMeta(){
   var total=getCashTotal(),inc=getCashIncome();
   document.getElementById('cash-total-label').textContent='Total: '+fmt(total)+'  \u00B7  Income: '+fmt(inc)+'/yr';
+  var btEl=document.getElementById('cash-bal-total');
+  var itEl=document.getElementById('cash-inc-total');
+  if(btEl)btEl.textContent=fmt(total);
+  if(itEl)itEl.textContent=fmt(inc);
 }
 
 function addCashRow(){
@@ -680,13 +752,18 @@ function renderH(){
     tbody.appendChild(tr);
   });
   ti+=getCashIncome();
+  // Total portfolio = cash + sum of ticker $ values (grandTotal * ta/100)
+  var tickerTotal=grandTotal*ta/100;
+  var portTotal=cashTotal+tickerTotal;
+  // Alloc bar: ticker $ value as % of total portfolio (not raw target %)
+  var barPct=portTotal>0?tickerTotal/portTotal*100:ta;
   var fill=document.getElementById('alloc-bar-fill');
-  fill.style.width=Math.min(ta,100)+'%';
-  fill.className='alloc-bar-fill'+(ta>100?' over':'');
+  fill.style.width=Math.min(barPct,100)+'%';
+  fill.className='alloc-bar-fill'+(barPct>100?' over':'');
   document.getElementById('alloc-pct-text').textContent='Target: '+ta.toFixed(1)+'%  /  Current: '+tCur.toFixed(1)+'%';
   document.getElementById('alloc-label').textContent='Target: '+ta.toFixed(1)+'%';
-  var need=grandTotal*0.04, cov=ti/need*100, bY=wY/Math.max(ta,1);
-  document.getElementById('sv-port').textContent=fmt(grandTotal+cashTotal);
+  var need=portTotal*0.04, cov=ti/need*100, bY=wY/Math.max(ta,1);
+  document.getElementById('sv-port').textContent=fmt(portTotal);
   var svi=document.getElementById('sv-income');svi.textContent=fmt(ti);svi.className='sc-val '+(ti>=need?'green':'yellow');
   document.getElementById('sv-target').textContent=fmt(need);
   var svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='sc-val '+(cov>=100?'green':cov>=80?'yellow':'red');
@@ -697,7 +774,8 @@ function renderH(){
 }
 
 function recalc(){renderH();saveH();}
-function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach(function(v,i){H[i].a=v;});renderH();saveH();}
+function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach(function(v,i){if(H[i])H[i].a=v;});renderH();saveH();}
+function editDefaults(){openProfileModal();}
 
 // ── ACCOUNTS ──
 function updateAcctSummary(){
@@ -917,15 +995,18 @@ function addNewTicker(){
 
 function saveTickerEdits(){
   H.forEach(function(h,i){
-    var g=function(id,def){var e=document.getElementById(id);return e?e.value:def;};
-    h.t=(g('e-t-'+i,h.t)||h.t).toUpperCase();
-    h.n=g('e-n-'+i,h.n)||h.n;
-    h.cat=g('e-c-'+i,h.cat)||h.cat;
-    h.acct=g('e-a-'+i,h.acct)||h.acct;
-    h.it=g('e-it-'+i,h.it)||h.it;
-    h.y=parseFloat(g('e-y-'+i,h.y))||0;
-    h.er=Math.min(99.99,parseFloat(g('e-er-'+i,h.er))||0);
-    h.a=Math.min(100,parseFloat(g('e-al-'+i,h.a))||0);
+    var gEl=function(id){return document.getElementById(id);};
+    var tEl=gEl('e-t-'+i),nEl=gEl('e-n-'+i),cEl=gEl('e-c-'+i),aEl=gEl('e-a-'+i),itEl=gEl('e-it-'+i);
+    var yEl=gEl('e-y-'+i),erEl=gEl('e-er-'+i),alEl=gEl('e-al-'+i);
+    if(tEl&&tEl.value.trim()) h.t=tEl.value.trim().toUpperCase();
+    if(nEl&&nEl.value.trim()) h.n=nEl.value.trim();
+    if(cEl&&cEl.value.trim()) h.cat=cEl.value.trim();
+    if(aEl&&aEl.value)        h.acct=aEl.value;
+    if(itEl&&itEl.value.trim())h.it=itEl.value.trim();
+    if(yEl&&yEl.value.trim()) h.y=parseFloat(yEl.value)||0;
+    if(erEl&&erEl.value.trim())h.er=Math.min(99.99,parseFloat(erEl.value)||0);
+    // Preserve existing target% if field is blank; only update if user typed something
+    if(alEl&&alEl.value.trim()!=='')h.a=Math.min(100,parseFloat(alEl.value)||0);
   });
   saveH();renderH();updateAcctSummary();closeTickerEditor();
 }
@@ -968,24 +1049,151 @@ function lookupRow(i){
   },function(){stEl.textContent='Err';stEl.style.color='var(--red)';setTimeout(function(){stEl.textContent='';},4000);});
 }
 function lookupNewTicker(){
-  var ticker=(gv('new-t')||'').trim().toUpperCase();if(!ticker){alert('Enter a ticker first.');return;}
+  // Read ticker directly from DOM at call time
+  var tkEl=document.getElementById('new-t');
+  var ticker=tkEl?(tkEl.value||'').trim().toUpperCase():'';
+  if(!ticker){alert('Enter a ticker symbol first (e.g. SCHD).');return;}
   var btn=document.getElementById('lookup-new-btn'),st=document.getElementById('lookup-status');
-  if(btn)btn.disabled=true;if(st){st.textContent='Looking up '+ticker+'...';st.style.color='var(--muted)';}
+  if(btn)btn.disabled=true;
+  if(st){st.textContent='Searching '+ticker+'...';st.style.color='var(--muted)';}
   lookupTicker(ticker,function(d){
-    function sv(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
-    sv('new-n',d.name);sv('new-cat',d.category);sv('new-it',d.it);
+    function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined)e.value=v;}
+    sv('new-n',d.name);
+    sv('new-cat',d.category);
+    sv('new-it',d.it);
     if(d.sec_yield!=null)sv('new-y',(+d.sec_yield).toFixed(2));
     if(d.er)sv('new-er',(+d.er).toFixed(2));
     var aEl=document.getElementById('new-acct');
-    if(aEl&&d.acct){for(var k=0;k<aEl.options.length;k++)if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}}
-    if(st){st.textContent='Filled';st.style.color='var(--green)';}
-    setTimeout(function(){if(st)st.textContent='';},4000);
+    if(aEl&&d.acct){for(var k=0;k<aEl.options.length;k++){if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}}}
+    if(st){st.textContent='Done - review and click + Add';st.style.color='var(--green)';}
+    setTimeout(function(){if(st)st.textContent='';},5000);
     if(btn)btn.disabled=false;
-  },function(){
-    if(st){st.textContent='Lookup failed';st.style.color='var(--red)';}
+  },function(err){
+    console.error('Lookup error:',err);
+    if(st){st.textContent='API lookup failed - fill manually';st.style.color='var(--red)';}
     setTimeout(function(){if(st)st.textContent='';},5000);
     if(btn)btn.disabled=false;
   });
+}
+
+// ── PROFILE & ALLOCATION ──
+var profileSuggestions = {}; // ticker -> suggested target%
+
+function openProfileModal(){
+  // Pre-fill portfolio total from account balances
+  var pf=getPF();
+  if(pf.total>0) document.getElementById('p-port').value=pf.total;
+  document.getElementById('profile-modal').classList.add('open');
+}
+function closeProfileModal(){ document.getElementById('profile-modal').classList.remove('open'); }
+
+function calcProfileTargets(){
+  var age    = parseFloat(document.getElementById('p-age').value)||69;
+  var horizon= parseFloat(document.getElementById('p-horizon').value)||95;
+  var port   = parseFloat(document.getElementById('p-port').value)||1110000;
+  var income = parseFloat(document.getElementById('p-income').value)||44000;
+  var risk   = document.getElementById('p-risk').value;
+  var pri    = document.getElementById('p-priority').value;
+
+  var incomeNeedPct = income/port*100;  // e.g. 4%
+  var yearsLeft     = horizon - age;    // e.g. 26
+
+  // Base allocation logic by risk + priority
+  // Conservative income-first: heavy fixed income + covered calls to cover income need
+  // Each tier shifts equity up, fixed income down
+  var base = {
+    'SGOV':0,'VTIP':0,'BSV':0,'SCHD':0,'JEPI':0,
+    'VTI':0,'SPDW':0,'IAU':0,'XLE':0,'QQQI':0,'PFF':0
+  };
+
+  // Step 1: how much do we need in income-generating assets?
+  // Target: income assets yield enough to cover the income need
+  // Blended yield of income assets ~5.5%, so income assets needed = incomeNeedPct / 0.055
+  var incomeAssetPct = Math.min(65, Math.round(incomeNeedPct / 0.055 * 10)/10);
+
+  // Step 2: adjust by risk tolerance
+  var equityBoost = risk==='growth'?15:risk==='moderate'?8:0;
+  var safetyBoost = risk==='conservative'?5:0;
+
+  // Step 3: build allocations
+  if(pri==='income'){
+    // Maximize income: T-bills as cash buffer, covered calls, dividends, preferred
+    base.SGOV = Math.round(Math.max(8, Math.min(15, incomeNeedPct * 0.8)));
+    base.VTIP = 8;
+    base.BSV  = Math.round(Math.max(7, Math.min(12, incomeNeedPct * 0.7)));
+    base.JEPI = Math.round(Math.max(8, Math.min(14, incomeNeedPct * 1.0)));
+    base.QQQI = 4;
+    base.PFF  = 5;
+    base.SCHD = Math.round(Math.max(10, 18 - equityBoost/2));
+    base.VTI  = Math.round(Math.max(10, 16 + equityBoost - safetyBoost));
+    base.SPDW = 6;
+    base.IAU  = 6 + safetyBoost;
+    base.XLE  = 3;
+  } else if(pri==='balanced'){
+    base.SGOV = 8; base.VTIP = 7; base.BSV = 8;
+    base.JEPI = 9; base.QQQI = 4; base.PFF = 4;
+    base.SCHD = 14; base.VTI = 20 + equityBoost;
+    base.SPDW = 8; base.IAU = 6; base.XLE = 4;
+  } else {
+    // Growth first
+    base.SGOV = 6; base.VTIP = 5; base.BSV = 5;
+    base.JEPI = 7; base.QQQI = 3; base.PFF = 3;
+    base.SCHD = 15; base.VTI = 28 + equityBoost;
+    base.SPDW = 10; base.IAU = 5; base.XLE = 5;
+  }
+
+  // Normalize to 100%
+  var total=0; for(var k in base) total+=base[k];
+  var scale=100/total;
+  for(var k in base) base[k]=Math.round(base[k]*scale*10)/10;
+
+  // Assign to H array (for tickers in our list)
+  H.forEach(function(h){ if(base[h.t]!==undefined) profileSuggestions[h.t]=base[h.t]; });
+
+  // Render the suggestion table
+  var rows='<table style="width:100%;border-collapse:collapse">';
+  rows+='<tr><th style="text-align:left;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Ticker</th>';
+  rows+='<th style="text-align:left;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Name</th>';
+  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Current Target%</th>';
+  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Suggested%</th>';
+  rows+='<th style="text-align:right;font-size:.6rem;color:var(--muted);padding:.3rem .4rem;border-bottom:1px solid var(--border)">Override%</th></tr>';
+
+  H.forEach(function(h,i){
+    var sug = profileSuggestions[h.t]!==undefined ? profileSuggestions[h.t] : h.a;
+    var diff = sug - h.a;
+    var diffStr = diff===0?'':((diff>0?'+':'')+diff.toFixed(1)+'%');
+    var diffColor = diff>3?'color:var(--green)':diff<-3?'color:var(--red)':'color:var(--muted)';
+    rows+='<tr style="border-bottom:1px solid var(--border)">';
+    rows+='<td style="font-family:monospace;font-weight:500;color:var(--accent);padding:.32rem .4rem">'+h.t+'</td>';
+    rows+='<td style="font-size:.72rem;color:var(--muted);padding:.32rem .4rem">'+h.n+'</td>';
+    rows+='<td style="text-align:right;font-family:monospace;font-size:.78rem;padding:.32rem .4rem">'+h.a.toFixed(1)+'%</td>';
+    rows+='<td style="text-align:right;font-family:monospace;font-size:.78rem;padding:.32rem .4rem"><span style="'+diffColor+'">'+sug.toFixed(1)+'% <small>'+diffStr+'</small></span></td>';
+    rows+='<td style="text-align:right;padding:.32rem .4rem"><input type="number" id="psug-'+i+'" value="'+sug.toFixed(1)+'" min="0" max="100" step="0.5" style="width:58px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 5px;font-family:monospace;font-size:.78rem;text-align:right;outline:none"></td>';
+    rows+='</tr>';
+  });
+  rows+='</table>';
+
+  // Summary line
+  var incomeYield=0,totalPct=0;
+  H.forEach(function(h,i){
+    var s=profileSuggestions[h.t]!==undefined?profileSuggestions[h.t]:h.a;
+    totalPct+=s; incomeYield+=h.y*s;
+  });
+  var blendedYield=incomeYield/Math.max(totalPct,1);
+  var projIncome=port*blendedYield/100;
+  rows+='<div style="margin-top:.8rem;padding:.7rem .9rem;background:var(--green-bg);border-radius:6px;font-size:.74rem;color:var(--green);font-family:monospace">';
+  rows+='Total: '+totalPct.toFixed(1)+'%  &middot;  Blended yield: '+blendedYield.toFixed(2)+'%  &middot;  Projected income: '+fmt(projIncome)+'/yr  &middot;  Need: '+fmt(income)+'/yr';
+  rows+='</div>';
+
+  document.getElementById('profile-alloc-table').innerHTML=rows;
+}
+
+function applyProfileTargets(){
+  H.forEach(function(h,i){
+    var e=document.getElementById('psug-'+i);
+    if(e&&e.value.trim()!=='') h.a=Math.min(100,parseFloat(e.value)||0);
+  });
+  saveH(); renderH(); updateAcctSummary(); closeProfileModal();
 }
 
 // ── INIT ──
@@ -1000,6 +1208,12 @@ function init(){
   document.getElementById('modal-close-btn').addEventListener('click',closeTickerEditor);
   document.getElementById('save-tickers-btn').addEventListener('click',saveTickerEdits);
   document.getElementById('ticker-modal').addEventListener('click',function(e){if(e.target===this)closeTickerEditor();});
+  document.getElementById('profile-btn').addEventListener('click',openProfileModal);
+  document.getElementById('edit-defaults-btn').addEventListener('click',editDefaults);
+  document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
+  document.getElementById('profile-calc-btn').addEventListener('click',calcProfileTargets);
+  document.getElementById('profile-save-btn').addEventListener('click',applyProfileTargets);
+  document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
 }
 
 init();
