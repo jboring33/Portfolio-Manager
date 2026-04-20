@@ -265,6 +265,7 @@ canvas{width:100%!important;}
   <button class="tab-btn"        onclick="showTab('universe',this)">ETF Universe</button>
   <button class="tab-btn"        onclick="showTab('dca',this)">DCA Plan</button>
   <button class="tab-btn"        onclick="showTab('projection',this)">Projection</button>
+  <button class="tab-btn"        id="profile-tab-btn">Profile</button>
 </div>
 
 <!-- ═══ D1: DASHBOARD ═══ -->
@@ -291,7 +292,7 @@ canvas{width:100%!important;}
   <div class="tbl-wrap">
     <table id="htable">
       <thead><tr>
-        <th>Ticker</th><th>Name</th><th>Category</th><th>Bucket / Account</th><th>Income Type</th>
+        <th>Ticker</th><th>Name</th><th>Category</th><th>Income Type</th>
         <th class="r">Yield%</th><th class="r">ER%</th>
         <th class="r">Target%</th><th class="r">Target $</th>
         <th class="r">Current Value $</th>
@@ -305,10 +306,8 @@ canvas{width:100%!important;}
   <div class="info-box" id="tax-box" style="font-size:.72rem"></div>
   <div class="btn-row">
     <button class="btn btn-gold" onclick="recalc()">&#8635; Recalculate</button>
+    <button class="btn btn-outline" id="edit-mode-btn">&#9998; Edit Values</button>
     <button class="btn btn-outline" id="refresh-btn">&#8635; Refresh All Lookups</button>
-    <button class="btn btn-dim" id="profile-btn">&#127775; L1 Profile</button>
-    <button class="btn btn-dim" onclick="showTab('accounts',document.querySelectorAll('.tab-btn')[1])">L2 Accounts</button>
-    <button class="btn btn-dim" onclick="showTab('universe',document.querySelectorAll('.tab-btn')[2])">L3 ETF Universe</button>
   </div>
   <div class="disclaimer">Browser-local storage only. Hover ticker name for tax rationale. Data from Yahoo Finance via public proxy. Not financial advice.</div>
 </div>
@@ -489,7 +488,7 @@ var CASH = [
 ];
 var cashNextId=4;
 
-var SIG='green', SCEN='flat', SS=false, projChart=null;
+var SIG='green', SCEN='flat', SS=false, projChart=null, EDIT_MODE=false;
 var SK={h:'pm_h3',cash:'pm_cash3',accts:'pm_accts3',prof:'pm_prof3',sig:'pm_sig3',cur:'pm_cur3',sets:'pm_sets3'};
 
 // ══════════════════════════════════════════
@@ -634,7 +633,7 @@ function renderDash(){
     // Bucket header row (totals filled in after loop)
     var bHdr=document.createElement('tr');
     bHdr.className='bkt-hdr '+bucketClass(bkt);
-    var bHdrTd=el('td',{colSpan:14,textContent:bucketLabel(bkt)+' — '+acctForBucket(bkt)},bHdr);
+    var bHdrTd=el('td',{colSpan:13,textContent:bucketLabel(bkt)+' — '+acctForBucket(bkt)},bHdr);
     tbody.appendChild(bHdr);
     var bCurVal=0,bTgtVal=0,bCurInc=0,bCurPct=0;
     // Cash rows inside Bucket 1
@@ -642,28 +641,27 @@ function renderDash(){
       CASH.forEach(function(c){
         var tr=document.createElement('tr');tr.style.background='rgba(74,143,232,.05)';
         var tdTk=el('td',null,tr);
-        var iTk=el('input',{type:'text',className:'inp',value:c.ticker,style:'width:66px;font-weight:500;color:var(--b1)'},tdTk);
-        iTk.addEventListener('input',function(){c.ticker=this.value.toUpperCase();this.value=c.ticker;saveCash();});
-        var tdNm=el('td',{className:'tn'},tr);
-        var iNm=el('input',{type:'text',className:'inp',value:c.name,style:'width:160px;border-color:transparent;background:transparent'},tdNm);
-        iNm.addEventListener('focus',function(){this.style.borderColor='var(--gold)';});
-        iNm.addEventListener('blur',function(){this.style.borderColor='transparent';});
-        iNm.addEventListener('input',function(){c.name=this.value;saveCash();});
-        var tdCat=el('td',null,tr);
-        var sTy=el('select',{className:'csel',style:'width:66px;font-size:.64rem'},tdCat);
-        ['ETF','MMF','CD','Treasury','Savings'].forEach(function(t){var o=el('option',{value:t,textContent:t},sTy);if(t===c.type)o.selected=true;});
-        sTy.addEventListener('change',function(){c.type=this.value;saveCash();});
-        var tdBkt=el('td',null,tr);el('span',{className:'tag tag-b1',textContent:'B1 Cash'},tdBkt);
+        el('span',{textContent:c.ticker,className:'tc',style:'color:var(--b1)'},tdTk);
+        var tdNm=el('td',{className:'tn',textContent:c.name},tr);
+        var tdCat=el('td',{textContent:c.type,style:'font-size:.72rem;color:var(--muted)'},tr);
         el('td',{textContent:'Interest/Div',style:'font-size:.65rem;color:var(--muted)'},tr);
         var tdYl=el('td',{className:'r'},tr);
-        var iYl=el('input',{type:'number',className:'inp',value:c.yld,style:'width:50px;text-align:right',min:'0',max:'20',step:'0.05'},tdYl);
-        iYl.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;saveCash();renderDash();});
+        if(EDIT_MODE){
+          var iYl=el('input',{type:'number',className:'inp',value:c.yld,style:'width:50px;text-align:right',min:'0',max:'20',step:'0.05'},tdYl);
+          iYl.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;saveCash();renderDash();});
+        }else{
+          el('span',{textContent:fmtP(c.yld),style:'font-family:"DM Mono",monospace;font-size:.78rem;color:var(--green)'},tdYl);
+        }
         el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
         el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
         el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
         var tdBal=el('td',{className:'r'},tr);
-        var iBal=el('input',{type:'number',className:'inp wide',value:c.bal||'',style:'width:110px;text-align:right',min:'0',step:'100'},tdBal);
-        iBal.addEventListener('input',function(){c.bal=parseFloat(this.value)||0;if(c.type==='MMF'||c.price===1)c.shares=c.bal;saveCash();renderDash();});
+        if(EDIT_MODE){
+          var iBal=el('input',{type:'number',className:'inp wide',value:c.bal||'',style:'width:110px;text-align:right',min:'0',step:'100'},tdBal);
+          iBal.addEventListener('input',function(){c.bal=parseFloat(this.value)||0;if(c.type==='MMF'||c.price===1)c.shares=c.bal;saveCash();renderDash();});
+        }else{
+          el('span',{textContent:c.bal>0?fmt(c.bal):'—',style:'font-family:"DM Mono",monospace;font-size:.78rem'},tdBal);
+        }
         var tdCP=el('td',{className:'r'},tr);
         el('span',{textContent:portTotal>0&&c.bal>0?(c.bal/portTotal*100).toFixed(1)+'%':'--',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted)'},tdCP);
         var cashInc=c.bal*c.yld/100;
@@ -698,9 +696,6 @@ function renderDash(){
       el('td',{className:'tn',title:h.why,textContent:h.n},tr);
       // Category
       el('td',{textContent:h.cat,style:'font-size:.72rem;color:var(--muted)'},tr);
-      // Bucket tag
-      var tdBkt=el('td',null,tr);
-      el('span',{className:'tag '+bucketTagClass(bkt),textContent:'B'+bkt},tdBkt);
       // Income type
       el('td',{textContent:h.it,style:'font-size:.68rem;color:var(--muted)'},tr);
       // Yield
@@ -709,24 +704,25 @@ function renderDash(){
       el('td',{className:'r',textContent:fmtP(h.er),style:'font-family:"DM Mono",monospace;color:var(--muted);font-size:.74rem'},tr);
       // Target%
       var tdTgt=el('td',{className:'r'},tr);
-      var iTgt=el('input',{type:'number',className:'inp narrow',value:h.a,min:0,max:PROF.maxpct,step:0.5,id:'alloc-'+i},tdTgt);
-      iTgt.addEventListener('input',function(){
-        var v=Math.min(PROF.maxpct,Math.max(0,parseFloat(this.value)||0));
-        H[i].a=v;this.value=v;recalc();
-      });
+      if(EDIT_MODE){
+        var iTgt=el('input',{type:'number',className:'inp narrow',value:h.a,min:0,max:PROF.maxpct,step:0.5,id:'alloc-'+i},tdTgt);
+        iTgt.addEventListener('input',function(){var v=Math.min(PROF.maxpct,Math.max(0,parseFloat(this.value)||0));H[i].a=v;this.value=v;recalc();});
+      }else{
+        el('span',{textContent:h.a>0?h.a.toFixed(1)+'%':'—',style:'font-family:"DM Mono",monospace;font-size:.78rem'},tdTgt);
+      }
       // Target $
       el('td',{className:'r mono',textContent:fmt(tgtVal),style:'font-size:.76rem'},tr);
       // Current Value $
       var tdCV=el('td',{className:'r'},tr);
-      var iCV=el('input',{type:'number',className:'inp wide',min:0,step:100,id:'curval-'+i,title:'Current dollar value in this position'},tdCV);
-      iCV.style.width='115px';
-      if(curVal!==null)iCV.value=curVal;
-      iCV.placeholder='—';
-      iCV.addEventListener('input',function(){
-        var v=this.value.trim();
-        H[i].curVal=v===''?null:Math.max(0,parseFloat(v)||0);
-        saveCurVals();renderDash();
-      });
+      if(EDIT_MODE){
+        var iCV=el('input',{type:'number',className:'inp wide',min:0,step:100,id:'curval-'+i,title:'Current dollar value'},tdCV);
+        iCV.style.width='115px';
+        if(curVal!==null)iCV.value=curVal;
+        iCV.placeholder='—';
+        iCV.addEventListener('input',function(){var v=this.value.trim();H[i].curVal=v===''?null:Math.max(0,parseFloat(v)||0);saveCurVals();renderDash();});
+      }else{
+        el('span',{textContent:curVal!==null?fmt(curVal):'—',style:'font-family:"DM Mono",monospace;font-size:.78rem'},tdCV);
+      }
       // Current %
       var tdCP=el('td',{className:'r'},tr);
       if(curPct!==null){
@@ -803,6 +799,13 @@ function buildTaxBox(){
 }
 
 function recalc(){renderDash();saveH();}
+function toggleEditMode(){
+  EDIT_MODE=!EDIT_MODE;
+  var btn=document.getElementById('edit-mode-btn');
+  if(btn){btn.textContent=EDIT_MODE?'✅ Done Editing':'✏ Edit Values';
+          btn.className=EDIT_MODE?'btn btn-gold':'btn btn-outline';}
+  renderDash();
+}
 
 // ══════════════════════════════════════════
 // ACCOUNTS (L2)
@@ -1237,7 +1240,10 @@ function init(){
   document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
   document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
   document.getElementById('note-overlay').addEventListener('click',function(e){if(e.target===this)closeNote();});
-  document.getElementById('profile-btn').addEventListener('click',openProfileModal);
+  document.getElementById('note-cancel-btn').addEventListener('click',closeNote);
+  document.getElementById('note-save-btn').addEventListener('click',saveNote);
+  document.getElementById('profile-tab-btn').addEventListener('click',openProfileModal);
+  document.getElementById('edit-mode-btn').addEventListener('click',toggleEditMode);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
   document.getElementById('profile-save-btn').addEventListener('click',saveAndCloseProfile);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
@@ -1253,8 +1259,8 @@ init();
     <h3 id="note-title">Notes</h3>
     <textarea id="note-ta" placeholder="Your notes for this position..."></textarea>
     <div class="note-foot">
-      <button class="btn btn-dim" onclick="closeNote()">Cancel</button>
-      <button class="btn btn-gold" onclick="saveNote()">Save</button>
+      <button class="btn btn-dim" id="note-cancel-btn">Cancel</button>
+      <button class="btn btn-gold" id="note-save-btn">Save</button>
     </div>
   </div>
 </div>
