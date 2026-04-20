@@ -3,561 +3,606 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio Manager</title>
+<title>JAB/TAB Portfolio Manager</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
-  --bg:#f4f1ea;--surface:#fffdf7;--surface2:#ede9df;--border:#d4cfc2;--border2:#b8b2a2;
-  --text:#1c1a15;--muted:#7a7468;--accent:#2a5c3f;--gold:#9a7a1a;
-  --blue:#1a3a6b;--purple:#5a1a8b;--green:#1e6b3a;--yellow:#9a6b00;--red:#8b1a1a;
-  --green-bg:#eaf4ed;--yellow-bg:#fdf6e3;--red-bg:#fdeaea;
-  --blue-bg:#e8eef8;--purple-bg:#f0eaf8;--shadow:0 2px 12px rgba(0,0,0,.08);
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--surface3:#252a3a;
+  --border:#2a3148;--border2:#384060;
+  --text:#e8eaf0;--muted:#7a8099;--dim:#4a5068;
+  --gold:#d4a853;--gold-bg:rgba(212,168,83,.1);
+  --blue:#4a8fe8;--blue-bg:rgba(74,143,232,.1);
+  --green:#4caf7d;--green-bg:rgba(76,175,125,.1);
+  --yellow:#e8b84a;--yellow-bg:rgba(232,184,74,.1);
+  --red:#e86060;--red-bg:rgba(232,96,96,.1);
+  --purple:#9b6ee8;--purple-bg:rgba(155,110,232,.1);
+  --b1:#4a8fe8;--b2:#d4a853;--b3:#4caf7d;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(0,0,0,.015) 31px,rgba(0,0,0,.015) 32px);}
-.app-header{background:var(--text);color:var(--bg);padding:1.1rem 2rem;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
-.app-header h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;}
-.app-header h1 em{color:#c8b882;font-style:normal;}
-.header-meta{font-size:.68rem;color:#7a7060;font-family:'IBM Plex Mono',monospace;}
-.signal-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:.65rem 2rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
-.sbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:14px;}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 1.6rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;}
+.hdr-brand{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--text);display:flex;align-items:baseline;gap:.5rem;}
+.hdr-brand em{color:var(--gold);font-style:normal;}
+.hdr-meta{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);display:flex;gap:1rem;flex-wrap:wrap;}
+.hdr-meta span{display:flex;align-items:center;gap:.3rem;}
+.hdr-meta .dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.dot-b1{background:var(--b1);}.dot-b2{background:var(--b2);}.dot-b3{background:var(--b3);}
+
+/* SIGNAL BAR */
+.sig-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:.5rem 1.6rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.sig-lbl{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .sig-btns{display:flex;gap:.3rem;}
-.sig-btn{background:var(--surface);border:1px solid var(--border);border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:.3rem .9rem;cursor:pointer;color:var(--muted);transition:all .15s;}
-.sig-btn.green.active{background:var(--green-bg);border-color:var(--green);color:var(--green);font-weight:500;}
-.sig-btn.yellow.active{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow);font-weight:500;}
-.sig-btn.red.active{background:var(--red-bg);border-color:var(--red);color:var(--red);font-weight:500;}
-.signal-note{font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
-.tab-bar{background:var(--text);display:flex;padding:0 2rem;gap:0;border-bottom:2px solid #2a2a2a;}
-.tab-btn{background:transparent;border:none;color:#6a6258;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:.7rem 1.3rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;}
-.tab-btn:hover{color:#c8b882;}.tab-btn.active{color:#f4f1ea;border-bottom-color:#c8b882;}
-.tab-pane{display:none;padding:1.8rem 2rem;max-width:1140px;margin:0 auto;}
+.sig-btn{background:transparent;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:.68rem;padding:.28rem .85rem;cursor:pointer;color:var(--muted);transition:all .15s;}
+.sig-btn.active-green{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.sig-btn.active-yellow{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow);}
+.sig-btn.active-red{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.sig-note{font-size:.65rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* TABS */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 1.6rem;gap:0;overflow-x:auto;}
+.tab-btn{background:transparent;border:none;color:var(--dim);font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;padding:.65rem 1.1rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s,border-color .15s;}
+.tab-btn:hover{color:var(--muted);}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-pane{display:none;padding:1.4rem 1.6rem;max-width:1280px;margin:0 auto;}
 .tab-pane.active{display:block;}
-.sec-head{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin-bottom:1.1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;}
-.sec-head small{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);font-weight:400;}
-.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:.9rem;margin-bottom:1.5rem;}
-.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.95rem 1.1rem;box-shadow:var(--shadow);}
-.sc-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem;}
-.sc-val{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;line-height:1;}
-.sc-sub{font-size:.67rem;color:var(--muted);margin-top:.18rem;}
-.sc-val.green{color:var(--green);}.sc-val.yellow{color:var(--yellow);}.sc-val.red{color:var(--red);}.sc-val.blue{color:var(--blue);}.sc-val.accent{color:var(--accent);}
-.info-box{background:var(--blue-bg);border:1px solid #b8c8e8;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--blue);margin-bottom:1.1rem;}
-.warn-box{background:var(--yellow-bg);border:1px solid #ddd090;border-radius:7px;padding:.85rem 1.1rem;font-size:.76rem;line-height:1.6;color:var(--yellow);margin-bottom:1.1rem;}
-.tbl-wrap{overflow-x:auto;margin-bottom:1.3rem;}
-.tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.6rem;font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap;}
-.tag-ira{background:var(--blue-bg);color:var(--blue);border:1px solid #b8c8e8;}
-.tag-roth{background:var(--green-bg);color:var(--green);border:1px solid #b8d8c0;}
-.tag-brok{background:var(--yellow-bg);color:var(--yellow);border:1px solid #ddd090;}
-.tag-hsa{background:var(--purple-bg);color:var(--purple);border:1px solid #d0b8e8;}
-.btn{display:inline-flex;align-items:center;gap:.4rem;border-radius:6px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:.52rem 1.1rem;transition:opacity .15s,transform .1s;border:none;}
+
+/* SECTION HEADS */
+.sec-hd{font-family:'DM Serif Display',serif;font-size:1.15rem;margin-bottom:.9rem;padding-bottom:.45rem;border-bottom:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;color:var(--text);}
+.sec-hd small{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);font-weight:400;}
+
+/* SUMMARY CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin-bottom:1.2rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;}
+.card-lbl{font-family:'DM Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
+.card-val{font-family:'DM Serif Display',serif;font-size:1.5rem;line-height:1;color:var(--text);}
+.card-sub{font-size:.63rem;color:var(--muted);margin-top:.15rem;font-family:'DM Mono',monospace;}
+.card-val.g{color:var(--green);}.card-val.y{color:var(--yellow);}.card-val.r{color:var(--red);}.card-val.b{color:var(--blue);}.card-val.gold{color:var(--gold);}
+
+/* INFO/WARN BOXES */
+.info-box{background:var(--blue-bg);border:1px solid rgba(74,143,232,.25);border-radius:6px;padding:.75rem 1rem;font-size:.73rem;line-height:1.6;color:var(--blue);margin-bottom:1rem;}
+.warn-box{background:var(--yellow-bg);border:1px solid rgba(232,184,74,.25);border-radius:6px;padding:.75rem 1rem;font-size:.73rem;line-height:1.6;color:var(--yellow);margin-bottom:1rem;}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin-bottom:1rem;}
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+thead th{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:.42rem .65rem;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap;background:var(--surface);}
+thead th.r{text-align:right;}
+tbody td{padding:.5rem .65rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:hover td{background:var(--surface2);}
+td.r{text-align:right;}
+.mono{font-family:'DM Mono',monospace;}
+
+/* BUCKET ROWS */
+.bkt-hdr td{background:var(--surface2);font-family:'DM Mono',monospace;font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:.38rem .65rem;border-top:2px solid var(--border2);}
+.bkt-hdr.b1 td{color:var(--b1);border-top-color:var(--b1);}
+.bkt-hdr.b2 td{color:var(--b2);border-top-color:var(--b2);}
+.bkt-hdr.b3 td{color:var(--b3);border-top-color:var(--b3);}
+.bkt-sub td{background:rgba(255,255,255,.02);font-family:'DM Mono',monospace;font-size:.7rem;font-weight:500;padding:.4rem .65rem;border-top:1px solid var(--border2);}
+.bkt-total td{background:var(--surface3);font-family:'DM Mono',monospace;font-size:.72rem;font-weight:600;padding:.45rem .65rem;border-top:2px solid var(--border);}
+tfoot tr td{background:var(--surface3);font-family:'DM Mono',monospace;font-size:.73rem;font-weight:700;padding:.5rem .65rem;border-top:2px solid var(--gold);color:var(--gold);}
+
+/* TAGS */
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-size:.58rem;font-weight:500;white-space:nowrap;}
+.tag-b1{background:rgba(74,143,232,.15);color:var(--b1);border:1px solid rgba(74,143,232,.3);}
+.tag-b2{background:rgba(212,168,83,.15);color:var(--b2);border:1px solid rgba(212,168,83,.3);}
+.tag-b3{background:rgba(76,175,125,.15);color:var(--b3);border:1px solid rgba(76,175,125,.3);}
+.tag-jab{background:rgba(155,110,232,.15);color:var(--purple);border:1px solid rgba(155,110,232,.3);}
+.tag-tab{background:rgba(232,96,96,.15);color:var(--red);border:1px solid rgba(232,96,96,.3);}
+.tag-joint{background:rgba(232,184,74,.15);color:var(--yellow);border:1px solid rgba(232,184,74,.3);}
+.tc{font-family:'DM Mono',monospace;font-weight:500;color:var(--gold);font-size:.82rem;}
+.tn{color:var(--muted);font-size:.73rem;max-width:160px;}
+
+/* INPUTS */
+.inp{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none;-webkit-appearance:none;}
+.inp:focus{border-color:var(--gold);}
+.inp.wide{width:115px;text-align:right;}
+.inp.med{width:80px;text-align:right;}
+.inp.narrow{width:60px;text-align:right;}
+.csel{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
+.csel:focus{border-color:var(--gold);}
+
+/* DRIFT */
+.drift{font-family:'DM Mono',monospace;font-size:.63rem;margin-left:4px;}
+
+/* ALLOC BAR */
+.abar-wrap{margin-bottom:1rem;}
+.abar-lbls{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:.3rem;}
+.abar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.abar-fill{height:100%;border-radius:3px;background:var(--gold);transition:width .4s;}
+.abar-fill.over{background:var(--red);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.35rem;border-radius:5px;cursor:pointer;font-family:'DM Mono',monospace;font-size:.68rem;padding:.48rem 1rem;transition:all .15s;border:none;white-space:nowrap;}
 .btn:active{transform:scale(.97);}
-.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{opacity:.87;}
-.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:var(--green-bg);}
-.btn-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem;align-items:center;}
-.cash-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin-bottom:1.4rem;box-shadow:var(--shadow);}
-.cash-hd{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem;}
-.cash-hd-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;}
-.cash-hd-meta{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--green);font-weight:500;}
-.ctable{width:100%;border-collapse:collapse;font-size:.8rem;}
-.ctable th{font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.42rem .65rem;border-bottom:2px solid var(--border2);text-align:left;white-space:nowrap;}
-.ctable th.r,.ctable td.r{text-align:right;}
-.ctable td{padding:.52rem .65rem;border-bottom:1px solid var(--border);vertical-align:middle;}
-.ctable tbody tr:hover td{background:var(--surface2);}
-.ctable .cd-row td:first-child{border-left:3px solid var(--gold);}
-.ctable .mmf-row td:first-child{border-left:3px solid var(--blue);}
-.ctable .etf-row td:first-child{border-left:3px solid var(--green);}
-.ci{font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-size:.8rem;color:var(--text);outline:none;}
-.ci:focus{border-color:var(--accent);}
-.ci.tk{font-weight:500;color:var(--accent);}
-.csel{font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:.78rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
-.mat-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;padding:1px 6px;border-radius:3px;font-weight:500;margin-left:4px;}
-.mat-badge.soon{background:var(--yellow-bg);color:var(--yellow);border:1px solid #ddd090;}
-.mat-badge.ok{background:var(--green-bg);color:var(--green);border:1px solid #b8d8c0;}
-.mat-badge.past{background:var(--red-bg);color:var(--red);border:1px solid #ddb8b8;}
-.add-row-btn{display:inline-flex;align-items:center;gap:.35rem;background:transparent;border:1px dashed var(--border2);border-radius:5px;padding:.35rem .85rem;font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-top:.6rem;}
-.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
-.del-btn{background:transparent;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:0 .2rem;line-height:1;}
+.btn-gold{background:var(--gold);color:#000;font-weight:500;}.btn-gold:hover{opacity:.88;}
+.btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold);}.btn-outline:hover{background:var(--gold-bg);}
+.btn-dim{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-dim:hover{border-color:var(--muted);color:var(--text);}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;align-items:center;}
+.btn-spin{display:inline-block;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* CASH TABLE */
+.cash-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.4rem;margin-bottom:1.2rem;}
+.cash-hd{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem;}
+.cash-hd-title{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text);}
+.cash-hd-meta{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--green);}
+.add-row-btn{display:inline-flex;align-items:center;gap:.3rem;background:transparent;border:1px dashed var(--border2);border-radius:4px;padding:.3rem .75rem;font-family:'DM Mono',monospace;font-size:.63rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-top:.5rem;}
+.add-row-btn:hover{border-color:var(--gold);color:var(--gold);}
+.del-btn{background:transparent;border:none;color:var(--dim);font-size:.85rem;cursor:pointer;padding:0 .2rem;}
 .del-btn:hover{color:var(--red);}
-.htable{width:100%;border-collapse:collapse;font-size:.8rem;}
-.htable th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.45rem .7rem;border-bottom:2px solid var(--border2);white-space:nowrap;}
-.htable th.r,.htable td.r{text-align:right;}
-.htable td{padding:.58rem .7rem;border-bottom:1px solid var(--border);vertical-align:middle;}
-.htable tbody tr:hover td{background:var(--surface2);}
-.tc{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.83rem;color:var(--accent);}
-.tn{color:var(--muted);font-size:.76rem;max-width:165px;}
-.yld{font-family:'IBM Plex Mono',monospace;color:var(--green);font-size:.8rem;}
-.erv{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:.74rem;}
-.ai{width:54px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);text-align:right;outline:none;}
-.ai:focus{border-color:var(--accent);}
-.ai.cur{background:var(--surface2);}
-.drift{font-size:.62rem;margin-left:3px;}
-.alloc-bar-row{margin-bottom:1.2rem;}
-.alloc-bar-labels{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:.3rem;}
-.alloc-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
-.alloc-bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s;}
-.alloc-bar-fill.over{background:var(--red);}
-.accounts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.1rem;margin-bottom:1.5rem;}
-.acct-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;border-top:3px solid var(--border);box-shadow:var(--shadow);}
-.acct-card.ira{border-top-color:var(--blue);}.acct-card.roth{border-top-color:var(--green);}.acct-card.brok{border-top-color:var(--yellow);}.acct-card.hsa{border-top-color:var(--purple);}
-.acct-name{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;margin-bottom:.8rem;}
-.acct-field{margin-bottom:.55rem;}
-.acct-field label{display:block;font-size:.6rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem;}
-.acct-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--text);outline:none;}
-.acct-field input:focus{border-color:var(--accent);}
-.tp-label{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);}
-.ticker-pills{display:flex;flex-wrap:wrap;gap:3px;}
-.ticker-pill{font-family:'IBM Plex Mono',monospace;font-size:.63rem;padding:2px 6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);}
-.dca-controls{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.4rem;margin-bottom:1.2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.9rem;align-items:end;}
-.dc-head{grid-column:1/-1;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-.dc-field label{display:block;font-size:.6rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.22rem;}
-.dc-field input,.dc-field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none;}
-.dca-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:1rem;}
-.dca-table th{font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.4rem .65rem;border-bottom:2px solid var(--border2);text-align:left;}
-.dca-table td{padding:.5rem .65rem;border-bottom:1px solid var(--border);}
-.dca-table tbody tr:hover td{background:var(--surface2);}
-.dca-amt{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--accent);}
-.dca-rat{font-size:.68rem;color:var(--muted);line-height:1.4;}
-.pri-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.59rem;font-family:'IBM Plex Mono',monospace;}
-.pri-green{background:var(--green-bg);color:var(--green);}.pri-yellow{background:var(--yellow-bg);color:var(--yellow);}.pri-red{background:var(--red-bg);color:var(--red);}
-.proj-controls{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:1.2rem;align-items:center;}
-.proj-btn{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.38rem .95rem;font-family:'IBM Plex Mono',monospace;font-size:.7rem;cursor:pointer;color:var(--muted);transition:all .15s;}
-.proj-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-.proj-lbl{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-right:.2rem;}
-.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.3rem 1.4rem;margin-bottom:1.2rem;box-shadow:var(--shadow);}
-.chart-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--muted);margin-bottom:.9rem;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem;}
-.chart-title small{font-family:'IBM Plex Mono',monospace;font-size:.6rem;font-weight:400;}
-canvas{width:100%!important;}
-.proj-legend{display:flex;gap:1.2rem;margin-top:.7rem;flex-wrap:wrap;}
-.leg-item{display:flex;align-items:center;gap:.35rem;font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
-.leg-dot{width:18px;height:3px;border-radius:2px;flex-shrink:0;}
-.longevity-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:1rem;box-shadow:var(--shadow);}
-.lon-label{font-size:.58rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.18rem;}
-.lon-val{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;}
-.lon-val.good{color:var(--green);}.lon-val.warn{color:var(--yellow);}.lon-val.bad{color:var(--red);}
-.rmd-card{background:var(--yellow-bg);border:1px solid #ddd090;border-radius:8px;padding:1rem 1.3rem;margin-top:1.2rem;font-size:.76rem;line-height:1.65;color:var(--yellow);}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.mat-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:.58rem;padding:1px 5px;border-radius:3px;font-weight:500;margin-left:3px;}
+.mat-badge.soon{background:var(--yellow-bg);color:var(--yellow);}
+.mat-badge.ok{background:var(--green-bg);color:var(--green);}
+.mat-badge.past{background:var(--red-bg);color:var(--red);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:1160px;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;margin:auto;}
-.modal-head{background:var(--text);color:var(--bg);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.modal-head h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;}
-.modal-close{background:transparent;border:none;color:#c8b882;font-size:1.3rem;cursor:pointer;line-height:1;}
-.modal-body{padding:1.2rem 1.5rem;overflow-x:auto;max-height:70vh;overflow-y:auto;}
-.modal-foot{padding:.9rem 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;background:var(--surface2);}
-.modal-foot-note{font-size:.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
-.ed-table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:900px;}
-.ed-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.38rem .45rem;border-bottom:2px solid var(--border2);white-space:nowrap;}
-.ed-table td{padding:.38rem .45rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:1100px;box-shadow:0 8px 40px rgba(0,0,0,.5);overflow:hidden;margin:auto;}
+.modal-box.narrow{max-width:680px;}
+.modal-head{background:var(--surface2);padding:.9rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.modal-head h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:1.2rem 1.4rem;overflow-x:auto;max-height:72vh;overflow-y:auto;}
+.modal-foot{padding:.8rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;background:var(--surface2);}
+.modal-foot-note{font-size:.62rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.ed-table{width:100%;border-collapse:collapse;font-size:.75rem;min-width:900px;}
+.ed-table th{text-align:left;font-family:'DM Mono',monospace;font-size:.53rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:.35rem .42rem;border-bottom:1px solid var(--border2);white-space:nowrap;}
+.ed-table td{padding:.35rem .42rem;border-bottom:1px solid var(--border);vertical-align:middle;}
 .ed-table tbody tr:hover td{background:var(--surface2);}
-.ei{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--text);outline:none;width:100%;}
-.ei:focus{border-color:var(--accent);}
-.ei.tk{width:64px;text-transform:uppercase;font-weight:500;color:var(--accent);}
-.ei.nm{width:170px;}.ei.cat{width:130px;}.ei.it{width:165px;}.ei.num{width:54px;text-align:right;}
-.esel{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;font-size:.73rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
-.ed-del{background:transparent;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:0 .3rem;}
+.ei{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--text);outline:none;width:100%;}
+.ei:focus{border-color:var(--gold);}
+.ei.tk{width:66px;text-transform:uppercase;font-weight:500;color:var(--gold);}
+.ei.nm{width:168px;}.ei.cat{width:118px;}.ei.it{width:148px;}.ei.num{width:54px;text-align:right;}
+.esel{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
+.ed-del{background:transparent;border:none;color:var(--dim);font-size:.82rem;cursor:pointer;padding:0 .3rem;transition:color .15s;}
 .ed-del:hover{color:var(--red);}
-.add-ticker-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);}
-.disclaimer{font-size:.66rem;color:var(--muted);line-height:1.55;border-top:1px solid var(--border);padding-top:.85rem;margin-top:1rem;}
-@media(max-width:650px){.tab-pane{padding:1.2rem 1rem;}.app-header,.signal-bar{padding:.9rem 1rem;}.tab-bar{padding:0 .4rem;overflow-x:auto;}.tab-btn{padding:.6rem .8rem;font-size:.62rem;}}
+.add-ticker-row{display:flex;gap:.45rem;align-items:center;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);}
+.status-span{font-family:'DM Mono',monospace;font-size:.6rem;min-width:32px;display:inline-block;}
+
+/* PROFILE FORM */
+.pform{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.1rem;}
+.pform .acct-field label{display:block;font-size:.58rem;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem;}
+.pform .acct-field input,.pform .acct-field select{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none;}
+.pform .acct-field input:focus,.pform .acct-field select:focus{border-color:var(--gold);}
+
+/* ACCOUNTS GRID */
+.accts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin-bottom:1.2rem;}
+.acct-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;border-top:3px solid var(--border);}
+.acct-card.b1{border-top-color:var(--b1);}.acct-card.b2{border-top-color:var(--b2);}.acct-card.b3{border-top-color:var(--b3);}
+.acct-name{font-family:'DM Serif Display',serif;font-size:.95rem;margin-bottom:.7rem;color:var(--text);}
+.acct-field{margin-bottom:.5rem;}
+.acct-field label{display:block;font-size:.58rem;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.18rem;}
+.acct-field input,.acct-field select{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.35rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none;}
+.acct-field input:focus,.acct-field select:focus{border-color:var(--gold);}
+.acct-tickers-lbl{font-size:.55rem;color:var(--dim);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border);}
+.ticker-pills{display:flex;flex-wrap:wrap;gap:2px;}
+.ticker-pill{font-family:'DM Mono',monospace;font-size:.6rem;padding:1px 5px;border-radius:3px;background:var(--surface3);border:1px solid var(--border);color:var(--gold);}
+
+/* DCA */
+.dca-controls{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.3rem;margin-bottom:1.1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.8rem;align-items:end;}
+.dc-head{grid-column:1/-1;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.dc-field label{display:block;font-size:.58rem;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem;}
+.dc-field input,.dc-field select{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.36rem .6rem;font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none;}
+.dca-amt{font-family:'DM Mono',monospace;font-weight:500;color:var(--gold);}
+.pri-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:.57rem;font-family:'DM Mono',monospace;}
+.pri-g{background:var(--green-bg);color:var(--green);}.pri-y{background:var(--yellow-bg);color:var(--yellow);}.pri-r{background:var(--red-bg);color:var(--red);}
+
+/* PROJECTION */
+.proj-controls{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.1rem;align-items:center;}
+.proj-btn{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.35rem .9rem;font-family:'DM Mono',monospace;font-size:.67rem;cursor:pointer;color:var(--muted);transition:all .15s;}
+.proj-btn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:500;}
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.3rem;margin-bottom:1.1rem;}
+.chart-title{font-family:'DM Serif Display',serif;font-size:.95rem;color:var(--muted);margin-bottom:.8rem;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem;}
+.chart-title small{font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;}
+canvas{width:100%!important;}
+.proj-legend{display:flex;gap:1.1rem;margin-top:.6rem;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:.3rem;font-size:.65rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.leg-dot{width:16px;height:3px;border-radius:2px;flex-shrink:0;}
+.lon-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.4rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.9rem;}
+.lon-label{font-size:.56rem;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem;}
+.lon-val{font-family:'DM Serif Display',serif;font-size:1.3rem;}
+.lon-val.good{color:var(--green);}.lon-val.warn{color:var(--yellow);}.lon-val.bad{color:var(--red);}
+
+/* DISCLAIMER */
+.disclaimer{font-size:.63rem;color:var(--dim);line-height:1.5;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.9rem;}
+@media(max-width:640px){.tab-pane{padding:1rem .9rem;}.hdr,.sig-bar{padding:.8rem .9rem;}.tab-bar{padding:0 .4rem;}}
 </style>
 </head>
 <body>
-<div class="app-header">
-  <h1>Portfolio <em>Manager</em></h1>
-  <span class="header-meta">Conservative Income &middot; Age 69 &middot; Horizon to 95</span>
-</div>
-<div class="signal-bar">
-  <span class="sbl">Market Signal (Tool 1):</span>
-  <div class="signal-btns">
-    <button class="sig-btn green"  id="sig-green"  onclick="setSignal('green')">&#x1F7E2; Full DCA</button>
-    <button class="sig-btn yellow" id="sig-yellow" onclick="setSignal('yellow')">&#x1F7E1; Half DCA</button>
-    <button class="sig-btn red"    id="sig-red"    onclick="setSignal('red')">&#x1F534; Hold Cash</button>
+
+<div class="hdr">
+  <div class="hdr-brand">JAB <em>/</em> TAB Portfolio <em>Manager</em></div>
+  <div class="hdr-meta">
+    <span><span class="dot dot-b1"></span>Bucket 1 · Brokerage/Cash</span>
+    <span><span class="dot dot-b2"></span>Bucket 2 · IRA</span>
+    <span><span class="dot dot-b3"></span>Bucket 3 · Roth/HSA</span>
+    <span id="hdr-total" style="color:var(--gold)">Total: $0</span>
   </div>
-  <span class="signal-note" id="signal-note">Select today's signal from Market Signal Tool 1</span>
-</div>
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="showTab('holdings',this)">01 Holdings</button>
-  <button class="tab-btn"        onclick="showTab('accounts',this)">02 Accounts</button>
-  <button class="tab-btn"        onclick="showTab('dca',this)">03 DCA Plan</button>
-  <button class="tab-btn"        onclick="showTab('projection',this)">04 Projection</button>
 </div>
 
-<!-- TAB 1 -->
-<div class="tab-pane active" id="tab-holdings">
-  <div class="sec-head">My Holdings<small id="alloc-label">Target: 0%</small></div>
+<div class="sig-bar">
+  <span class="sig-lbl">Market Signal:</span>
+  <div class="sig-btns">
+    <button class="sig-btn" id="sig-green"  onclick="setSig('green')">&#x1F7E2; Full DCA</button>
+    <button class="sig-btn" id="sig-yellow" onclick="setSig('yellow')">&#x1F7E1; Half DCA</button>
+    <button class="sig-btn" id="sig-red"    onclick="setSig('red')">&#x1F534; Hold Cash</button>
+  </div>
+  <span class="sig-note" id="sig-note">Set today's signal from Market Signal tool</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('dashboard',this)">D1 Dashboard</button>
+  <button class="tab-btn"        onclick="showTab('accounts',this)">L2 Accounts</button>
+  <button class="tab-btn"        onclick="showTab('universe',this)">L3 ETF Universe</button>
+  <button class="tab-btn"        onclick="showTab('dca',this)">DCA Plan</button>
+  <button class="tab-btn"        onclick="showTab('projection',this)">Projection</button>
+</div>
+
+<!-- ═══ D1: DASHBOARD ═══ -->
+<div class="tab-pane active" id="tab-dashboard">
+  <div class="sec-hd">Portfolio Dashboard<small id="dash-updated">last updated: —</small></div>
+
+  <!-- Cash & Equivalents -->
   <div class="cash-section">
     <div class="cash-hd">
       <span class="cash-hd-title">Cash &amp; Equivalents</span>
-      <span class="cash-hd-meta" id="cash-total-label">Total: $0 &middot; Income: $0/yr</span>
+      <span class="cash-hd-meta" id="cash-hd-meta">Total: $0 · Income: $0/yr</span>
     </div>
     <div class="tbl-wrap">
-      <table class="ctable">
+      <table id="cash-table">
         <thead><tr>
           <th>Ticker</th><th>Name</th><th>Type</th>
-          <th class="r">Shares/Units</th><th class="r">Price/NAV</th>
-          <th class="r">Balance ($)</th><th class="r">Yield %</th>
+          <th class="r">Shares</th><th class="r">Price</th>
+          <th class="r">Balance $</th><th class="r">Yield %</th>
           <th class="r">Ann. Income</th><th>Maturity</th><th>Note</th><th></th>
         </tr></thead>
         <tbody id="cash-tbody"></tbody>
+        <tfoot id="cash-tfoot"></tfoot>
       </table>
     </div>
     <button class="add-row-btn" id="add-cash-btn">+ Add Row</button>
   </div>
-  <div class="alloc-bar-row">
-    <div class="alloc-bar-labels"><span>Target allocation</span><span id="alloc-pct-text">Target: 0% / Current: 0%</span></div>
-    <div class="alloc-bar"><div class="alloc-bar-fill" id="alloc-bar-fill" style="width:0%"></div></div>
+
+  <!-- Summary cards -->
+  <div class="cards">
+    <div class="card"><div class="card-lbl">Total Portfolio</div><div class="card-val gold" id="sv-port">$0</div><div class="card-sub">Cash + holdings</div></div>
+    <div class="card"><div class="card-lbl">Annual Income</div><div class="card-val" id="sv-income">$0</div><div class="card-sub">Current positions</div></div>
+    <div class="card"><div class="card-lbl">Income Target</div><div class="card-val" id="sv-target">$0</div><div class="card-sub">From profile</div></div>
+    <div class="card"><div class="card-lbl">Coverage</div><div class="card-val" id="sv-cov">0%</div><div class="card-sub">Income / target</div></div>
+    <div class="card"><div class="card-lbl">Annual Income %</div><div class="card-val" id="sv-yield">0%</div><div class="card-sub">Blended yield</div></div>
+    <div class="card"><div class="card-lbl">Cash %</div><div class="card-val" id="sv-cashpct">0%</div></div>
   </div>
-  <div class="summary-row">
-    <div class="sum-card"><div class="sc-label">Total Portfolio</div><div class="sc-val blue" id="sv-port">$0</div><div class="sc-sub">Cash + ticker values</div></div>
-    <div class="sum-card"><div class="sc-label">Annual Income</div><div class="sc-val" id="sv-income">$0</div><div class="sc-sub">From holdings + cash</div></div>
-    <div class="sum-card"><div class="sc-label">Income Target (4%)</div><div class="sc-val" id="sv-target">$0</div></div>
-    <div class="sum-card"><div class="sc-label">Coverage</div><div class="sc-val" id="sv-cov">0%</div><div class="sc-sub">Income vs target</div></div>
-    <div class="sum-card"><div class="sc-label">Blended Yield</div><div class="sc-val" id="sv-yield">0%</div></div>
-    <div class="sum-card"><div class="sc-label">Cash % of Total</div><div class="sc-val" id="sv-cashpct">0%</div></div>
+
+  <!-- Alloc bar -->
+  <div class="abar-wrap">
+    <div class="abar-lbls"><span>Holdings deployed</span><span id="abar-txt">0%</span></div>
+    <div class="abar"><div class="abar-fill" id="abar-fill" style="width:0%"></div></div>
   </div>
+
+  <!-- Holdings table grouped by bucket -->
   <div class="tbl-wrap">
-    <table class="htable">
+    <table id="htable">
       <thead><tr>
-        <th>Ticker</th><th>Name</th><th>Category</th><th>Best Account</th><th>Income Type</th>
+        <th>Ticker</th><th>Name</th><th>Category</th><th>Bucket / Account</th><th>Income Type</th>
         <th class="r">Yield%</th><th class="r">ER%</th>
-        <th class="r">Target%</th><th class="r">Current Value $</th>
+        <th class="r">Target%</th><th class="r">Target $</th>
+        <th class="r">Current Value $</th>
         <th class="r" style="color:var(--red)">Current %</th>
-        <th class="r">$ Value</th><th class="r">Ann. Income</th>
+        <th class="r">Ann. Income $</th><th class="r">Ann. Income %</th>
       </tr></thead>
-      <tbody id="htable-body"></tbody>
+      <tbody id="htbody"></tbody>
+      <tfoot id="htfoot"></tfoot>
     </table>
   </div>
-  <div class="info-box" id="tax-info-box"></div>
+  <div class="info-box" id="tax-box" style="font-size:.72rem"></div>
   <div class="btn-row">
-    <button class="btn btn-primary" onclick="recalc()">&#8635; Recalculate</button>
-    <button class="btn btn-outline" id="profile-btn">&#127775; Profile</button>
-    <button class="btn btn-outline" id="edit-tickers-btn" style="margin-left:auto">&#9998; Edit Tickers</button>
+    <button class="btn btn-gold" onclick="recalc()">&#8635; Recalculate</button>
+    <button class="btn btn-outline" id="refresh-btn">&#8635; Refresh All Lookups</button>
+    <button class="btn btn-dim" id="profile-btn">&#127775; L1 Profile</button>
+    <button class="btn btn-dim" onclick="showTab('accounts',document.querySelectorAll('.tab-btn')[1])">L2 Accounts</button>
+    <button class="btn btn-dim" onclick="showTab('universe',document.querySelectorAll('.tab-btn')[2])">L3 ETF Universe</button>
   </div>
-  <div class="disclaimer">Values persist via browser storage. Hover fund name for tax rationale. Not financial advice.</div>
+  <div class="disclaimer">Browser-local storage only. Hover ticker name for tax rationale. Data from Yahoo Finance via public proxy. Not financial advice.</div>
 </div>
 
-<!-- TAB 2 -->
+<!-- ═══ L2: ACCOUNTS ═══ -->
 <div class="tab-pane" id="tab-accounts">
-  <div class="sec-head">Account Balances</div>
-  <div class="info-box">Enter your current balance in each account. The DCA tab distributes your budget using these balances and tax placement rules.</div>
-  <div class="accounts-grid">
-    <div class="acct-card ira">
-      <div class="acct-name">Traditional IRA</div>
-      <div class="acct-field"><label>Current Balance ($)</label><input type="number" id="bal-ira" value="600000" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="acct-field"><label>Target % of Portfolio</label><input type="number" id="pct-ira" value="54" min="0" max="100" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="tp-label">Holdings</div><div class="ticker-pills" id="tp-ira"></div>
-    </div>
-    <div class="acct-card roth">
-      <div class="acct-name">Roth IRA</div>
-      <div class="acct-field"><label>Current Balance ($)</label><input type="number" id="bal-roth" value="140000" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="acct-field"><label>Target % of Portfolio</label><input type="number" id="pct-roth" value="13" min="0" max="100" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="tp-label">Holdings</div><div class="ticker-pills" id="tp-roth"></div>
-    </div>
-    <div class="acct-card brok">
-      <div class="acct-name">Brokerage</div>
-      <div class="acct-field"><label>Current Balance ($)</label><input type="number" id="bal-brok" value="320000" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="acct-field"><label>Target % of Portfolio</label><input type="number" id="pct-brok" value="29" min="0" max="100" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="tp-label">Holdings</div><div class="ticker-pills" id="tp-brok"></div>
-    </div>
-    <div class="acct-card hsa">
-      <div class="acct-name">HSA</div>
-      <div class="acct-field"><label>Current Balance ($)</label><input type="number" id="bal-hsa" value="50000" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="acct-field"><label>Target % of Portfolio</label><input type="number" id="pct-hsa" value="4" min="0" max="100" oninput="saveAccts();updateAcctSummary()"></div>
-      <div class="tp-label">Holdings</div><div class="ticker-pills" id="tp-hsa"></div>
-    </div>
+  <div class="sec-hd">L2 Investment Accounts</div>
+  <div class="info-box">Balances and settings per account. Buckets: 1=Brokerage/Cash (0-5yr) · 2=IRA (5-10yr) · 3=Roth/HSA (10+yr)</div>
+  <div class="accts-grid" id="accts-grid"></div>
+  <div class="cards">
+    <div class="card"><div class="card-lbl">Bucket 1 Total</div><div class="card-val" style="color:var(--b1)" id="bk1-total">$320,000</div><div class="card-sub">Brokerage/Cash</div></div>
+    <div class="card"><div class="card-lbl">Bucket 2 Total</div><div class="card-val" style="color:var(--b2)" id="bk2-total">$586,000</div><div class="card-sub">IRA</div></div>
+    <div class="card"><div class="card-lbl">Bucket 3 Total</div><div class="card-val" style="color:var(--b3)" id="bk3-total">$187,000</div><div class="card-sub">Roth / HSA</div></div>
+    <div class="card"><div class="card-lbl">Grand Total</div><div class="card-val gold" id="acct-grand">$1,093,000</div></div>
   </div>
-  <div class="summary-row">
-    <div class="sum-card"><div class="sc-label">Total Portfolio</div><div class="sc-val blue" id="as-total">$1,110,000</div></div>
-    <div class="sum-card"><div class="sc-label">4% Income Target</div><div class="sc-val accent" id="as-target">$44,400</div></div>
-    <div class="sum-card"><div class="sc-label">Tax-Deferred (IRA+HSA)</div><div class="sc-val" id="as-deferred">0%</div></div>
-    <div class="sum-card"><div class="sc-label">Tax-Free (Roth)</div><div class="sc-val green" id="as-free">0%</div></div>
-    <div class="sum-card"><div class="sc-label">Taxable (Brokerage)</div><div class="sc-val" id="as-taxable">0%</div></div>
-  </div>
-  <div class="rmd-card"><strong>RMD Notice:</strong> Required Minimum Distributions begin at age 73. On a $600K IRA the current RMD is approximately <strong>$22,600/year</strong> (IRS factor 26.5). Consider Roth conversions in lower-income years.</div>
+  <div class="warn-box" style="font-size:.72rem"><strong>Emergency Fund:</strong> Bucket 1 should maintain a minimum <strong>$80,000</strong> emergency reserve at all times. Current Bucket 1 balance: <span id="bk1-emerg">$320,000</span></div>
 </div>
 
-<!-- TAB 3 -->
+<!-- ═══ L3: ETF UNIVERSE ═══ -->
+<div class="tab-pane" id="tab-universe">
+  <div class="sec-hd">L3 ETF Holdings Universe</div>
+  <div class="info-box" style="font-size:.72rem">
+    <strong>Your ticker universe, fully editable.</strong> Click &#x1F50D; next to any row to look up current SEC yield, ER, category and income type via Yahoo Finance (works 100% from your browser). Or edit any field manually. Max % per ETF enforced from Profile.
+  </div>
+  <div class="tbl-wrap">
+    <table class="ed-table">
+      <thead><tr>
+        <th>Ticker</th><th></th><th>Name</th><th>Category</th><th>Best Account</th>
+        <th>Income Type</th><th style="text-align:right">SEC Yield%</th>
+        <th style="text-align:right">ER%</th><th style="text-align:right">Target%</th>
+        <th style="text-align:right">Max%</th><th></th>
+      </tr></thead>
+      <tbody id="ed-tbody"></tbody>
+    </table>
+  </div>
+  <div class="add-ticker-row" id="add-ticker-row"></div>
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="saveTickerEdits()">Save &amp; Apply</button>
+    <span class="modal-foot-note" style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted)">Saves to browser storage &middot; Applies to dashboard immediately</span>
+  </div>
+</div>
+
+<!-- ═══ DCA ═══ -->
 <div class="tab-pane" id="tab-dca">
-  <div class="sec-head">DCA Plan<small>Dollar-Cost Averaging by Account &amp; Ticker</small></div>
+  <div class="sec-hd">DCA Plan<small>Dollar-Cost Averaging by Bucket &amp; Ticker</small></div>
   <div class="dca-controls">
     <div class="dc-head">DCA Settings</div>
-    <div class="dc-field"><label>Signal (from Tool 1)</label>
-      <select id="dc-signal" onchange="buildDCA();saveSettings()">
+    <div class="dc-field"><label>Signal</label>
+      <select id="dc-signal" onchange="buildDCA();saveSets()">
         <option value="green">Full DCA (100%)</option>
         <option value="yellow">Half DCA (50%)</option>
         <option value="red">Hold Cash (0%)</option>
       </select></div>
-    <div class="dc-field"><label>Monthly Budget ($)</label><input type="number" id="dc-budget" value="2000" min="0" step="100" oninput="buildDCA();saveSettings()"></div>
+    <div class="dc-field"><label>Monthly Budget ($)</label><input type="number" id="dc-budget" value="2000" min="0" step="100" oninput="buildDCA();saveSets()"></div>
     <div class="dc-field"><label>Frequency</label>
-      <select id="dc-freq" onchange="buildDCA();saveSettings()">
+      <select id="dc-freq" onchange="buildDCA();saveSets()">
         <option value="monthly">Monthly</option><option value="biweekly">Bi-weekly</option><option value="weekly">Weekly</option>
       </select></div>
     <div class="dc-field"><label>Priority</label>
-      <select id="dc-priority" onchange="buildDCA();saveSettings()">
-        <option value="income">Maximize Income</option><option value="balanced">Balanced</option><option value="growth">Maximize Growth</option>
+      <select id="dc-priority" onchange="buildDCA();saveSets()">
+        <option value="income">Maximize Income</option><option value="balanced">Balanced</option><option value="growth">Growth First</option>
       </select></div>
   </div>
-  <div id="dca-signal-banner" class="info-box">Select a signal above.</div>
+  <div id="dca-banner" class="info-box"></div>
   <div class="tbl-wrap">
-    <table class="dca-table">
-      <thead><tr><th>Ticker</th><th>Account</th><th>Why This Account</th><th>Target%</th><th>DCA Amount</th><th>Priority</th></tr></thead>
-      <tbody id="dca-body"></tbody>
-    </table>
+    <table><thead><tr>
+      <th>Ticker</th><th>Bucket</th><th>Account Rationale</th><th>Target%</th><th>DCA Amount</th><th>Priority</th>
+    </tr></thead><tbody id="dca-body"></tbody></table>
   </div>
-  <div class="summary-row">
-    <div class="sum-card"><div class="sc-label">Total This Period</div><div class="sc-val accent" id="dc-total">$0</div></div>
-    <div class="sum-card"><div class="sc-label">Into IRA</div><div class="sc-val" id="dc-ira">$0</div></div>
-    <div class="sum-card"><div class="sc-label">Into Roth</div><div class="sc-val green" id="dc-roth">$0</div></div>
-    <div class="sum-card"><div class="sc-label">Into Brokerage</div><div class="sc-val" id="dc-brok">$0</div></div>
-    <div class="sum-card"><div class="sc-label">Into HSA</div><div class="sc-val" id="dc-hsa">$0</div></div>
+  <div class="cards">
+    <div class="card"><div class="card-lbl">Total This Period</div><div class="card-val gold" id="dc-total">$0</div></div>
+    <div class="card"><div class="card-lbl">Into Bucket 1</div><div class="card-val" style="color:var(--b1)" id="dc-b1">$0</div></div>
+    <div class="card"><div class="card-lbl">Into Bucket 2</div><div class="card-val" style="color:var(--b2)" id="dc-b2">$0</div></div>
+    <div class="card"><div class="card-lbl">Into Bucket 3</div><div class="card-val" style="color:var(--b3)" id="dc-b3">$0</div></div>
   </div>
-  <div id="dca-warn" class="warn-box" style="display:none"></div>
 </div>
 
-<!-- TAB 4 -->
+<!-- ═══ PROJECTION ═══ -->
 <div class="tab-pane" id="tab-projection">
-  <div class="sec-head">12-Month Projection<small>Income vs. Total Return</small></div>
+  <div class="sec-hd">12-Month Projection</div>
   <div class="proj-controls">
-    <span class="proj-lbl">Scenario:</span>
-    <button class="proj-btn active" onclick="setScenario('flat',this)">Flat 0%</button>
-    <button class="proj-btn" onclick="setScenario('up',this)">Up +10%</button>
-    <button class="proj-btn" onclick="setScenario('down',this)">Down -15%</button>
-    <span class="proj-lbl" style="margin-left:.8rem">SS Cut:</span>
+    <span class="sig-lbl">Scenario:</span>
+    <button class="proj-btn active" onclick="setScen('flat',this)">Flat 0%</button>
+    <button class="proj-btn" onclick="setScen('up',this)">Up +10%</button>
+    <button class="proj-btn" onclick="setScen('down',this)">Down -15%</button>
+    <span class="sig-lbl" style="margin-left:.6rem">SS Cut:</span>
     <button class="proj-btn" id="ss-btn" onclick="toggleSS()">+20% SS Cut</button>
   </div>
   <div class="chart-wrap">
-    <div class="chart-title">Portfolio Balance &amp; Cumulative Income<small id="chart-subtitle">Flat scenario</small></div>
-    <canvas id="proj-canvas" height="300"></canvas>
+    <div class="chart-title">Portfolio Balance &amp; Cumulative Income<small id="chart-sub">Flat scenario</small></div>
+    <canvas id="proj-canvas" height="280"></canvas>
     <div class="proj-legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#1e6b3a"></div>Total Return</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#9a7a1a"></div>Cumulative Income</div>
-      <div class="leg-item"><div class="leg-dot" style="background:rgba(139,26,26,.5)"></div>Balance with SS Cut</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Balance</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Cumulative Income</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Balance w/ SS Cut</div>
     </div>
   </div>
-  <div class="longevity-card">
-    <div><div class="lon-label">Portfolio Survives To</div><div class="lon-val" id="lon-age">-</div></div>
-    <div><div class="lon-label">Balance at Age 95</div><div class="lon-val" id="lon-95">-</div></div>
-    <div><div class="lon-label">Min Return Needed</div><div class="lon-val" id="lon-req">-</div></div>
-    <div><div class="lon-label">Income vs Target</div><div class="lon-val" id="lon-gap">-</div></div>
-    <div><div class="lon-label">SS Cut Impact</div><div class="lon-val" id="lon-ss">-</div></div>
+  <div class="lon-card">
+    <div><div class="lon-label">Survives To</div><div class="lon-val" id="lon-age">—</div></div>
+    <div><div class="lon-label">Balance at Age 95</div><div class="lon-val" id="lon-95">—</div></div>
+    <div><div class="lon-label">Min Return Needed</div><div class="lon-val" id="lon-req">—</div></div>
+    <div><div class="lon-label">Income vs Target</div><div class="lon-val" id="lon-gap">—</div></div>
+    <div><div class="lon-label">SS Cut Impact</div><div class="lon-val" id="lon-ss">—</div></div>
   </div>
-  <div class="info-box" style="margin-top:1.1rem"><strong>Sequence of returns risk:</strong> A Down -15% year 1 forces selling depressed assets to fund the $44K withdrawal. SGOV and JEPI income exist to fund withdrawals in years 1-3 without touching equities.</div>
+  <div class="info-box" style="margin-top:1rem;font-size:.72rem"><strong>Sequence of returns risk:</strong> A -15% year 1 forces selling depressed assets to fund withdrawals. Bucket 1 (SGOV/SWVXX) provides 5 years of runway without touching Buckets 2-3.</div>
   <div class="disclaimer">Simplified linear projections. Not financial advice.</div>
 </div>
 
-<!-- PROFILE & ALLOCATION MODAL -->
+<!-- ═══ L1 PROFILE MODAL ═══ -->
 <div class="modal-overlay" id="profile-modal">
-  <div class="modal-box" style="max-width:680px">
+  <div class="modal-box narrow">
     <div class="modal-head">
-      <h2>Profile</h2>
+      <h2>L1 Profile</h2>
       <button class="modal-close" id="profile-close-btn">&#10005;</button>
     </div>
-    <div class="modal-body" style="max-height:80vh">
-      <div class="info-box" style="margin-bottom:1rem;font-size:.73rem">
-        Set your profile details. Annual Income Need drives the Income Target shown on the Holdings screen. Target allocations are edited directly in the main holdings table.
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
-        <div class="acct-field"><label>Age</label><input type="number" id="p-age" value="69" min="50" max="100" step="1" oninput="saveProfile()"></div>
-        <div class="acct-field"><label>Target Horizon (live to age)</label><input type="number" id="p-horizon" value="95" min="70" max="110" step="1" oninput="saveProfile()"></div>
-        <div class="acct-field"><label>Total Portfolio ($)</label><input type="number" id="p-port" value="1110000" min="0" step="10000" oninput="saveProfile();renderH()"></div>
-        <div class="acct-field"><label>Annual Income Need ($)</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProfile();renderH()"></div>
+    <div class="modal-body">
+      <div class="info-box" style="font-size:.72rem;margin-bottom:.9rem">Profile values drive the Income Target and Max % per ETF on the dashboard.</div>
+      <div class="pform">
+        <div class="acct-field"><label>Owner 1 Initials</label><input type="text" id="p-o1i" value="JAB" maxlength="5" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 2 Initials</label><input type="text" id="p-o2i" value="TAB" maxlength="5" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 1 Current Age</label><input type="number" id="p-o1age" value="68" min="50" max="100" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 2 Current Age</label><input type="number" id="p-o2age" value="62" min="50" max="100" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 1 Live to Age</label><input type="number" id="p-o1live" value="90" min="70" max="120" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 2 Live to Age</label><input type="number" id="p-o2live" value="92" min="70" max="120" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="10000" oninput="saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Annual Income Target $</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Max % per ETF</label><input type="number" id="p-maxpct" value="20" min="1" max="100" step="0.5" oninput="saveProf()"></div>
         <div class="acct-field"><label>Risk Tolerance</label>
-          <select id="p-risk" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none" onchange="saveProfile()">
+          <select id="p-risk" onchange="saveProf()">
             <option value="conservative" selected>Conservative</option>
             <option value="moderate">Moderate</option>
-            <option value="growth">Growth-oriented</option>
-          </select>
-        </div>
-        <div class="acct-field"><label>Income Priority</label>
-          <select id="p-priority" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.38rem .65rem;font-family:'IBM Plex Mono',monospace;font-size:.83rem;color:var(--text);outline:none;-webkit-appearance:none" onchange="saveProfile()">
-            <option value="income" selected>Maximize income (cover needs)</option>
-            <option value="balanced">Balanced income + growth</option>
-            <option value="growth">Growth first, income secondary</option>
-          </select>
-        </div>
+            <option value="growth">Growth</option>
+          </select></div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-primary" id="profile-save-btn">Save &amp; Close</button>
-      <span class="modal-foot-note">Changes save automatically as you type</span>
-    </div>
-  </div>
-</div>
-
-<!-- TICKER EDITOR MODAL -->
-<div class="modal-overlay" id="ticker-modal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h2>Edit Holdings Universe</h2>
-      <button class="modal-close" id="modal-close-btn">&#10005;</button>
-    </div>
-    <div class="modal-body">
-      <div class="info-box" style="margin-bottom:.9rem;font-size:.72rem">
-        <strong>Your tickers, fully editable.</strong> Click &#x1F50D; to auto-fill from live data (SEC 30-day yield, ER, category). Edit any field manually. Account placement overrides are yours to set.
-      </div>
-      <table class="ed-table">
-        <thead><tr>
-          <th>Ticker</th><th></th><th>Name</th><th>Category</th><th>Account</th>
-          <th>Income Type</th><th style="text-align:right">SEC Yield%</th>
-          <th style="text-align:right">ER%</th><th style="text-align:right">Target%</th><th></th>
-        </tr></thead>
-        <tbody id="ed-tbody"></tbody>
-      </table>
-      <div class="add-ticker-row" id="add-ticker-row"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" id="save-tickers-btn">Save &amp; Apply</button>
-      <span class="modal-foot-note">Saves to browser storage &middot; Applies immediately</span>
+      <button class="btn btn-gold" id="profile-save-btn">Save &amp; Close</button>
+      <span class="modal-foot-note">Changes apply immediately to dashboard</span>
     </div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-(function() {
+(function(){
 'use strict';
 
-// ── DATA ──
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+var PROF = {o1i:'JAB',o2i:'TAB',o1age:68,o2age:62,o1live:90,o2live:92,port:1093000,income:44000,maxpct:20,risk:'conservative'};
+
+var ACCTS = [
+  {id:'bk-schw-joint', name:'Schwab Joint Brokerage', bucket:1, owner:'Joint', type:'Brokerage', cust:'Schwab', bal:300000, tgt:300000},
+  {id:'bk-fidel-joint', name:'Fidelity Joint Brokerage',bucket:1, owner:'Joint', type:'Brokerage', cust:'Fidelity',bal:20000,  tgt:20000},
+  {id:'ira-jab',        name:'Schwab IRA – JAB',       bucket:2, owner:'JAB',   type:'IRA',        cust:'Schwab', bal:274000, tgt:274000},
+  {id:'ira-tab',        name:'Schwab IRA – TAB',       bucket:2, owner:'TAB',   type:'IRA',        cust:'Schwab', bal:267000, tgt:267000},
+  {id:'iira-jab',       name:'Schwab Inherited IRA – JAB',bucket:2,owner:'JAB', type:'IRA',        cust:'Schwab', bal:45000,  tgt:45000},
+  {id:'roth-jab',       name:'Schwab Roth – JAB',      bucket:3, owner:'JAB',   type:'Roth',       cust:'Schwab', bal:101000, tgt:101000},
+  {id:'roth-tab',       name:'Schwab Roth – TAB',      bucket:3, owner:'TAB',   type:'Roth',       cust:'Schwab', bal:36500,  tgt:36500},
+  {id:'hsa-jab',        name:'Fidelity HSA – JAB',     bucket:3, owner:'JAB',   type:'HSA',        cust:'Fidelity',bal:19500, tgt:19500},
+  {id:'hsa-tab',        name:'Fidelity HSA – TAB',     bucket:3, owner:'TAB',   type:'HSA',        cust:'Fidelity',bal:30000, tgt:30000},
+];
+
+// H: ETF Universe. curVal = current dollar value (null = not entered)
 var H = [
-  {t:'SGOV', n:'iShares 0-3 Month Treasury',    cat:'T-Bills',        acct:'IRA',       it:'Ordinary',        y:5.1, er:0.09, a:10, cur:0, why:'Ordinary income sheltered in IRA. Cash-equivalent buffer.'},
-  {t:'VTIP', n:'Vanguard Short-Term TIPS',       cat:'TIPS',           acct:'IRA',       it:'Ordinary+Infl',   y:4.2, er:0.04, a:8,  cur:0, why:'Inflation adjustments taxable annually. IRA shields this.'},
-  {t:'BSV',  n:'Vanguard Short-Term Bond',       cat:'Short Bond',     acct:'IRA',       it:'Ordinary',        y:4.6, er:0.04, a:10, cur:0, why:'Steady ordinary income. IRA prevents annual tax drag.'},
-  {t:'SCHD', n:'Schwab US Dividend Equity',      cat:'Dividend',       acct:'Brokerage', it:'QDI',             y:3.7, er:0.06, a:15, cur:0, why:'QDI taxed 0-15% in brokerage. Tax-loss harvesting available.'},
-  {t:'JEPI', n:'JPMorgan Equity Premium Income', cat:'Covered Call',   acct:'IRA',       it:'ELNs (Ordinary)', y:7.4, er:0.35, a:10, cur:0, why:'High ordinary income from ELNs. Must stay in IRA.'},
-  {t:'VTI',  n:'Vanguard Total Stock Market',    cat:'US Equity',      acct:'Roth',      it:'QDI',             y:1.4, er:0.03, a:18, cur:0, why:'Long-term growth compounding tax-free in Roth over 26 years.'},
-  {t:'SPDW', n:'SPDR Portfolio Developed World', cat:'Intl Developed', acct:'Brokerage', it:'QDI',             y:3.2, er:0.04, a:8,  cur:0, why:'Foreign tax credit only in taxable brokerage.'},
-  {t:'IAU',  n:'iShares Gold Trust',             cat:'Gold',           acct:'IRA',       it:'None (growth)',   y:0,   er:0.25, a:7,  cur:0, why:'Gold taxed at 28% collectibles rate outside IRA.'},
-  {t:'XLE',  n:'Energy Select Sector SPDR',      cat:'Energy',         acct:'Brokerage', it:'QDI',             y:3.4, er:0.09, a:4,  cur:0, why:'QDI efficient in brokerage. Inflation hedge.'},
-  {t:'QQQI', n:'NEOS NASDAQ 100 High Income',    cat:'Covered Call',   acct:'IRA',       it:'60/40 Options',   y:14.0,er:0.68, a:5,  cur:0, why:'High income sheltered in IRA. 60/40 options treatment.'},
-  {t:'PFF',  n:'iShares Preferred Income Secs',  cat:'Preferred',      acct:'IRA',       it:'Ordinary',        y:6.2, er:0.46, a:5,  cur:0, why:'Preferred dividends = ordinary income. IRA is correct home.'}
+  {t:'SGOV', n:'iShares 0-3 Month Treasury',    cat:'T-Bills',      bucket:1, it:'Ordinary',       y:5.1,  er:0.09, a:10, curVal:null, why:'Ordinary income sheltered. Cash-equivalent buffer in Bucket 1.'},
+  {t:'VTIP', n:'Vanguard Short-Term TIPS',       cat:'TIPS',         bucket:2, it:'Ordinary+Infl',  y:4.2,  er:0.04, a:8,  curVal:null, why:'Inflation protection in IRA shields annual taxable inflation adjustments.'},
+  {t:'BSV',  n:'Vanguard Short-Term Bond',       cat:'Short Bond',   bucket:2, it:'Ordinary',       y:4.6,  er:0.04, a:10, curVal:null, why:'Steady ordinary income; IRA prevents annual tax drag on interest.'},
+  {t:'SCHD', n:'Schwab US Dividend Equity',      cat:'Dividend',     bucket:1, it:'QDI',            y:3.7,  er:0.06, a:15, curVal:null, why:'QDI taxed 0-15% in Bucket 1 brokerage. Foreign tax credit preserved.'},
+  {t:'JEPI', n:'JPMorgan Equity Premium Income', cat:'Covered Call', bucket:2, it:'ELNs',           y:7.4,  er:0.35, a:10, curVal:null, why:'High ordinary income from ELNs must stay in IRA (Bucket 2).'},
+  {t:'VTI',  n:'Vanguard Total Stock Market',    cat:'US Equity',    bucket:3, it:'QDI',            y:1.4,  er:0.03, a:18, curVal:null, why:'Long-term growth compounds tax-free over 20+ years in Roth/HSA (Bucket 3).'},
+  {t:'SPDW', n:'SPDR Portfolio Developed World', cat:'Intl',         bucket:1, it:'QDI',            y:3.2,  er:0.04, a:8,  curVal:null, why:'Foreign tax credit preserved only in taxable brokerage (Bucket 1).'},
+  {t:'IAU',  n:'iShares Gold Trust',             cat:'Gold',         bucket:2, it:'None',           y:0,    er:0.25, a:7,  curVal:null, why:'Gold avoids 28% collectibles rate in IRA. IAUM is lower-cost equivalent.'},
+  {t:'XLE',  n:'Energy Select Sector SPDR',      cat:'Energy',       bucket:1, it:'QDI',            y:3.4,  er:0.09, a:4,  curVal:null, why:'QDI efficient in Bucket 1 brokerage. Inflation hedge.'},
+  {t:'QQQI', n:'NEOS NASDAQ 100 High Income',    cat:'Covered Call', bucket:2, it:'60/40 Options',  y:14.0, er:0.68, a:5,  curVal:null, why:'High income sheltered in IRA. 60/40 options tax treatment.'},
+  {t:'PFF',  n:'iShares Preferred Income',       cat:'Preferred',    bucket:2, it:'Ordinary',       y:6.2,  er:0.46, a:5,  curVal:null, why:'Preferred dividends = ordinary income; IRA is the correct home.'},
+  {t:'FBTC', n:'Fidelity Wise Origin Bitcoin',   cat:'Bitcoin',      bucket:1, it:'None',           y:0,    er:0.25, a:0,  curVal:null, why:'Bitcoin speculation in Fidelity Brokerage. Park in MMF when not speculating.'},
 ];
 
 var CASH = [
-  {id:1, ticker:'SGOV',  name:'iShares 0-3 Mo Treasury ETF', type:'ETF', shares:0, price:100, bal:0, yld:5.1, mat:'',         note:''},
-  {id:2, ticker:'SWVXX', name:'Schwab Value Advantage MMF',  type:'MMF', shares:0, price:1,   bal:0, yld:4.8, mat:'',         note:''},
-  {id:3, ticker:'CD',    name:'Certificate of Deposit',      type:'CD',  shares:1, price:0,   bal:0, yld:4.5, mat:'2025-06-15',note:'June maturity'}
+  {id:1,ticker:'SGOV', name:'iShares 0-3 Mo Treasury',  type:'ETF', shares:0,price:100, bal:0, yld:5.1, mat:'', note:'Bucket 1 – Schwab'},
+  {id:2,ticker:'SWVXX',name:'Schwab Value Advantage MMF',type:'MMF', shares:0,price:1,   bal:0, yld:4.8, mat:'', note:'Bucket 1 – Schwab'},
+  {id:3,ticker:'CD',   name:'Certificate of Deposit',   type:'CD',  shares:1,price:0,   bal:0, yld:4.5, mat:'2025-06-15', note:'June maturity'},
 ];
-var cashNextId = 4;
+var cashNextId=4;
 
-var ACCT_RAT = {
-  IRA:       'Tax-deferred: ordinary income not taxed annually',
-  Roth:      'Tax-free growth: best for long-term high-growth assets',
-  Brokerage: 'QDI at 0-15%; foreign tax credit preserved',
-  HSA:       'Triple tax advantage: healthcare or stealth IRA after 65'
-};
+var SIG='green', SCEN='flat', SS=false, projChart=null;
+var SK={h:'pm_h3',cash:'pm_cash3',accts:'pm_accts3',prof:'pm_prof3',sig:'pm_sig3',cur:'pm_cur3',sets:'pm_sets3'};
 
-var scenario = 'flat', ssCut = false, signal = 'green', projChart = null;
-var SK = {h:'pm_h2', cash:'pm_cash2', bal:'pm_bal2', set:'pm_set2', sig:'pm_sig2', cur:'pm_cur2', prof:'pm_prof2'};
-var PROFILE = {age:69, horizon:95, port:1110000, income:44000, risk:'conservative', priority:'income'};
-
-// ── STORAGE ──
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function sl(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
-
-// ── HELPERS ──
-function fmt(n){if(Math.abs(n)>=1e6)return'$'+(n/1e6).toFixed(2)+'M';return'$'+Math.round(n).toLocaleString();}
+function fmt(n){if(!n&&n!==0)return'--';if(Math.abs(n)>=1e6)return'$'+(n/1e6).toFixed(2)+'M';return'$'+Math.round(n).toLocaleString();}
 function fmtP(n){return(+(n)||0).toFixed(2)+'%';}
 function gv(id){var e=document.getElementById(id);return e?e.value:'';}
 function gn(id){return parseFloat(gv(id))||0;}
 function el(tag,props,parent){var e=document.createElement(tag);if(props)Object.assign(e,props);if(parent)parent.appendChild(e);return e;}
-function inp(parent,type,val,cls,w,title){
-  var e=el('input',{type:type||'text',className:'ci'+(cls?' '+cls:''),value:val||'',title:title||''},parent);
-  if(w)e.style.width=w;
-  return e;
-}
-function sel(parent,opts,cur,w){
-  var e=el('select',{className:'csel'},parent);
-  if(w)e.style.width=w;
-  opts.forEach(function(o){
-    var op=el('option',{value:o,textContent:o},e);
-    if(o===cur)op.selected=true;
-  });
-  return e;
-}
 
-// ── TABS ──
+function bucketLabel(b){return b===1?'Bucket 1':b===2?'Bucket 2':'Bucket 3';}
+function bucketClass(b){return b===1?'b1':b===2?'b2':'b3';}
+function bucketTagClass(b){return b===1?'tag-b1':b===2?'tag-b2':'tag-b3';}
+function acctForBucket(b){
+  // Best account type for tax purposes per bucket
+  if(b===1)return'Brokerage';
+  if(b===2)return'IRA';
+  return'Roth/HSA';
+}
+function getCashTotal(){return CASH.reduce(function(s,c){return s+c.bal;},0);}
+function getCashIncome(){return CASH.reduce(function(s,c){return s+(c.bal*c.yld/100);},0);}
+function getBucketTotal(b){return ACCTS.filter(function(a){return a.bucket===b;}).reduce(function(s,a){return s+a.bal;},0);}
+function getGrandTotal(){return ACCTS.reduce(function(s,a){return s+a.bal;},0);}
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
 function showTab(id,btn){
   document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
+  if(id==='dashboard')renderDash();
   if(id==='dca')buildDCA();
   if(id==='projection')buildProjection();
-  if(id==='accounts')updateAcctSummary();
+  if(id==='accounts')renderAccounts();
+  if(id==='universe')renderEditorTable();
 }
 
-// ── SIGNAL ──
-function setSignal(s){
-  signal=s;
-  ['green','yellow','red'].forEach(function(c){document.getElementById('sig-'+c).classList.remove('active');});
-  document.getElementById('sig-'+s).classList.add('active');
+// ══════════════════════════════════════════
+// SIGNAL
+// ══════════════════════════════════════════
+function setSig(s){
+  SIG=s;
+  ['green','yellow','red'].forEach(function(c){
+    var b=document.getElementById('sig-'+c);
+    b.className='sig-btn'+(s===c?' active-'+c:'');
+  });
   document.getElementById('dc-signal').value=s;
-  var notes={green:'Full DCA active — deploy full monthly budget.',yellow:'Half DCA — deploy 50%, hold remainder in money market.',red:'Hold Cash — no DCA this period. Protect income reserve.'};
-  document.getElementById('signal-note').textContent=notes[s];
-  ss(SK.sig,s);
-  buildDCA();
+  var notes={green:'Full DCA — deploy full budget across all positions.',yellow:'Half DCA — 50% deployed, hold remainder in SGOV/SWVXX.',red:'Hold Cash — no DCA this period. Protect Bucket 1 reserve.'};
+  document.getElementById('sig-note').textContent=notes[s];
+  ss(SK.sig,s);buildDCA();
 }
 
-// ── PERSISTENCE ──
+// ══════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════
 function saveH(){ss(SK.h,H);}
-function saveCurPct(){
-  var cur={};
-  H.forEach(function(h){cur[h.t]=h.curVal!==undefined?h.curVal:null;});
+function saveCash(){ss(SK.cash,CASH);}
+function saveAccts(){ss(SK.accts,ACCTS);}
+function saveProf(){
+  PROF={
+    o1i:gv('p-o1i')||'JAB', o2i:gv('p-o2i')||'TAB',
+    o1age:gn('p-o1age')||68, o2age:gn('p-o2age')||62,
+    o1live:gn('p-o1live')||90, o2live:gn('p-o2live')||92,
+    port:gn('p-port')||1093000, income:gn('p-income')||44000,
+    maxpct:gn('p-maxpct')||20, risk:gv('p-risk')||'conservative'
+  };
+  ss(SK.prof,PROF);
+}
+function saveCurVals(){
+  var cur={};H.forEach(function(h){cur[h.t]=h.curVal!==undefined?h.curVal:null;});
   ss(SK.cur,cur);
 }
-function loadCurPct(){
-  var cur=sl(SK.cur,{});
-  H.forEach(function(h){h.curVal=cur[h.t]!==undefined?cur[h.t]:null;});
+function saveSets(){
+  ss(SK.sets,{budget:gv('dc-budget'),freq:gv('dc-freq'),pri:gv('dc-priority'),sig:gv('dc-signal')});
 }
-function saveAccts(){
-  ss(SK.bal,{ira:gn('bal-ira'),roth:gn('bal-roth'),brok:gn('bal-brok'),hsa:gn('bal-hsa'),
-    pIra:gn('pct-ira'),pRoth:gn('pct-roth'),pBrok:gn('pct-brok'),pHsa:gn('pct-hsa')});
-}
-function loadAccts(){
-  var b=sl(SK.bal,null);if(!b)return;
-  ['ira','roth','brok','hsa'].forEach(function(k){var e=document.getElementById('bal-'+k);if(e&&b[k]!==undefined)e.value=b[k];});
-  [{k:'pIra',id:'pct-ira'},{k:'pRoth',id:'pct-roth'},{k:'pBrok',id:'pct-brok'},{k:'pHsa',id:'pct-hsa'}].forEach(function(x){var e=document.getElementById(x.id);if(e&&b[x.k]!==undefined)e.value=b[x.k];});
-}
-function saveSettings(){ss(SK.set,{budget:gv('dc-budget'),freq:gv('dc-freq'),pri:gv('dc-priority'),sig:gv('dc-signal')});}
-function saveProfile(){
-  var p={
-    age:parseFloat(gv('p-age'))||69,
-    horizon:parseFloat(gv('p-horizon'))||95,
-    port:parseFloat(gv('p-port'))||1110000,
-    income:parseFloat(gv('p-income'))||44000,
-    risk:gv('p-risk')||'conservative',
-    priority:gv('p-priority')||'income'
-  };
-  PROFILE=p; ss(SK.prof,p);
-}
-function loadProfile(){
-  var p=sl(SK.prof,null);
-  if(p){
-    PROFILE=p;
-    var set=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;};
-    set('p-age',p.age); set('p-horizon',p.horizon);
-    set('p-port',p.port); set('p-income',p.income);
-    set('p-risk',p.risk); set('p-priority',p.priority);
+function loadAll(){
+  var hp=sl(SK.h,null);if(hp&&hp.length)H=hp;
+  var cp=sl(SK.cash,null);if(cp&&cp.length){CASH=cp;cashNextId=Math.max.apply(null,cp.map(function(c){return c.id;}))+1;}
+  var ap=sl(SK.accts,null);if(ap&&ap.length)ACCTS=ap;
+  var pp=sl(SK.prof,null);if(pp)PROF=pp;
+  var cv=sl(SK.cur,{});H.forEach(function(h){h.curVal=cv[h.t]!==undefined?cv[h.t]:null;});
+  var sp=sl(SK.sets,null);
+  if(sp){
+    if(sp.budget)document.getElementById('dc-budget').value=sp.budget;
+    if(sp.freq)document.getElementById('dc-freq').value=sp.freq;
+    if(sp.pri)document.getElementById('dc-priority').value=sp.pri;
   }
-}
-function loadSettings(){
-  var s=sl(SK.set,null);if(!s)return;
-  if(s.budget)document.getElementById('dc-budget').value=s.budget;
-  if(s.freq)document.getElementById('dc-freq').value=s.freq;
-  if(s.pri)document.getElementById('dc-priority').value=s.pri;
-  if(s.sig)document.getElementById('dc-signal').value=s.sig;
-}
-function saveCash(){ss(SK.cash,CASH);}
-function loadCash(){
-  var saved=sl(SK.cash,null);
-  if(saved&&saved.length){CASH=saved;cashNextId=Math.max.apply(null,saved.map(function(c){return c.id;}))+1;}
+  var s=sl(SK.sig,'green');setSig(s);
+  // Pre-fill profile form
+  function pf(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
+  pf('p-o1i',PROF.o1i);pf('p-o2i',PROF.o2i);
+  pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
+  pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
+  pf('p-port',PROF.port);pf('p-income',PROF.income);
+  pf('p-maxpct',PROF.maxpct);pf('p-risk',PROF.risk);
 }
 
-// ── PORTFOLIO TOTALS ──
-function getPF(){var ira=gn('bal-ira'),roth=gn('bal-roth'),brok=gn('bal-brok'),hsa=gn('bal-hsa');return{ira:ira,roth:roth,brok:brok,hsa:hsa,total:ira+roth+brok+hsa};}
-function getCashTotal(){return CASH.reduce(function(s,c){return s+c.bal;},0);}
-function getCashIncome(){return CASH.reduce(function(s,c){return s+(c.bal*c.yld/100);},0);}
-
-// ── CASH TABLE ──
+// ══════════════════════════════════════════
+// CASH TABLE
+// ══════════════════════════════════════════
 function renderCash(){
   var tbody=document.getElementById('cash-tbody');
   tbody.innerHTML='';
@@ -565,392 +610,286 @@ function renderCash(){
     var isCD=c.type==='CD';
     var tr=document.createElement('tr');
     tr.className=isCD?'cd-row':c.type==='MMF'?'mmf-row':'etf-row';
-
     // Ticker
     var tdTk=el('td',null,tr);
-    var iTk=inp(tdTk,'text',c.ticker,'tk','70px');
+    var iTk=el('input',{type:'text',className:'inp',value:c.ticker,style:'width:72px;font-weight:500;color:var(--gold)'},tdTk);
     iTk.addEventListener('input',function(){c.ticker=this.value.toUpperCase();this.value=c.ticker;saveCash();});
-
     // Name
     var tdN=el('td',null,tr);
-    var iN=inp(tdN,'text',c.name,'','190px');
+    var iN=el('input',{type:'text',className:'inp',value:c.name,style:'width:185px'},tdN);
     iN.addEventListener('input',function(){c.name=this.value;saveCash();});
-
     // Type
-    var tdType=el('td',null,tr);
-    var sType=sel(tdType,['ETF','MMF','CD','Treasury','Savings'],c.type,'82px');
-    sType.addEventListener('change',function(){c.type=this.value;saveCash();renderCash();});
-
+    var tdTy=el('td',null,tr);
+    var sTy=el('select',{className:'csel',style:'width:78px'},tdTy);
+    ['ETF','MMF','CD','Treasury','Savings'].forEach(function(t){var o=el('option',{value:t,textContent:t},sTy);if(t===c.type)o.selected=true;});
+    sTy.addEventListener('change',function(){c.type=this.value;saveCash();renderCash();});
     // Shares
     var tdSh=el('td',{className:'r'},tr);
-    var iSh=inp(tdSh,'number',c.shares||'','','82px');
-    iSh.step='0.001';iSh.min='0';
-    iSh.addEventListener('input',function(){
-      c.shares=parseFloat(this.value)||0;
-      if(c.price>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}
-      iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderH();
-    });
-
+    var iSh=el('input',{type:'number',className:'inp',value:c.shares||'',style:'width:82px;text-align:right',min:'0',step:'0.001'},tdSh);
+    iSh.addEventListener('input',function(){c.shares=parseFloat(this.value)||0;if(c.price>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
     // Price
     var tdPr=el('td',{className:'r'},tr);
-    var iPr=inp(tdPr,'number',c.price||'','','74px');
-    iPr.step='0.01';iPr.min='0';
-    iPr.addEventListener('input',function(){
-      c.price=parseFloat(this.value)||0;
-      if(c.shares>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}
-      iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderH();
-    });
-
+    var iPr=el('input',{type:'number',className:'inp',value:c.price||'',style:'width:74px;text-align:right',min:'0',step:'0.01'},tdPr);
+    iPr.addEventListener('input',function(){c.price=parseFloat(this.value)||0;if(c.shares>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
     // Balance
     var tdBal=el('td',{className:'r'},tr);
-    var iBal=inp(tdBal,'number',c.bal||'','','98px');
-    iBal.step='100';iBal.min='0';
-    iBal.addEventListener('input',function(){
-      c.bal=parseFloat(this.value)||0;
-      if(c.price===1||c.type==='MMF'){c.shares=c.bal;c.price=1;}
-      iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderH();
-    });
-
+    var iBal=el('input',{type:'number',className:'inp',value:c.bal||'',style:'width:100px;text-align:right',min:'0',step:'100'},tdBal);
+    iBal.addEventListener('input',function(){c.bal=parseFloat(this.value)||0;if(c.price===1||c.type==='MMF'){c.shares=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
     // Yield
-    var tdYld=el('td',{className:'r'},tr);
-    var iYld=inp(tdYld,'number',c.yld,'','60px');
-    iYld.step='0.05';iYld.min='0';iYld.max='20';
-    iYld.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();});
-
-    // Income (display only)
+    var tdYl=el('td',{className:'r'},tr);
+    var iYl=el('input',{type:'number',className:'inp',value:c.yld,style:'width:58px;text-align:right',min:'0',max:'20',step:'0.05'},tdYl);
+    iYl.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();});
+    // Inc (display)
     var tdInc=el('td',{className:'r'},tr);
-    var iInc=el('span',{textContent:fmt(c.bal*c.yld/100),className:'mono'},tdInc);
-    iInc.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--green)';
-
+    var iInc=el('span',{textContent:fmt(c.bal*c.yld/100)},tdInc);
+    iInc.style.cssText='font-family:"DM Mono",monospace;font-size:.76rem;color:var(--green)';
     // Maturity
     var tdMat=el('td',null,tr);
     if(isCD){
-      var iMat=inp(tdMat,'date',c.mat,'','130px');
-      iMat.addEventListener('input',function(){
-        c.mat=this.value;saveCash();
-        var days=c.mat?Math.round((new Date(c.mat)-new Date())/86400000):-1;
-        badge.textContent=days<0?'Matured':days+'d left';
-        badge.className='mat-badge '+(days<0?'past':days<60?'soon':'ok');
-      });
+      var iMat=el('input',{type:'date',className:'inp',value:c.mat||'',style:'width:130px'},tdMat);
+      iMat.addEventListener('input',function(){c.mat=this.value;saveCash();var d=c.mat?Math.round((new Date(c.mat)-new Date())/86400000):-1;badge.textContent=c.mat?(d<0?'Matured':d+'d left'):'';badge.className='mat-badge '+(d<0?'past':d<60?'soon':'ok');});
       var days=c.mat?Math.round((new Date(c.mat)-new Date())/86400000):-1;
-      var badge=el('span',{textContent:c.mat?(days<0?'Matured':days+'d left'):'',className:'mat-badge '+(days<0?'past':days<60?'soon':'ok')},tdMat);
-    } else {
-      el('span',{textContent:'--',style:'color:var(--muted);font-size:.7rem'},tdMat);
-    }
-
+      el('span',{textContent:c.mat?(days<0?'Matured':days+'d left'):'',className:'mat-badge '+(days<0?'past':days<60?'soon':'ok')},tdMat);
+      // Use a reference — need to re-assign badge from tdMat's last child
+    }else{el('span',{textContent:'—',style:'color:var(--dim);font-size:.72rem'},tdMat);}
     // Note
-    var tdNote=el('td',null,tr);
-    var iNote=inp(tdNote,'text',c.note||'','','130px');
-    iNote.placeholder='Note...';iNote.style.fontSize='.72rem';
-    iNote.addEventListener('input',function(){c.note=this.value;saveCash();});
-
+    var tdNo=el('td',null,tr);
+    var iNo=el('input',{type:'text',className:'inp',value:c.note||'',style:'width:130px;font-size:.7rem'},tdNo);
+    iNo.placeholder='Note...';
+    iNo.addEventListener('input',function(){c.note=this.value;saveCash();});
     // Delete
-    var tdDel=el('td',null,tr);
-    var bDel=el('button',{textContent:'\u2715',className:'del-btn',title:'Remove'},tdDel);
-    bDel.addEventListener('click',function(){CASH=CASH.filter(function(x){return x.id!==c.id;});renderCash();saveCash();renderH();});
-
+    var tdDl=el('td',null,tr);
+    var bDl=el('button',{textContent:'\u2715',className:'del-btn',title:'Remove'},tdDl);
+    bDl.addEventListener('click',function(){CASH=CASH.filter(function(x){return x.id!==c.id;});renderCash();saveCash();renderDash();});
     tbody.appendChild(tr);
   });
-  // Totals row
-  var tfoot = tbody.parentNode.querySelector('tfoot');
-  if(tfoot) tfoot.innerHTML='';
-  else { tfoot=document.createElement('tfoot'); tbody.parentNode.appendChild(tfoot); }
-  var tftr=document.createElement('tr');
-  tftr.style.cssText='background:var(--surface2);font-weight:500';
-  var bs='padding:.45rem .65rem;font-family:"IBM Plex Mono",monospace;border-top:2px solid var(--border2)';
-  // Col 0: Ticker - label
-  el('td',{textContent:'Totals',style:bs+';font-size:.72rem;color:var(--muted)'},tftr);
-  // Col 1: Name - blank
-  el('td',{style:bs},tftr);
-  // Col 2: Type - blank
-  el('td',{style:bs},tftr);
-  // Col 3: Shares - blank
-  el('td',{style:bs},tftr);
-  // Col 4: Price - blank
-  el('td',{style:bs},tftr);
-  // Col 5: Balance total
-  var tfBal=el('td',{style:bs+';text-align:right;font-size:.78rem;font-weight:600'},tftr);
-  tfBal.id='cash-bal-total';
-  // Col 6: Yield - blank
-  el('td',{style:bs},tftr);
-  // Col 7: Annual Income total
-  var tfInc=el('td',{style:bs+';text-align:right;font-size:.78rem;font-weight:600;color:var(--green)'},tftr);
-  tfInc.id='cash-inc-total';
-  // Col 8: Maturity - blank
-  el('td',{style:bs},tftr);
-  // Col 9: Note - blank
-  el('td',{style:bs},tftr);
-  // Col 10: Delete - blank
-  el('td',{style:bs},tftr);
-  tfoot.appendChild(tftr);
+  renderCashTfoot();
   renderCashMeta();
 }
-
+function renderCashTfoot(){
+  var tf=document.getElementById('cash-tfoot');
+  tf.innerHTML='';
+  var total=getCashTotal(),inc=getCashIncome();
+  var tr=document.createElement('tr');
+  tr.style.cssText='background:var(--surface3);font-weight:600';
+  var bs='padding:.45rem .65rem;font-family:"DM Mono",monospace;border-top:2px solid var(--border2);font-size:.72rem';
+  el('td',{textContent:'Totals',style:bs+';color:var(--muted)'},tr);
+  el('td',{style:bs},tr);el('td',{style:bs},tr); // name, type
+  el('td',{style:bs},tr);el('td',{style:bs},tr); // shares, price
+  el('td',{textContent:fmt(total),style:bs+';text-align:right;font-size:.78rem'},tr);
+  el('td',{style:bs},tr); // yield
+  el('td',{textContent:fmt(inc),style:bs+';text-align:right;font-size:.78rem;color:var(--green)'},tr);
+  el('td',{style:bs},tr);el('td',{style:bs},tr);el('td',{style:bs},tr); // mat,note,del
+  tf.appendChild(tr);
+}
 function renderCashMeta(){
   var total=getCashTotal(),inc=getCashIncome();
-  document.getElementById('cash-total-label').textContent='Total: '+fmt(total)+'  \u00B7  Income: '+fmt(inc)+'/yr';
-  var btEl=document.getElementById('cash-bal-total');
-  var itEl=document.getElementById('cash-inc-total');
-  if(btEl)btEl.textContent=fmt(total);
-  if(itEl)itEl.textContent=fmt(inc);
+  document.getElementById('cash-hd-meta').textContent='Total: '+fmt(total)+' \u00B7 Income: '+fmt(inc)+'/yr';
 }
-
 function addCashRow(){
   CASH.push({id:cashNextId++,ticker:'NEW',name:'New Position',type:'MMF',shares:0,price:1,bal:0,yld:4.5,mat:'',note:''});
   renderCash();
 }
 
-// ── HOLDINGS TABLE ──
-function buildTaxBox(){
-  var byAcct={IRA:[],Roth:[],Brokerage:[],HSA:[]};
-  H.forEach(function(h){if(byAcct[h.acct])byAcct[h.acct].push(h.t);});
-  var parts=[];
-  if(byAcct.IRA.length)       parts.push('<strong>IRA</strong> (ordinary/sheltered): '+byAcct.IRA.join(', '));
-  if(byAcct.Roth.length)      parts.push('<strong>Roth</strong> (tax-free growth): '+byAcct.Roth.join(', '));
-  if(byAcct.Brokerage.length) parts.push('<strong>Brokerage</strong> (QDI/foreign tax credit): '+byAcct.Brokerage.join(', '));
-  if(byAcct.HSA.length)       parts.push('<strong>HSA</strong> (triple tax): '+byAcct.HSA.join(', '));
-  var box=document.getElementById('tax-info-box');
-  if(box) box.innerHTML='<strong>Tax placement:</strong> '+parts.join(' &nbsp;&middot;&nbsp; ')+'. Hover any fund name for detailed rationale.';
-}
-
-function renderH(){
-  loadCurPct();
-  var pf=getPF(), cashTotal=getCashTotal(), grandTotal=pf.total;
-  var portTotal=PROFILE.port||grandTotal||1; // from Profile screen
-  var tbody=document.getElementById('htable-body');
+// ══════════════════════════════════════════
+// DASHBOARD RENDER
+// ══════════════════════════════════════════
+function renderDash(){
+  var portTotal=PROF.port||getGrandTotal()||1;
+  var cashTotal=getCashTotal();
+  var tbody=document.getElementById('htbody');
   tbody.innerHTML='';
-  var ta=0,ti=0,wY=0,tCurVal=0,tCurInc=0;
-  H.forEach(function(h,i){
-    ta+=h.a;
-    // curVal = current dollar value entered by user (null = not entered, 0 = entered as zero)
-    var curVal=h.curVal!==null&&h.curVal!==undefined?h.curVal:null;
-    var hasPos=curVal!==null&&curVal>0;
-    var curPct=hasPos?(curVal/portTotal*100):null; // calculated, not stored
-    // Target $ value (for display in $ Value col)
-    var d=portTotal*h.a/100;
-    var incShow=hasPos?curVal*h.y/100:0;
-    if(hasPos){ti+=incShow; tCurVal+=curVal; tCurInc+=incShow;}
-    wY+=h.y*h.a;
-    var tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
-    var drift=curPct!==null?curPct-h.a:null;
-    var tr=document.createElement('tr');
-    // Ticker
-    el('td',{className:'tc',textContent:h.t},tr);
-    // Name
-    el('td',{className:'tn',title:h.why,textContent:h.n},tr);
-    // Category
-    el('td',{textContent:h.cat,style:'font-size:.74rem;color:var(--muted)'},tr);
-    // Account tag
-    var tdA=el('td',null,tr); el('span',{className:'tag '+tc,textContent:h.acct},tdA);
-    // Income type
-    el('td',{textContent:h.it,style:'font-size:.7rem;color:var(--muted)'},tr);
-    // Yield
-    el('td',{className:'r yld',textContent:h.y>0?fmtP(h.y):'--'},tr);
-    // ER
-    el('td',{className:'r erv',textContent:fmtP(h.er)},tr);
-    // Target%
-    var tdTgt=el('td',{className:'r'},tr);
-    var iTgt=el('input',{type:'number',className:'ai',value:h.a,min:0,max:100,step:0.5,id:'alloc-'+i},tdTgt);
-    iTgt.addEventListener('input',function(){H[i].a=Math.min(100,parseFloat(this.value)||0);this.value=H[i].a;recalc();});
-    // Current Value $ — editable dollar amount, wide field
-    var tdCurVal=el('td',{className:'r'},tr);
-    var iCurVal=el('input',{type:'number',className:'ai cur',min:0,step:100,id:'curval-'+i,title:'Your current dollar value in this position'},tdCurVal);
-    iCurVal.style.width='110px';
-    if(curVal!==null) iCurVal.value=curVal;
-    iCurVal.placeholder='--';
-    iCurVal.addEventListener('input',function(){
-      var v=this.value.trim();
-      H[i].curVal=v===''?null:Math.max(0,parseFloat(v)||0);
-      if(H[i].curVal===null) this.value='';
-      saveCurPct();
-      renderH(); // recalc everything
+  var ta=0,tCurVal=0,tCurInc=0,wY=0;
+  // Group by bucket
+  [1,2,3].forEach(function(bkt){
+    var bktH=H.filter(function(h){return h.bucket===bkt;});
+    if(bktH.length===0)return;
+    // Bucket header row
+    var bHdr=document.createElement('tr');
+    bHdr.className='bkt-hdr '+bucketClass(bkt);
+    var bhTd=el('td',{colSpan:13,textContent:bucketLabel(bkt)+' — '+acctForBucket(bkt)},bHdr);
+    tbody.appendChild(bHdr);
+    var bCurVal=0,bTgtVal=0,bCurInc=0,bCurPct=0;
+    bktH.forEach(function(h){
+      var i=H.indexOf(h);
+      ta+=h.a;
+      var curVal=h.curVal!==null&&h.curVal!==undefined?h.curVal:null;
+      var hasPos=curVal!==null;
+      var curPct=hasPos?curVal/portTotal*100:null;
+      var tgtVal=portTotal*h.a/100;
+      var incVal=hasPos&&curVal>0?curVal*h.y/100:0;
+      var incPct=curVal>0?h.y:0; // income % = yield when holding
+      if(hasPos){tCurVal+=curVal;tCurInc+=incVal;bCurVal+=curVal;bCurPct+=(curPct||0);bCurInc+=incVal;}
+      bTgtVal+=tgtVal;
+      wY+=h.y*h.a;
+      var drift=curPct!==null?curPct-h.a:null;
+      var driftColor=drift===null?'':Math.abs(drift)>5?'var(--red)':Math.abs(drift)>2?'var(--yellow)':'var(--muted)';
+      var tr=document.createElement('tr');
+      // Ticker
+      el('td',{className:'tc',textContent:h.t},tr);
+      // Name
+      el('td',{className:'tn',title:h.why,textContent:h.n},tr);
+      // Category
+      el('td',{textContent:h.cat,style:'font-size:.72rem;color:var(--muted)'},tr);
+      // Bucket tag
+      var tdBkt=el('td',null,tr);
+      el('span',{className:'tag '+bucketTagClass(bkt),textContent:'B'+bkt},tdBkt);
+      // Income type
+      el('td',{textContent:h.it,style:'font-size:.68rem;color:var(--muted)'},tr);
+      // Yield
+      el('td',{className:'r',textContent:h.y>0?fmtP(h.y):'—',style:'font-family:"DM Mono",monospace;color:var(--green);font-size:.78rem'},tr);
+      // ER
+      el('td',{className:'r',textContent:fmtP(h.er),style:'font-family:"DM Mono",monospace;color:var(--muted);font-size:.74rem'},tr);
+      // Target%
+      var tdTgt=el('td',{className:'r'},tr);
+      var iTgt=el('input',{type:'number',className:'inp narrow',value:h.a,min:0,max:PROF.maxpct,step:0.5,id:'alloc-'+i},tdTgt);
+      iTgt.addEventListener('input',function(){
+        var v=Math.min(PROF.maxpct,Math.max(0,parseFloat(this.value)||0));
+        H[i].a=v;this.value=v;recalc();
+      });
+      // Target $
+      el('td',{className:'r mono',textContent:fmt(tgtVal),style:'font-size:.76rem'},tr);
+      // Current Value $
+      var tdCV=el('td',{className:'r'},tr);
+      var iCV=el('input',{type:'number',className:'inp wide',min:0,step:100,id:'curval-'+i,title:'Current dollar value in this position'},tdCV);
+      iCV.style.width='115px';
+      if(curVal!==null)iCV.value=curVal;
+      iCV.placeholder='—';
+      iCV.addEventListener('input',function(){
+        var v=this.value.trim();
+        H[i].curVal=v===''?null:Math.max(0,parseFloat(v)||0);
+        saveCurVals();renderDash();
+      });
+      // Current %
+      var tdCP=el('td',{className:'r'},tr);
+      if(curPct!==null){
+        var cpSpan=el('span',{textContent:curPct.toFixed(1)+'%',id:'curpct-'+i},tdCP);
+        cpSpan.style.cssText='font-family:"DM Mono",monospace;font-size:.76rem;color:'+(Math.abs(drift||0)>5?'var(--red)':Math.abs(drift||0)>2?'var(--yellow)':'var(--text)');
+        if(drift!==null&&Math.abs(drift)>0.5){el('span',{textContent:' ('+(drift>0?'+':'')+drift.toFixed(1)+'%)',className:'drift',style:'color:'+driftColor},tdCP);}
+      }else{el('span',{textContent:'—',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.76rem'},tdCP);}
+      // Ann. Income $
+      el('td',{className:'r mono',textContent:hasPos&&curVal>0&&h.y>0?fmt(incVal):'—',style:'font-size:.76rem;color:var(--green)'},tr);
+      // Ann. Income %
+      el('td',{className:'r',textContent:hasPos&&curVal>0&&h.y>0?fmtP(h.y):'—',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted)'},tr);
+      tbody.appendChild(tr);
     });
-    // Current % — calculated read-only, shown in red when drifting
-    var tdCurPct=el('td',{className:'r'},tr);
-    if(curPct!==null){
-      var pctColor=drift!==null&&Math.abs(drift)>5?'var(--red)':drift!==null&&Math.abs(drift)>2?'var(--yellow)':'var(--text)';
-      var pctSpan=el('span',{textContent:curPct.toFixed(1)+'%',id:'curpct-'+i},tdCurPct);
-      pctSpan.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:'+pctColor;
-      if(drift!==null){
-        var driftSpan=el('span',{textContent:' ('+(drift>=0?'+':'')+drift.toFixed(1)+'%)',className:'drift'},tdCurPct);
-        driftSpan.style.color=pctColor;
-      }
-    } else {
-      el('span',{textContent:'--',style:'color:var(--muted);font-size:.78rem;font-family:"IBM Plex Mono",monospace'},tdCurPct);
-    }
-    // Target $ Value (based on Target% × portfolio)
-    el('td',{className:'r mono',textContent:fmt(d),style:'font-size:.78rem'},tr);
-    // Ann. Income — blank if not started or no yield
-    el('td',{className:'r mono',textContent:hasPos&&h.y>0?fmt(incShow):'--',style:'font-size:.78rem;color:var(--green)'},tr);
-    tbody.appendChild(tr);
+    // Bucket subtotal row
+    var bSub=document.createElement('tr');
+    bSub.className='bkt-sub';
+    var bsStyle='color:var(--text)';
+    for(var k=0;k<8;k++)el('td',{},bSub);
+    el('td',{textContent:fmt(bCurVal),className:'r mono',style:bsStyle},bSub);
+    el('td',{textContent:bCurPct>0?bCurPct.toFixed(1)+'%':'—',className:'r',style:'font-family:"DM Mono",monospace;'+bsStyle},bSub);
+    el('td',{textContent:fmt(bCurInc),className:'r mono',style:'color:var(--green)'},bSub);
+    el('td',{},bSub);
+    tbody.appendChild(bSub);
   });
-  // Totals row
-  var tfoot=tbody.parentNode.querySelector('tfoot')||document.createElement('tfoot');
-  tfoot.innerHTML='';
-  tbody.parentNode.appendChild(tfoot);
-  var tftr=document.createElement('tr');
-  tftr.style.cssText='background:var(--surface2);font-weight:600';
-  var bs='padding:.48rem .7rem;font-family:"IBM Plex Mono",monospace;border-top:2px solid var(--border2)';
-  // Blank cells for: Ticker, Name, Cat, Acct, IncType, Yield, ER, Target%
-  for(var k=0;k<8;k++) el('td',{style:bs},tftr);
-  // Current Value $ total
-  var tfCV=el('td',{style:bs+';text-align:right;font-size:.78rem',id:'h-total-curval'},tftr);
-  tfCV.textContent=tCurVal>0?fmt(tCurVal):'--';
-  // Current % — blank (no single total makes sense)
-  el('td',{style:bs},tftr);
-  // Target $ Value total
-  var tgtTotal=portTotal*ta/100;
-  el('td',{style:bs+';text-align:right;font-size:.78rem;font-family:"IBM Plex Mono",monospace'},tftr).textContent=fmt(tgtTotal);
-  // Ann. Income total
-  var tfInc=el('td',{style:bs+';text-align:right;font-size:.78rem;color:var(--green)',id:'h-total-inc'},tftr);
-  tfInc.textContent=tCurInc>0?fmt(tCurInc):'--';
-  tfoot.appendChild(tftr);
 
-  ti+=getCashIncome();
+  // TFOOT — grand totals
+  var tf=document.getElementById('htfoot');
+  tf.innerHTML='';
+  var tftr=document.createElement('tr');
+  for(var k=0;k<8;k++)el('td',{style:'padding:.5rem .65rem;border-top:2px solid var(--gold)'},tftr);
+  el('td',{textContent:fmt(tCurVal),style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--gold)'},tftr);
+  el('td',{textContent:portTotal>0&&tCurVal>0?(tCurVal/portTotal*100).toFixed(1)+'%':'—',style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--gold)'},tftr);
+  el('td',{textContent:fmt(tCurInc),style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--green)'},tftr);
+  el('td',{textContent:tCurVal>0&&tCurInc>0?fmtP(tCurInc/tCurVal*100):'—',style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--muted)'},tftr);
+  tf.appendChild(tftr);
+
+  // Summary cards
+  var ti=tCurInc+getCashIncome();
   var totalPortfolio=cashTotal+tCurVal;
-  var barPct=totalPortfolio>0?tCurVal/totalPortfolio*100:0;
-  var fill=document.getElementById('alloc-bar-fill');
-  fill.style.width=Math.min(barPct,100)+'%';
-  fill.className='alloc-bar-fill'+(barPct>100?' over':'');
-  document.getElementById('alloc-pct-text').textContent='Target: '+ta.toFixed(1)+'%';
-  document.getElementById('alloc-label').textContent='Target: '+ta.toFixed(1)+'%';
-  // Income target from Profile
-  var need=PROFILE.income||0;
+  var need=PROF.income||0;
   var cov=need>0?ti/need*100:0;
   var bY=wY/Math.max(ta,1);
-  document.getElementById('sv-port').textContent=fmt(totalPortfolio);
-  var svi=document.getElementById('sv-income');svi.textContent=fmt(ti);svi.className='sc-val '+(ti>=need?'green':'yellow');
-  document.getElementById('sv-target').textContent=fmt(need);
-  var svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='sc-val '+(cov>=100?'green':cov>=80?'yellow':'red');
-  var svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='sc-val '+(bY>=4?'green':'yellow');
   var cashPct=totalPortfolio>0?cashTotal/totalPortfolio*100:0;
-  var scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='sc-val '+(cashPct>30?'yellow':cashPct>15?'accent':'green');
+  document.getElementById('sv-port').textContent=fmt(totalPortfolio);
+  var svi=document.getElementById('sv-income');svi.textContent=fmt(ti);svi.className='card-val '+(ti>=need?'g':'y');
+  document.getElementById('sv-target').textContent=fmt(need);
+  var svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='card-val '+(cov>=100?'g':cov>=80?'y':'r');
+  var svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='card-val '+(bY>=4?'g':'y');
+  var scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='card-val '+(cashPct>50?'y':cashPct>30?'gold':'g');
+  document.getElementById('hdr-total').textContent='Total: '+fmt(totalPortfolio);
+
+  // Alloc bar
+  var barPct=totalPortfolio>0?tCurVal/totalPortfolio*100:0;
+  var fill=document.getElementById('abar-fill');
+  fill.style.width=Math.min(barPct,100)+'%';
+  fill.className='abar-fill'+(barPct>100?' over':'');
+  document.getElementById('abar-txt').textContent='Holdings: '+barPct.toFixed(1)+'%  /  Cash: '+cashPct.toFixed(1)+'%';
+
+  // Tax box
   buildTaxBox();
+  document.getElementById('dash-updated').textContent='last updated: '+new Date().toLocaleTimeString();
 }
 
-function recalc(){
-  // Recalculate current % for each row from curVal / PROFILE.port
-  var portTotal=PROFILE.port||1;
-  H.forEach(function(h){
-    // curVal is the source of truth; curPct is derived in renderH
-    // nothing to recompute here — renderH does it live
+function buildTaxBox(){
+  var by={1:[],2:[],3:[]};
+  H.forEach(function(h){if(by[h.bucket])by[h.bucket].push(h.t);});
+  var parts=[];
+  if(by[1].length)parts.push('<strong>Bucket 1 Brokerage:</strong> '+by[1].join(', ')+' — QDI/foreign tax credit');
+  if(by[2].length)parts.push('<strong>Bucket 2 IRA:</strong> '+by[2].join(', ')+' — ordinary/sheltered income');
+  if(by[3].length)parts.push('<strong>Bucket 3 Roth/HSA:</strong> '+by[3].join(', ')+' — tax-free growth');
+  var box=document.getElementById('tax-box');
+  if(box)box.innerHTML='<strong>Tax placement:</strong> '+parts.join(' &nbsp;&middot;&nbsp; ')+'. Hover ticker name for rationale.';
+}
+
+function recalc(){renderDash();saveH();}
+
+// ══════════════════════════════════════════
+// ACCOUNTS (L2)
+// ══════════════════════════════════════════
+function renderAccounts(){
+  var grid=document.getElementById('accts-grid');
+  grid.innerHTML='';
+  ACCTS.forEach(function(acct,i){
+    var card=document.createElement('div');
+    card.className='acct-card b'+acct.bucket;
+    var nm=el('div',{className:'acct-name',textContent:acct.name},card);
+    // Bucket
+    var bf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Bucket'},bf);
+    var bSel=el('select',{className:''},bf);
+    bSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
+    [{v:1,t:'1 — Brokerage/Cash (0-5yr)'},{v:2,t:'2 — IRA (5-10yr)'},{v:3,t:'3 — Roth/HSA (10+yr)'}].forEach(function(x){
+      var o=el('option',{value:x.v,textContent:x.t},bSel);
+      if(x.v===acct.bucket)o.selected=true;
+    });
+    bSel.addEventListener('change',function(){ACCTS[i].bucket=parseInt(this.value);saveAccts();renderAccounts();renderDash();});
+    // Owner
+    var of=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Owner'},of);
+    var oSel=el('select',{},of);
+    oSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
+    ['JAB','TAB','Joint'].forEach(function(o){var op=el('option',{value:o,textContent:o},oSel);if(o===acct.owner)op.selected=true;});
+    oSel.addEventListener('change',function(){ACCTS[i].owner=this.value;saveAccts();});
+    // Current balance
+    var cf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Current Balance ($)'},cf);
+    var ci=el('input',{type:'number',value:acct.bal,min:0,step:1000},cf);
+    ci.addEventListener('input',function(){ACCTS[i].bal=parseFloat(this.value)||0;saveAccts();updateAcctTotals();renderDash();});
+    // Target balance
+    var tf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Target Balance ($)'},tf);
+    var ti=el('input',{type:'number',value:acct.tgt,min:0,step:1000},tf);
+    ti.addEventListener('input',function(){ACCTS[i].tgt=parseFloat(this.value)||0;saveAccts();});
+    grid.appendChild(card);
   });
-  renderH();saveH();
+  updateAcctTotals();
 }
-function resetAllocs(){[10,8,10,15,10,18,8,7,4,5,5].forEach(function(v,i){if(H[i])H[i].a=v;});renderH();saveH();}
-
-// ── ACCOUNTS ──
-function updateAcctSummary(){
-  var pf=getPF();
-  document.getElementById('as-total').textContent=fmt(pf.total);
-  document.getElementById('as-target').textContent=fmt(pf.total*0.04);
-  document.getElementById('as-deferred').textContent=((pf.ira+pf.hsa)/pf.total*100).toFixed(0)+'%';
-  document.getElementById('as-free').textContent=(pf.roth/pf.total*100).toFixed(0)+'%';
-  document.getElementById('as-taxable').textContent=(pf.brok/pf.total*100).toFixed(0)+'%';
-  var g={IRA:[],Roth:[],Brokerage:[],HSA:[]};
-  H.forEach(function(h){if(g[h.acct])g[h.acct].push(h.t);});
-  [['IRA','tp-ira'],['Roth','tp-roth'],['Brokerage','tp-brok'],['HSA','tp-hsa']].forEach(function(x){
-    var e=document.getElementById(x[1]);
-    if(e)e.innerHTML=(g[x[0]]||[]).map(function(t){return '<span class="ticker-pill">'+t+'</span>';}).join('');
-  });
+function updateAcctTotals(){
+  var b1=getBucketTotal(1),b2=getBucketTotal(2),b3=getBucketTotal(3),grand=b1+b2+b3;
+  document.getElementById('bk1-total').textContent=fmt(b1);
+  document.getElementById('bk2-total').textContent=fmt(b2);
+  document.getElementById('bk3-total').textContent=fmt(b3);
+  document.getElementById('acct-grand').textContent=fmt(grand);
+  document.getElementById('bk1-emerg').textContent=fmt(b1);
+  document.getElementById('hdr-total').textContent='Total: '+fmt(grand+getCashTotal());
 }
 
-// ── DCA ──
-function buildDCA(){
-  var sig=gv('dc-signal'),budget=gn('dc-budget'),freq=gv('dc-freq'),pri=gv('dc-priority');
-  var pb=freq==='weekly'?budget/4.33:freq==='biweekly'?budget/2:budget;
-  var mult=sig==='green'?1:sig==='yellow'?.5:0;
-  var dep=pb*mult;
-  var banners={green:'<strong>Full DCA active.</strong> Deploy full budget proportionally across all positions.',yellow:'<strong>Half DCA.</strong> 50% deployed. Remaining cash holds in money market.',red:'<strong>Hold Cash.</strong> No DCA this period. Protect income reserve.'};
-  var banner=document.getElementById('dca-signal-banner');
-  banner.innerHTML=banners[sig];banner.className=sig==='red'?'warn-box':'info-box';
-  var sorted=H.map(function(h,i){return {h:h,i:i};});
-  if(pri==='income')sorted.sort(function(a,b){return b.h.y-a.h.y;});
-  if(pri==='growth')sorted.sort(function(a,b){return (b.h.a*(1-b.h.y/100))-(a.h.a*(1-a.h.y/100));});
-  var ta=H.reduce(function(s,h){return s+h.a;},0)||100;
-  var body=document.getElementById('dca-body'); body.innerHTML='';
-  var tots={IRA:0,Roth:0,Brokerage:0,HSA:0};
-  sorted.forEach(function(x,rank){
-    var h=x.h, amt=dep*(h.a/ta);
-    tots[h.acct]=(tots[h.acct]||0)+amt;
-    var tc=h.acct==='IRA'?'tag-ira':h.acct==='Roth'?'tag-roth':h.acct==='Brokerage'?'tag-brok':'tag-hsa';
-    var pc=rank<4?'pri-green':rank<8?'pri-yellow':'pri-red';
-    var tr=document.createElement('tr');
-    el('td',{className:'tc',textContent:h.t},tr);
-    var tdA=el('td',null,tr); el('span',{className:'tag '+tc,textContent:h.acct},tdA);
-    el('td',{className:'dca-rat',textContent:ACCT_RAT[h.acct]},tr);
-    el('td',{textContent:h.a+'%',style:'text-align:right;font-family:"IBM Plex Mono",monospace;font-size:.76rem'},tr);
-    el('td',{className:'dca-amt',textContent:sig==='red'?'$0':fmt(amt),style:'text-align:right'},tr);
-    var tdP=el('td',null,tr); el('span',{className:'pri-badge '+pc,textContent:rank<4?'High':rank<8?'Medium':'Lower'},tdP);
-    body.appendChild(tr);
-  });
-  document.getElementById('dc-total').textContent=fmt(dep);
-  document.getElementById('dc-ira').textContent=fmt(tots.IRA||0);
-  document.getElementById('dc-roth').textContent=fmt(tots.Roth||0);
-  document.getElementById('dc-brok').textContent=fmt(tots.Brokerage||0);
-  document.getElementById('dc-hsa').textContent=fmt(tots.HSA||0);
-  var warn=document.getElementById('dca-warn');
-  if(sig==='red'){warn.style.display='block';warn.innerHTML='<strong>No DCA this period.</strong> Check if any positions drifted 3%+ from targets. Monitor Market Signal weekly.';}
-  else warn.style.display='none';
-}
-
-// ── PROJECTION ──
-function setScenario(s,btn){
-  scenario=s;
-  document.querySelectorAll('.proj-btn:not(#ss-btn)').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');buildProjection();
-}
-function toggleSS(){
-  ssCut=!ssCut;
-  var btn=document.getElementById('ss-btn');
-  btn.classList.toggle('active',ssCut);
-  btn.textContent=ssCut?'SS Cut ON':'+20% SS Cut';
-  buildProjection();
-}
-function buildProjection(){
-  var pf=getPF(), total=pf.total+getCashTotal();
-  var ta=H.reduce(function(s,h){return s+h.a;},0)||100;
-  var blendY=H.reduce(function(s,h){return s+h.y*h.a;},0)/ta/100;
-  var aw=total*0.04, ssE=ssCut?aw*0.2:0;
-  var gr={flat:0,up:.10,down:-.15}[scenario];
-  var labels=['Now'];for(var m=1;m<=12;m++)labels.push('Mo '+m);
-  var bal=total,balSS=total,ci=0;
-  var bd=[],id=[],bsd=[];
-  for(m=0;m<=12;m++){
-    bd.push(+bal.toFixed(0));id.push(+ci.toFixed(0));bsd.push(+balSS.toFixed(0));
-    if(m<12){
-      var mg=Math.pow(1+gr,1/12)-1;ci+=bal*blendY/12;bal=bal*(1+mg)-(aw+ssE)/12;
-      balSS=balSS*Math.pow(1+gr,1/12)-((aw+aw*.2)/12);
-    }
-  }
-  var lr=Math.max(gr,.04),lb=total,la=69;
-  for(var y=0;y<50;y++){lb=lb*(1+lr)-aw;if(lb<=0){la=69+y;break;}if(y===49)la=119;}
-  var b95=total;for(y=0;y<26;y++)b95=b95*(1+lr)-aw;
-  var ai=total*blendY,gap=ai-aw;
-  var lae=document.getElementById('lon-age');lae.textContent=la>=119?'119+ yrs':'Age '+la;lae.className='lon-val '+(la>=95?'good':la>=85?'warn':'bad');
-  var b9e=document.getElementById('lon-95');b9e.textContent=fmt(b95);b9e.className='lon-val '+(b95>0?'good':'bad');
-  document.getElementById('lon-req').textContent=fmtP(aw/total*100);
-  var lge=document.getElementById('lon-gap');lge.textContent=(gap>=0?'+':'')+fmt(gap)+'/yr';lge.className='lon-val '+(gap>=0?'good':'bad');
-  var lse=document.getElementById('lon-ss');lse.textContent=ssCut?'-'+fmt(ssE)+'/yr':'Not modeled';lse.className='lon-val '+(ssCut?'bad':'green');
-  document.getElementById('chart-subtitle').textContent=(scenario==='flat'?'Flat 0%':scenario==='up'?'Up +10%':'Down -15%')+(ssCut?' + SS Cut 20%':'');
-  if(projChart)projChart.destroy();
-  var ctx=document.getElementById('proj-canvas').getContext('2d');
-  var ds=[
-    {label:'Portfolio Balance',data:bd,borderColor:'#1e6b3a',backgroundColor:'rgba(30,107,58,.06)',fill:true,tension:.35,pointRadius:3,pointHoverRadius:6,yAxisID:'y'},
-    {label:'Cumulative Income',data:id,borderColor:'#9a7a1a',fill:false,tension:.35,pointRadius:3,pointHoverRadius:6,borderDash:[6,3],yAxisID:'y'}
-  ];
-  if(ssCut)ds.push({label:'Balance SS Cut',data:bsd,borderColor:'rgba(139,26,26,.55)',fill:false,tension:.35,pointRadius:2,borderDash:[3,3],yAxisID:'y'});
-  projChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:ds},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}},scales:{y:{ticks:{callback:function(v){return fmt(v);},color:'#7a7468',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{color:'#e4e0d5'}},x:{ticks:{color:'#7a7468',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{display:false}}}}});
-}
-
-// ── TICKER EDITOR ──
-function openTickerEditor(){
-  renderEditorTable();
-  document.getElementById('ticker-modal').classList.add('open');
-}
-function closeTickerEditor(){
-  document.getElementById('ticker-modal').classList.remove('open');
-}
+// ══════════════════════════════════════════
+// ETF UNIVERSE / TICKER EDITOR (L3)
+// ══════════════════════════════════════════
 function renderEditorTable(){
   var tbody=document.getElementById('ed-tbody');
   tbody.innerHTML='';
@@ -959,195 +898,193 @@ function renderEditorTable(){
     tr.id='ed-row-'+i;
     // Ticker
     var tdTk=el('td',null,tr);
-    var eTk=el('input',{type:'text',className:'ei tk',value:h.t},tdTk);
-    eTk.id='e-t-'+i;
+    var eTk=el('input',{type:'text',className:'ei tk',value:h.t,id:'e-t-'+i},tdTk);
     eTk.addEventListener('input',function(){this.value=this.value.toUpperCase();});
     // Lookup btn
     var tdLk=el('td',null,tr);
-    var bLk=el('button',{className:'ed-del',title:'Auto-fill from web',textContent:'\uD83D\uDD0D'},tdLk);
-    bLk.style.color='var(--accent)';bLk.style.fontSize='.9rem';
+    var bLk=el('button',{className:'ed-del',title:'Lookup from Yahoo Finance',textContent:'\uD83D\uDD0D'},tdLk);
+    bLk.style.color='var(--gold)';bLk.style.fontSize='.9rem';
     bLk.addEventListener('click',function(){lookupRow(i);});
     // Name
     var tdNm=el('td',null,tr);
-    var eNm=el('input',{type:'text',className:'ei nm',value:h.n},tdNm);
-    eNm.id='e-n-'+i;
+    var eNm=el('input',{type:'text',className:'ei nm',value:h.n,id:'e-n-'+i},tdNm);
     // Category
     var tdCat=el('td',null,tr);
-    var eCat=el('input',{type:'text',className:'ei cat',value:h.cat},tdCat);
-    eCat.id='e-c-'+i;
-    // Account
-    var tdAcct=el('td',null,tr);
-    var eAcct=el('select',{className:'esel',title:h.why},tdAcct);
-    eAcct.id='e-a-'+i; eAcct.style.width='92px';
-    ['IRA','Roth','Brokerage','HSA'].forEach(function(a){
-      var op=el('option',{value:a,textContent:a},eAcct);
-      if(a===h.acct)op.selected=true;
+    var eCat=el('input',{type:'text',className:'ei cat',value:h.cat,id:'e-c-'+i},tdCat);
+    // Bucket/Account (as select)
+    var tdBkt=el('td',null,tr);
+    var eBkt=el('select',{className:'esel',id:'e-b-'+i,title:h.why},tdBkt);
+    eBkt.style.width='90px';
+    [{v:1,t:'B1 Brok'},{v:2,t:'B2 IRA'},{v:3,t:'B3 Roth'}].forEach(function(x){
+      var o=el('option',{value:x.v,textContent:x.t},eBkt);
+      if(x.v===h.bucket)o.selected=true;
     });
     // Income type
     var tdIt=el('td',null,tr);
-    var eIt=el('input',{type:'text',className:'ei it',value:h.it},tdIt);
-    eIt.id='e-it-'+i;
+    var eIt=el('input',{type:'text',className:'ei it',value:h.it,id:'e-it-'+i},tdIt);
     // SEC Yield
     var tdY=el('td',null,tr);
-    var eY=el('input',{type:'number',className:'ei num',value:h.y,min:0,max:50,step:0.1},tdY);
-    eY.id='e-y-'+i; eY.style.width='60px'; eY.style.textAlign='right';
+    var eY=el('input',{type:'number',className:'ei num',value:h.y,min:0,max:50,step:0.1,id:'e-y-'+i},tdY);
+    eY.style.textAlign='right';
     // ER
     var tdEr=el('td',null,tr);
-    var eEr=el('input',{type:'number',className:'ei num',value:h.er,min:0,max:99.99,step:0.01},tdEr);
-    eEr.id='e-er-'+i; eEr.style.width='62px'; eEr.style.textAlign='right';
+    var eEr=el('input',{type:'number',className:'ei num',value:h.er,min:0,max:99.99,step:0.01,id:'e-er-'+i},tdEr);
+    eEr.style.textAlign='right';
     // Alloc
     var tdAl=el('td',null,tr);
-    var eAl=el('input',{type:'number',className:'ei num',value:h.a,min:0,max:100,step:0.5},tdAl);
-    eAl.id='e-al-'+i; eAl.style.width='56px'; eAl.style.textAlign='right';
+    var eAl=el('input',{type:'number',className:'ei num',value:h.a,min:0,max:PROF.maxpct,step:0.5,id:'e-al-'+i},tdAl);
+    eAl.style.textAlign='right';
+    // Max%
+    var tdMx=el('td',null,tr);
+    var eMx=el('input',{type:'number',className:'ei num',value:h.maxPct||PROF.maxpct,min:0,max:100,step:0.5,id:'e-mx-'+i},tdMx);
+    eMx.style.textAlign='right';
     // Status + Delete
     var tdAct=el('td',null,tr);
-    var sSt=el('span',{id:'e-status-'+i},tdAct);
-    sSt.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:.6rem;color:var(--muted);min-width:32px;display:inline-block;margin-right:4px';
+    var stSp=el('span',{id:'e-status-'+i,className:'status-span',style:'color:var(--muted)'},tdAct);
     var bDel=el('button',{className:'ed-del',title:'Remove',textContent:'\uD83D\uDDD1'},tdAct);
     bDel.addEventListener('click',function(){
-      if(H.length<=1){alert('Keep at least one holding.');return;}
+      if(H.length<=1){alert('Keep at least one.');return;}
       if(confirm('Remove '+H[i].t+'?')){H.splice(i,1);renderEditorTable();}
     });
     tbody.appendChild(tr);
   });
-  // Add row
   buildAddTickerRow();
 }
 
 function buildAddTickerRow(){
   var row=document.getElementById('add-ticker-row');
   row.innerHTML='';
-  var eTk=el('input',{type:'text',className:'ei tk',placeholder:'TICKER'},row);
-  eTk.style.width='70px';eTk.id='new-t';
-  eTk.addEventListener('input',function(){this.value=this.value.toUpperCase();});
-  var bLk=el('button',{className:'btn btn-outline',textContent:'\uD83D\uDD0D Lookup'},row);
-  bLk.style.cssText='padding:.3rem .7rem;font-size:.68rem';
-  bLk.id='lookup-new-btn';
+  var nTk=el('input',{type:'text',className:'ei tk',placeholder:'TICKER',id:'new-t',style:'width:72px'},row);
+  nTk.addEventListener('input',function(){this.value=this.value.toUpperCase();});
+  var bLk=el('button',{className:'btn btn-dim',textContent:'\uD83D\uDD0D Lookup',id:'lookup-new-btn'},row);
+  bLk.style.cssText='padding:.28rem .65rem;font-size:.66rem';
   bLk.addEventListener('click',lookupNewTicker);
-  var eNm=el('input',{type:'text',className:'ei nm',placeholder:'Fund name'},row);
-  eNm.style.width='185px';eNm.id='new-n';
-  var eCat=el('input',{type:'text',className:'ei cat',placeholder:'Category'},row);
-  eCat.style.width='110px';eCat.id='new-cat';
-  var eAcct=el('select',{className:'esel'},row);
-  eAcct.style.width='95px';eAcct.id='new-acct';
-  ['IRA','Roth','Brokerage','HSA'].forEach(function(a){el('option',{value:a,textContent:a},eAcct);});
-  var eIt=el('input',{type:'text',className:'ei it',placeholder:'Income type'},row);
-  eIt.style.width='140px';eIt.id='new-it';
-  var eY=el('input',{type:'number',className:'ei num',placeholder:'Yld%',min:0,max:50,step:0.1},row);
-  eY.style.width='65px';eY.id='new-y';
-  var eEr=el('input',{type:'number',className:'ei num',placeholder:'ER%',min:0,max:99.99,step:0.01},row);
-  eEr.style.width='60px';eEr.id='new-er';
-  var eAl=el('input',{type:'number',className:'ei num',placeholder:'Tgt%',min:0,max:100,step:0.5},row);
-  eAl.style.width='60px';eAl.id='new-al';
-  var bAdd=el('button',{className:'btn btn-primary',textContent:'+ Add'},row);
-  bAdd.style.cssText='padding:.35rem .9rem;font-size:.7rem';
+  el('input',{type:'text',className:'ei nm',placeholder:'Fund name',id:'new-n',style:'width:175px'},row);
+  el('input',{type:'text',className:'ei cat',placeholder:'Category',id:'new-cat',style:'width:105px'},row);
+  var aBkt=el('select',{className:'esel',id:'new-bkt',style:'width:88px'},row);
+  [{v:1,t:'B1 Brok'},{v:2,t:'B2 IRA'},{v:3,t:'B3 Roth'}].forEach(function(x){el('option',{value:x.v,textContent:x.t},aBkt);});
+  el('input',{type:'text',className:'ei it',placeholder:'Income type',id:'new-it',style:'width:130px'},row);
+  el('input',{type:'number',className:'ei num',placeholder:'Yld%',id:'new-y',min:0,max:50,step:0.1,style:'width:60px;text-align:right'},row);
+  el('input',{type:'number',className:'ei num',placeholder:'ER%',id:'new-er',min:0,max:99.99,step:0.01,style:'width:55px;text-align:right'},row);
+  el('input',{type:'number',className:'ei num',placeholder:'Tgt%',id:'new-al',min:0,max:100,step:0.5,style:'width:55px;text-align:right'},row);
+  var bAdd=el('button',{className:'btn btn-gold',textContent:'+ Add',style:'padding:.3rem .85rem;font-size:.68rem'},row);
   bAdd.addEventListener('click',addNewTicker);
-  var sSt=el('span',{id:'lookup-status'},row);
-  sSt.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:.65rem;color:var(--muted)';
+  el('span',{id:'lookup-status',className:'status-span',style:'color:var(--muted)'},row);
 }
 
 function addNewTicker(){
   var t=(gv('new-t')||'').trim().toUpperCase();
   if(!t){alert('Enter a ticker first.');return;}
-  H.push({t:t,n:gv('new-n')||t,cat:gv('new-cat')||'Custom',acct:gv('new-acct')||'Brokerage',
+  H.push({t:t,n:gv('new-n')||t,cat:gv('new-cat')||'Custom',bucket:parseInt(gv('new-bkt'))||1,
     it:gv('new-it')||'See prospectus',y:parseFloat(gv('new-y'))||0,
-    er:Math.min(99.99,parseFloat(gv('new-er'))||0),a:Math.min(100,parseFloat(gv('new-al'))||0),cur:0,why:'User-defined'});
+    er:Math.min(99.99,parseFloat(gv('new-er'))||0),
+    a:Math.min(PROF.maxpct,parseFloat(gv('new-al'))||0),curVal:null,why:'User-defined'});
   renderEditorTable();
 }
 
 function saveTickerEdits(){
   H.forEach(function(h,i){
-    var gEl=function(id){return document.getElementById(id);};
-    var tEl=gEl('e-t-'+i),nEl=gEl('e-n-'+i),cEl=gEl('e-c-'+i),aEl=gEl('e-a-'+i),itEl=gEl('e-it-'+i);
-    var yEl=gEl('e-y-'+i),erEl=gEl('e-er-'+i),alEl=gEl('e-al-'+i);
-    if(tEl&&tEl.value.trim()) h.t=tEl.value.trim().toUpperCase();
-    if(nEl&&nEl.value.trim()) h.n=nEl.value.trim();
-    if(cEl&&cEl.value.trim()) h.cat=cEl.value.trim();
-    if(aEl&&aEl.value)        h.acct=aEl.value;
+    function gEl(id){return document.getElementById(id);}
+    var tEl=gEl('e-t-'+i),nEl=gEl('e-n-'+i),cEl=gEl('e-c-'+i),bEl=gEl('e-b-'+i),itEl=gEl('e-it-'+i);
+    var yEl=gEl('e-y-'+i),erEl=gEl('e-er-'+i),alEl=gEl('e-al-'+i),mxEl=gEl('e-mx-'+i);
+    if(tEl&&tEl.value.trim())h.t=tEl.value.trim().toUpperCase();
+    if(nEl&&nEl.value.trim())h.n=nEl.value.trim();
+    if(cEl&&cEl.value.trim())h.cat=cEl.value.trim();
+    if(bEl&&bEl.value)h.bucket=parseInt(bEl.value)||h.bucket;
     if(itEl&&itEl.value.trim())h.it=itEl.value.trim();
-    if(yEl&&yEl.value.trim()) h.y=parseFloat(yEl.value)||0;
+    if(yEl&&yEl.value.trim())h.y=parseFloat(yEl.value)||0;
     if(erEl&&erEl.value.trim())h.er=Math.min(99.99,parseFloat(erEl.value)||0);
-    // Preserve existing target% if field is blank; only update if user typed something
-    if(alEl&&alEl.value.trim()!=='')h.a=Math.min(100,parseFloat(alEl.value)||0);
+    if(alEl&&alEl.value.trim()!=='')h.a=Math.min(PROF.maxpct,parseFloat(alEl.value)||0);
+    if(mxEl&&mxEl.value.trim()!=='')h.maxPct=parseFloat(mxEl.value)||PROF.maxpct;
   });
-  saveH();renderH();updateAcctSummary();closeTickerEditor();
+  saveH();renderDash();updateAcctTotals();
 }
 
-// ── API LOOKUP ──
-var API='https://api.anthropic.com/v1/messages';
+// ══════════════════════════════════════════
+// YAHOO FINANCE LOOKUP (CORS-safe via proxy)
+// ══════════════════════════════════════════
+var YF_PROXY='https://query1.finance.yahoo.com/v8/finance/chart/';
+var YF_QUOTE='https://query2.finance.yahoo.com/v10/finance/quoteSummary/';
 
 function lookupTicker(ticker,cb,errCb){
-  var prompt='Look up ETF or fund ticker symbol '+ticker+'. Return ONLY a raw JSON object with no markdown fences or explanation: {"name":"Full fund name","category":"Short category e.g. T-Bills/Bond/Equity/Gold/Preferred/Covered Call","acct":"Best tax account: IRA or Roth or Brokerage or HSA","it":"Abbreviated income type: QDI or Ordinary or ELNs or 60/40 Options or None","sec_yield":number_or_null,"er":number,"why":"One sentence tax placement rationale"}. For sec_yield use the SEC 30-day standardized yield as a number (e.g. 5.1 not 0.051). For er use the expense ratio as a percent number (e.g. 0.35 not 0.0035). If SEC yield not available use null.';
-  fetch(API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:500,
-      tools:[{type:'web_search_20250305',name:'web_search'}],
-      messages:[{role:'user',content:prompt}]
-    })
-  })
-  .then(function(r){
-    if(!r.ok) throw new Error('HTTP '+r.status+' - '+r.statusText);
-    return r.json();
-  })
+  // Use YF quoteSummary via a CORS proxy
+  var url='https://corsproxy.io/?'+encodeURIComponent(
+    'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'+ticker+
+    '?modules=summaryProfile,defaultKeyStatistics,summaryDetail,assetProfile,fundProfile,topHoldings'
+  );
+  fetch(url,{headers:{'Accept':'application/json'}})
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
   .then(function(data){
-    if(data.error) throw new Error(data.error.message||'API error');
-    var raw='';
-    (data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
-    var s=raw.indexOf('{'),e=raw.lastIndexOf('}');
-    if(s<0||e<0) throw new Error('No JSON found in response');
-    var parsed=JSON.parse(raw.slice(s,e+1));
-    cb(parsed);
+    var res=data.quoteSummary&&data.quoteSummary.result&&data.quoteSummary.result[0];
+    if(!res)throw new Error('No data for '+ticker);
+    var sd=res.summaryDetail||{};
+    var fp=res.fundProfile||{};
+    var sp=res.summaryProfile||{};
+    var ks=res.defaultKeyStatistics||{};
+    // Extract what we can
+    var name=fp.longName||sp.longBusinessSummary||ticker;
+    if(name&&name.length>60)name=name.slice(0,60);
+    var er=(fp.annualReportExpenseRatio&&fp.annualReportExpenseRatio.raw!=null)?fp.annualReportExpenseRatio.raw*100:
+           (ks.annualHoldingsTurnover&&ks.annualHoldingsTurnover.raw!=null)?null:null;
+    var yld=(sd.yield&&sd.yield.raw!=null)?sd.yield.raw*100:
+            (sd.dividendYield&&sd.dividendYield.raw!=null)?sd.dividendYield.raw*100:null;
+    cb({name:name||ticker,er:er,yld:yld,raw:res});
   })
   .catch(function(err){
-    errCb(err);
+    // Fallback: try the Anthropic API
+    lookupViaAPI(ticker,cb,errCb);
   });
+}
+
+function lookupViaAPI(ticker,cb,errCb){
+  var prompt='Look up ETF ticker '+ticker+'. Return ONLY raw JSON: {"name":"full name","category":"short category","bucket":1or2or3,"it":"QDI or Ordinary or ELNs or 60/40 Options or None","sec_yield":number_or_null,"er":number,"why":"one sentence tax rationale"}. Bucket: 1=Brokerage/taxable QDI, 2=IRA/ordinary income, 3=Roth/HSA long-term growth. SEC 30-day yield as percent number. ER as percent e.g. 0.35.';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:prompt}]})
+  })
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(data){
+    var raw='';(data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
+    var s=raw.indexOf('{'),e=raw.lastIndexOf('}');
+    if(s<0||e<0)throw new Error('No JSON');
+    cb(JSON.parse(raw.slice(s,e+1)));
+  })
+  .catch(errCb);
 }
 
 function applyLookupToRow(d,i){
-  function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined&&v!=='')e.value=v;}
-  sv('e-n-'+i, d.name);
-  sv('e-c-'+i, d.category);
-  sv('e-it-'+i, d.it);
-  if(d.sec_yield!=null) sv('e-y-'+i, (+d.sec_yield).toFixed(2));
-  if(d.er!=null&&d.er>0) sv('e-er-'+i, (+d.er).toFixed(2));
-  var aEl=document.getElementById('e-a-'+i);
-  if(aEl&&d.acct){
-    for(var k=0;k<aEl.options.length;k++){
-      if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}
-    }
-  }
-  // Update the why tooltip on the account select
-  if(d.why&&aEl) aEl.title=d.why;
+  function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==''&&v!==undefined)e.value=v;}
+  // Handle both YF format {name,er,yld} and API format {name,category,it,sec_yield,er,bucket}
+  sv('e-n-'+i,d.name||d.n);
+  if(d.category)sv('e-c-'+i,d.category);
+  if(d.it)sv('e-it-'+i,d.it);
+  var yVal=d.sec_yield!=null?d.sec_yield:d.yld;
+  if(yVal!=null)sv('e-y-'+i,(+yVal).toFixed(2));
+  var erVal=d.er!=null&&d.er>0?d.er:null;
+  if(erVal!=null)sv('e-er-'+i,(+erVal).toFixed(2));
+  if(d.bucket){var bEl=document.getElementById('e-b-'+i);if(bEl){for(var k=0;k<bEl.options.length;k++)if(parseInt(bEl.options[k].value)===d.bucket){bEl.selectedIndex=k;break;}}}
+  if(d.why){var bEl2=document.getElementById('e-b-'+i);if(bEl2)bEl2.title=d.why;}
+}
+
+function setStatus(stEl,msg,color,delay){
+  if(!stEl)return;stEl.textContent=msg;stEl.style.color=color||'var(--muted)';
+  if(delay)setTimeout(function(){stEl.textContent='';},delay);
 }
 
 function lookupRow(i){
-  var tEl=document.getElementById('e-t-'+i);
-  var stEl=document.getElementById('e-status-'+i);
-  if(!tEl||!stEl){console.error('lookupRow: missing elements for index',i);return;}
+  var tEl=document.getElementById('e-t-'+i),stEl=document.getElementById('e-status-'+i);
+  if(!tEl||!stEl)return;
   var ticker=tEl.value.trim().toUpperCase();
-  if(!ticker){alert('Enter a ticker symbol first.');return;}
-  stEl.textContent='...';
-  stEl.style.color='var(--muted)';
+  if(!ticker){alert('Enter a ticker first.');return;}
+  setStatus(stEl,'...','var(--muted)');
   lookupTicker(ticker,
-    function(d){
-      applyLookupToRow(d,i);
-      stEl.textContent='OK';
-      stEl.style.color='var(--green)';
-      setTimeout(function(){stEl.textContent='';},3000);
-    },
+    function(d){applyLookupToRow(d,i);setStatus(stEl,'OK','var(--green)',3000);},
     function(err){
-      console.error('Lookup error for row',i,':',err);
-      var msg=err&&err.message?err.message:'unknown error';
-      if(msg.indexOf('Failed to fetch')>=0||msg.indexOf('NetworkError')>=0||msg.indexOf('CORS')>=0){
-        stEl.textContent='CORS - use within claude.ai';
-      } else {
-        stEl.textContent='Error: '+msg.slice(0,20);
-      }
-      stEl.style.color='var(--red)';
-      setTimeout(function(){stEl.textContent='';},6000);
+      var msg=(err&&err.message||'').indexOf('fetch')>=0?'Network err':'Error';
+      setStatus(stEl,msg,'var(--red)',5000);
+      console.error('Lookup error row '+i+':',err);
     }
   );
 }
@@ -1155,74 +1092,164 @@ function lookupRow(i){
 function lookupNewTicker(){
   var tkEl=document.getElementById('new-t');
   var ticker=tkEl?(tkEl.value||'').trim().toUpperCase():'';
-  if(!ticker){alert('Enter a ticker symbol first (e.g. IAUM).');return;}
-  var btn=document.getElementById('lookup-new-btn');
-  var st=document.getElementById('lookup-status');
+  if(!ticker){alert('Enter a ticker symbol first.');return;}
+  var btn=document.getElementById('lookup-new-btn'),st=document.getElementById('lookup-status');
   if(btn)btn.disabled=true;
-  if(st){st.textContent='Searching '+ticker+'...';st.style.color='var(--muted)';}
+  setStatus(st,'Searching '+ticker+'...','var(--muted)');
   lookupTicker(ticker,
     function(d){
-      function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==undefined&&v!=='')e.value=v;}
-      sv('new-n', d.name);
-      sv('new-cat', d.category);
-      sv('new-it', d.it);
-      if(d.sec_yield!=null) sv('new-y', (+d.sec_yield).toFixed(2));
-      if(d.er!=null&&d.er>0) sv('new-er', (+d.er).toFixed(2));
-      var aEl=document.getElementById('new-acct');
-      if(aEl&&d.acct){
-        for(var k=0;k<aEl.options.length;k++){
-          if(aEl.options[k].value===d.acct){aEl.selectedIndex=k;break;}
-        }
-      }
-      if(st){st.textContent='Filled - review then click + Add';st.style.color='var(--green)';}
-      setTimeout(function(){if(st)st.textContent='';},5000);
+      function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!=='')e.value=v;}
+      sv('new-n',d.name||d.n);sv('new-cat',d.category);sv('new-it',d.it);
+      var yVal=d.sec_yield!=null?d.sec_yield:d.yld;
+      if(yVal!=null)sv('new-y',(+yVal).toFixed(2));
+      if(d.er!=null&&d.er>0)sv('new-er',(+d.er).toFixed(2));
+      if(d.bucket){var bEl=document.getElementById('new-bkt');if(bEl){for(var k=0;k<bEl.options.length;k++)if(parseInt(bEl.options[k].value)===d.bucket){bEl.selectedIndex=k;break;}}}
+      setStatus(st,'Filled — review then + Add','var(--green)',5000);
       if(btn)btn.disabled=false;
     },
     function(err){
-      console.error('Lookup error:',err);
-      var msg=err&&err.message?err.message:'unknown';
-      var display=(msg.indexOf('Failed to fetch')>=0||msg.indexOf('CORS')>=0)
-        ?'CORS error - use within claude.ai'
-        :'Error: '+msg.slice(0,25);
-      if(st){st.textContent=display;st.style.color='var(--red)';}
-      setTimeout(function(){if(st)st.textContent='';},6000);
+      var msg=(err&&err.message||'').indexOf('fetch')>=0?'Network error — fill manually':'Error — fill manually';
+      setStatus(st,msg,'var(--red)',6000);
       if(btn)btn.disabled=false;
+      console.error('New ticker lookup error:',err);
     }
   );
 }
 
-// ── PROFILE & ALLOCATION ──
+// Refresh ALL tickers at once
+function refreshAllLookups(){
+  var btn=document.getElementById('refresh-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="btn-spin">&#8635;</span> Refreshing...';}
+  var idx=0;
+  function next(){
+    if(idx>=H.length){
+      saveH();renderDash();
+      if(btn){btn.disabled=false;btn.textContent='&#8635; Refresh All Lookups';}
+      return;
+    }
+    var h=H[idx];var i=idx;idx++;
+    lookupTicker(h.t,
+      function(d){
+        if(d.name||d.n)h.n=d.name||d.n;
+        var yVal=d.sec_yield!=null?d.sec_yield:d.yld;
+        if(yVal!=null)h.y=+(+yVal).toFixed(2);
+        if(d.er!=null&&d.er>0)h.er=+(+d.er).toFixed(2);
+        if(d.category)h.cat=d.category;
+        if(d.it)h.it=d.it;
+        if(d.bucket)h.bucket=d.bucket;
+        setTimeout(next,400); // rate limit
+      },
+      function(){setTimeout(next,400);}
+    );
+  }
+  next();
+}
+
+// ══════════════════════════════════════════
+// DCA
+// ══════════════════════════════════════════
+var BRAT={1:'QDI/foreign tax credit in taxable brokerage',2:'Ordinary income sheltered in IRA',3:'Tax-free growth in Roth/HSA'};
+function buildDCA(){
+  var sig=gv('dc-signal'),budget=gn('dc-budget'),freq=gv('dc-freq'),pri=gv('dc-priority');
+  var pb=freq==='weekly'?budget/4.33:freq==='biweekly'?budget/2:budget;
+  var mult=sig==='green'?1:sig==='yellow'?.5:0;
+  var dep=pb*mult;
+  var banners={
+    green:'<strong>Full DCA.</strong> Deploy full budget proportionally across all positions by Target%.',
+    yellow:'<strong>Half DCA.</strong> 50% deployed — hold remainder in SGOV or SWVXX.',
+    red:'<strong>Hold Cash.</strong> No DCA this period. Protect Bucket 1 emergency reserve.'
+  };
+  var banner=document.getElementById('dca-banner');
+  banner.innerHTML=banners[sig];banner.className=sig==='red'?'warn-box':'info-box';
+  var sorted=H.slice();
+  if(pri==='income')sorted.sort(function(a,b){return b.y-a.y;});
+  if(pri==='growth')sorted.sort(function(a,b){return b.bucket-a.bucket;});
+  var ta=H.reduce(function(s,h){return s+h.a;},0)||100;
+  var body=document.getElementById('dca-body');body.innerHTML='';
+  var tots={1:0,2:0,3:0};
+  sorted.forEach(function(h,rank){
+    var amt=dep*(h.a/ta);tots[h.bucket]=(tots[h.bucket]||0)+amt;
+    var pc=rank<4?'pri-g':rank<8?'pri-y':'pri-r';
+    var tr=document.createElement('tr');
+    el('td',{className:'tc',textContent:h.t},tr);
+    var tdB=el('td',null,tr);el('span',{className:'tag '+bucketTagClass(h.bucket),textContent:'B'+h.bucket},tdB);
+    el('td',{className:'',textContent:BRAT[h.bucket]||'',style:'font-size:.68rem;color:var(--muted)'},tr);
+    el('td',{textContent:h.a+'%',style:'text-align:right;font-family:"DM Mono",monospace;font-size:.74rem'},tr);
+    el('td',{className:'dca-amt',textContent:sig==='red'?'$0':fmt(amt),style:'text-align:right'},tr);
+    var tdP=el('td',null,tr);el('span',{className:'pri-badge '+pc,textContent:rank<4?'High':rank<8?'Med':'Low'},tdP);
+    body.appendChild(tr);
+  });
+  document.getElementById('dc-total').textContent=fmt(dep);
+  document.getElementById('dc-b1').textContent=fmt(tots[1]||0);
+  document.getElementById('dc-b2').textContent=fmt(tots[2]||0);
+  document.getElementById('dc-b3').textContent=fmt(tots[3]||0);
+}
+
+// ══════════════════════════════════════════
+// PROJECTION
+// ══════════════════════════════════════════
+function setScen(s,btn){SCEN=s;document.querySelectorAll('.proj-btn:not(#ss-btn)').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');buildProjection();}
+function toggleSS(){SS=!SS;var btn=document.getElementById('ss-btn');btn.classList.toggle('active',SS);btn.textContent=SS?'SS Cut ON':'+20% SS Cut';buildProjection();}
+function buildProjection(){
+  var total=PROF.port||getGrandTotal()||1;
+  var ta=H.reduce(function(s,h){return s+h.a;},0)||100;
+  var blendY=H.reduce(function(s,h){return s+h.y*h.a;},0)/ta/100;
+  var aw=PROF.income||44000,ssE=SS?aw*.2:0;
+  var gr={flat:0,up:.10,down:-.15}[SCEN];
+  var labels=['Now'];for(var m=1;m<=12;m++)labels.push('Mo '+m);
+  var bal=total,balSS=total,ci=0;var bd=[],id=[],bsd=[];
+  for(m=0;m<=12;m++){
+    bd.push(+bal.toFixed(0));id.push(+ci.toFixed(0));bsd.push(+balSS.toFixed(0));
+    if(m<12){var mg=Math.pow(1+gr,1/12)-1;ci+=bal*blendY/12;bal=bal*(1+mg)-(aw+ssE)/12;balSS=balSS*Math.pow(1+gr,1/12)-((aw+aw*.2)/12);}
+  }
+  var lr=Math.max(gr,.04),lb=total,la=PROF.o1age||68;
+  for(var y=0;y<60;y++){lb=lb*(1+lr)-aw;if(lb<=0){la=(PROF.o1age||68)+y;break;}if(y===59)la=130;}
+  var b95=total;for(y=0;y<(95-(PROF.o1age||68));y++)b95=b95*(1+lr)-aw;
+  var ai=total*blendY,gap=ai-aw;
+  var lae=document.getElementById('lon-age');lae.textContent=la>=130?'130+':'Age '+la;lae.className='lon-val '+(la>=95?'good':la>=(PROF.o2live||92)?'warn':'bad');
+  var b9e=document.getElementById('lon-95');b9e.textContent=fmt(b95);b9e.className='lon-val '+(b95>0?'good':'bad');
+  document.getElementById('lon-req').textContent=fmtP(aw/total*100);
+  var lge=document.getElementById('lon-gap');lge.textContent=(gap>=0?'+':'')+fmt(gap)+'/yr';lge.className='lon-val '+(gap>=0?'good':'bad');
+  var lse=document.getElementById('lon-ss');lse.textContent=SS?'-'+fmt(ssE)+'/yr':'Not modeled';lse.className='lon-val '+(SS?'bad':'good');
+  document.getElementById('chart-sub').textContent=(SCEN==='flat'?'Flat 0%':SCEN==='up'?'Up +10%':'Down -15%')+(SS?' + SS Cut 20%':'');
+  if(projChart)projChart.destroy();
+  var ctx=document.getElementById('proj-canvas').getContext('2d');
+  var ds=[
+    {label:'Balance',data:bd,borderColor:'var(--gold)',backgroundColor:'rgba(212,168,83,.06)',fill:true,tension:.35,pointRadius:3,pointHoverRadius:6},
+    {label:'Cumulative Income',data:id,borderColor:'var(--green)',fill:false,tension:.35,pointRadius:3,pointHoverRadius:6,borderDash:[5,3]}
+  ];
+  if(SS)ds.push({label:'Balance SS Cut',data:bsd,borderColor:'var(--red)',fill:false,tension:.35,pointRadius:2,borderDash:[3,3]});
+  projChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:ds},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}},scales:{y:{ticks:{callback:function(v){return fmt(v);},color:'#7a8099',font:{family:"'DM Mono',monospace",size:10}},grid:{color:'#2a3148'}},x:{ticks:{color:'#7a8099',font:{family:"'DM Mono',monospace",size:10}},grid:{display:false}}}}});
+}
+
+// ══════════════════════════════════════════
+// PROFILE MODAL
+// ══════════════════════════════════════════
 function openProfileModal(){
-  // Pre-fill from saved profile
-  var set=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;};
-  set('p-age',PROFILE.age); set('p-horizon',PROFILE.horizon);
-  set('p-port',PROFILE.port); set('p-income',PROFILE.income);
-  set('p-risk',PROFILE.risk); set('p-priority',PROFILE.priority);
+  function pf(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
+  pf('p-o1i',PROF.o1i);pf('p-o2i',PROF.o2i);
+  pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
+  pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
+  pf('p-port',PROF.port);pf('p-income',PROF.income);
+  pf('p-maxpct',PROF.maxpct);pf('p-risk',PROF.risk);
   document.getElementById('profile-modal').classList.add('open');
 }
-function closeProfileModal(){ document.getElementById('profile-modal').classList.remove('open'); }
-function saveProfileAndClose(){ saveProfile(); closeProfileModal(); renderH(); }
+function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
+function saveAndCloseProfile(){saveProf();renderDash();closeProfileModal();}
 
-
-
-// ── INIT ──
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
 function init(){
-  var saved=sl(SK.h,null);if(saved&&saved.length)H=saved;
-  loadCash();loadAccts();loadSettings();loadCurPct();loadProfile();
-  var s=sl(SK.sig,'green');setSignal(s);
-  renderCash();renderH();updateAcctSummary();
-  // Wire buttons via addEventListener (no inline onclick needed)
+  loadAll();
+  renderCash();renderDash();renderAccounts();renderEditorTable();
   document.getElementById('add-cash-btn').addEventListener('click',addCashRow);
-  document.getElementById('edit-tickers-btn').addEventListener('click',openTickerEditor);
-  document.getElementById('modal-close-btn').addEventListener('click',closeTickerEditor);
-  document.getElementById('save-tickers-btn').addEventListener('click',saveTickerEdits);
-  document.getElementById('ticker-modal').addEventListener('click',function(e){if(e.target===this)closeTickerEditor();});
+  document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
   document.getElementById('profile-btn').addEventListener('click',openProfileModal);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
-  document.getElementById('profile-save-btn').addEventListener('click',saveProfileAndClose);
+  document.getElementById('profile-save-btn').addEventListener('click',saveAndCloseProfile);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
 }
-
 init();
 })();
 </script>
