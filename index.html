@@ -245,13 +245,8 @@ canvas{width:100%!important;}
 
 <div class="hdr">
   <div class="hdr-brand">JAB <em>/</em> TAB Portfolio <em>Manager</em></div>
-  <div class="hdr-meta">
-    <span><span class="dot dot-b1"></span>Bucket 1 · Brokerage/Cash</span>
-    <span><span class="dot dot-b2"></span>Bucket 2 · IRA</span>
-    <span><span class="dot dot-b3"></span>Bucket 3 · Roth/HSA</span>
-    <span id="hdr-total" style="color:var(--gold)">Total: $0</span>
-  </div>
-  <button id="theme-toggle" onclick="toggleTheme()" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:.28rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;" title="Toggle light/dark mode">&#9788; Light</button>
+  <!-- bucket legend removed -->
+  <button id="theme-toggle" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:.28rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;" title="Toggle light/dark mode">&#9788; Light</button>
 </div>
 
 <div class="sig-bar">
@@ -636,10 +631,10 @@ function renderDash(){
   [1,2,3].forEach(function(bkt){
     var bktH=H.filter(function(h){return h.bucket===bkt;});
     if(bktH.length===0&&(bkt!==1||CASH.length===0))return;
-    // Bucket header row
+    // Bucket header row (totals filled in after loop)
     var bHdr=document.createElement('tr');
     bHdr.className='bkt-hdr '+bucketClass(bkt);
-    el('td',{colSpan:14,textContent:bucketLabel(bkt)+' --- '+acctForBucket(bkt)},bHdr);
+    var bHdrTd=el('td',{colSpan:14,textContent:bucketLabel(bkt)+' — '+acctForBucket(bkt)},bHdr);
     tbody.appendChild(bHdr);
     var bCurVal=0,bTgtVal=0,bCurInc=0,bCurPct=0;
     // Cash rows inside Bucket 1
@@ -681,11 +676,6 @@ function renderDash(){
         bCurVal+=c.bal;bCurInc+=cashInc;
         tbody.appendChild(tr);
       });
-      var addTr=document.createElement('tr');addTr.style.background='rgba(74,143,232,.03)';
-      var addTd=el('td',{colSpan:14},addTr);
-      var addBtn=el('button',{textContent:'+ Add Cash / MMF / CD',className:'add-row-btn'},addTd);
-      addBtn.style.marginTop='0';addBtn.addEventListener('click',addCashRow);
-      tbody.appendChild(addTr);
     }
     bktH.forEach(function(h){
       var i=H.indexOf(h);
@@ -754,16 +744,13 @@ function renderDash(){
       (function(ni){bNt.addEventListener('click',function(){openNoteModal(ni);});})(i);
       tbody.appendChild(tr);
     });
-    // Bucket subtotal row
-    var bSub=document.createElement('tr');
-    bSub.className='bkt-sub';
-    var bsStyle='color:var(--text)';
-    for(var k=0;k<8;k++)el('td',{},bSub);
-    el('td',{textContent:fmt(bCurVal),className:'r mono',style:bsStyle},bSub);
-    el('td',{textContent:bCurPct>0?bCurPct.toFixed(1)+'%':'—',className:'r',style:'font-family:"DM Mono",monospace;'+bsStyle},bSub);
-    el('td',{textContent:fmt(bCurInc),className:'r mono',style:'color:var(--green)'},bSub);
-    el('td',{},bSub);
-    tbody.appendChild(bSub);
+    // Update bucket header with totals
+    var bktAcctTot=getBucketTotal(bkt);
+    var bktParts=[bucketLabel(bkt)+' — '+acctForBucket(bkt)];
+    if(bktAcctTot>0) bktParts.push('Accts: '+fmt(bktAcctTot));
+    if(bCurVal>0)    bktParts.push('Holdings: '+fmt(bCurVal));
+    if(bCurInc>0)    bktParts.push('Income: '+fmt(bCurInc)+'/yr');
+    bHdrTd.textContent=bktParts.join('  ·  ');
   });
 
   // TFOOT — grand totals
@@ -790,7 +777,7 @@ function renderDash(){
   var svc=document.getElementById('sv-cov');svc.textContent=cov.toFixed(0)+'%';svc.className='card-val '+(cov>=100?'g':cov>=80?'y':'r');
   var svy=document.getElementById('sv-yield');svy.textContent=fmtP(bY);svy.className='card-val '+(bY>=4?'g':'y');
   var scp=document.getElementById('sv-cashpct');scp.textContent=cashPct.toFixed(1)+'%';scp.className='card-val '+(cashPct>50?'y':cashPct>30?'gold':'g');
-  document.getElementById('hdr-total').textContent='Total: '+fmt(totalPortfolio);
+  var _ht=document.getElementById('hdr-total');if(_ht)_ht.textContent='Total: '+fmt(totalPortfolio);
 
   // Alloc bar
   var barPct=totalPortfolio>0?tCurVal/totalPortfolio*100:0;
@@ -865,7 +852,7 @@ function updateAcctTotals(){
   document.getElementById('bk3-total').textContent=fmt(b3);
   document.getElementById('acct-grand').textContent=fmt(grand);
   document.getElementById('bk1-emerg').textContent=fmt(b1);
-  document.getElementById('hdr-total').textContent='Total: '+fmt(grand+getCashTotal());
+  var _ht2=document.getElementById('hdr-total');if(_ht2)_ht2.textContent='Total: '+fmt(grand+getCashTotal());
 }
 
 // ══════════════════════════════════════════
@@ -1248,6 +1235,7 @@ function init(){
   renderAccounts();
   renderEditorTable();
   document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
+  document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
   document.getElementById('note-overlay').addEventListener('click',function(e){if(e.target===this)closeNote();});
   document.getElementById('profile-btn').addEventListener('click',openProfileModal);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
