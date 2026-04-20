@@ -19,6 +19,21 @@
   --b1:#4a8fe8;--b2:#d4a853;--b3:#4caf7d;
   --shadow:0 4px 24px rgba(0,0,0,.4);
 }
+body.light{
+  --bg:#f4f1ea;--surface:#fffdf7;--surface2:#ede9df;--surface3:#e4e0d5;
+  --border:#d4cfc2;--border2:#b8b2a2;
+  --text:#1c1a15;--muted:#7a7468;--dim:#b8b2a2;
+  --gold:#9a6e10;--gold-bg:rgba(154,110,16,.08);
+  --blue:#1a3a8b;--blue-bg:rgba(26,58,139,.07);
+  --green:#1a6b3a;--green-bg:rgba(26,107,58,.08);
+  --yellow:#9a6b00;--yellow-bg:rgba(154,107,0,.08);
+  --red:#8b1a1a;--red-bg:rgba(139,26,26,.08);
+  --purple:#5a1a8b;--purple-bg:rgba(90,26,139,.08);
+  --b1:#1a3a8b;--b2:#9a6e10;--b3:#1a6b3a;
+  --shadow:0 2px 12px rgba(0,0,0,.1);
+}
+*{transition:background-color .2s,border-color .2s,color .15s;}
+input,select,textarea,button{transition:background-color .2s,border-color .2s,color .15s;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:14px;}
 /* SCROLLBAR */
@@ -214,6 +229,15 @@ canvas{width:100%!important;}
 
 /* DISCLAIMER */
 .disclaimer{font-size:.63rem;color:var(--dim);line-height:1.5;border-top:1px solid var(--border);padding-top:.8rem;margin-top:.9rem;}
+.note-btn{background:transparent;border:1px solid var(--border);border-radius:3px;cursor:pointer;padding:1px 5px;font-size:.72rem;color:var(--dim);transition:all .15s;font-family:'DM Mono',monospace;line-height:1.4;}
+.note-btn:hover,.note-btn.has-note{color:var(--gold);border-color:var(--gold);}
+.note-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;align-items:center;justify-content:center;}
+.note-overlay.open{display:flex;}
+.note-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:430px;max-width:95vw;padding:1.3rem 1.5rem;box-shadow:0 8px 32px rgba(0,0,0,.6);}
+.note-box h3{font-family:'DM Serif Display',serif;font-size:1rem;margin-bottom:.7rem;color:var(--text);}
+.note-box textarea{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:.6rem .8rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);outline:none;resize:vertical;min-height:110px;line-height:1.5;}
+.note-box textarea:focus{border-color:var(--gold);}
+.note-foot{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem;}
 @media(max-width:640px){.tab-pane{padding:1rem .9rem;}.hdr,.sig-bar{padding:.8rem .9rem;}.tab-bar{padding:0 .4rem;}}
 </style>
 </head>
@@ -227,6 +251,7 @@ canvas{width:100%!important;}
     <span><span class="dot dot-b3"></span>Bucket 3 · Roth/HSA</span>
     <span id="hdr-total" style="color:var(--gold)">Total: $0</span>
   </div>
+  <button id="theme-toggle" onclick="toggleTheme()" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:.28rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;" title="Toggle light/dark mode">&#9788; Light</button>
 </div>
 
 <div class="sig-bar">
@@ -240,9 +265,9 @@ canvas{width:100%!important;}
 </div>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="showTab('dashboard',this)">D1 Dashboard</button>
-  <button class="tab-btn"        onclick="showTab('accounts',this)">L2 Accounts</button>
-  <button class="tab-btn"        onclick="showTab('universe',this)">L3 ETF Universe</button>
+  <button class="tab-btn active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button class="tab-btn"        onclick="showTab('accounts',this)">Accounts</button>
+  <button class="tab-btn"        onclick="showTab('universe',this)">ETF Universe</button>
   <button class="tab-btn"        onclick="showTab('dca',this)">DCA Plan</button>
   <button class="tab-btn"        onclick="showTab('projection',this)">Projection</button>
 </div>
@@ -250,27 +275,6 @@ canvas{width:100%!important;}
 <!-- ═══ D1: DASHBOARD ═══ -->
 <div class="tab-pane active" id="tab-dashboard">
   <div class="sec-hd">Portfolio Dashboard<small id="dash-updated">last updated: —</small></div>
-
-  <!-- Cash & Equivalents -->
-  <div class="cash-section">
-    <div class="cash-hd">
-      <span class="cash-hd-title">Cash &amp; Equivalents</span>
-      <span class="cash-hd-meta" id="cash-hd-meta">Total: $0 · Income: $0/yr</span>
-    </div>
-    <div class="tbl-wrap">
-      <table id="cash-table">
-        <thead><tr>
-          <th>Ticker</th><th>Name</th><th>Type</th>
-          <th class="r">Shares</th><th class="r">Price</th>
-          <th class="r">Balance $</th><th class="r">Yield %</th>
-          <th class="r">Ann. Income</th><th>Maturity</th><th>Note</th><th></th>
-        </tr></thead>
-        <tbody id="cash-tbody"></tbody>
-        <tfoot id="cash-tfoot"></tfoot>
-      </table>
-    </div>
-    <button class="add-row-btn" id="add-cash-btn">+ Add Row</button>
-  </div>
 
   <!-- Summary cards -->
   <div class="cards">
@@ -297,7 +301,7 @@ canvas{width:100%!important;}
         <th class="r">Target%</th><th class="r">Target $</th>
         <th class="r">Current Value $</th>
         <th class="r" style="color:var(--red)">Current %</th>
-        <th class="r">Ann. Income $</th><th class="r">Ann. Income %</th>
+        <th class="r">Ann. Income $</th><th class="r">Ann. Income %</th><th style="width:36px;text-align:center">Notes</th>
       </tr></thead>
       <tbody id="htbody"></tbody>
       <tfoot id="htfoot"></tfoot>
@@ -422,7 +426,7 @@ canvas{width:100%!important;}
 <div class="modal-overlay" id="profile-modal">
   <div class="modal-box narrow">
     <div class="modal-head">
-      <h2>L1 Profile</h2>
+      <h2>Profile</h2>
       <button class="modal-close" id="profile-close-btn">&#10005;</button>
     </div>
     <div class="modal-body">
@@ -434,15 +438,8 @@ canvas{width:100%!important;}
         <div class="acct-field"><label>Owner 2 Current Age</label><input type="number" id="p-o2age" value="62" min="50" max="100" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 1 Live to Age</label><input type="number" id="p-o1live" value="90" min="70" max="120" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 2 Live to Age</label><input type="number" id="p-o2live" value="92" min="70" max="120" oninput="saveProf()"></div>
-        <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="10000" oninput="saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
         <div class="acct-field"><label>Annual Income Target $</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
-        <div class="acct-field"><label>Max % per ETF</label><input type="number" id="p-maxpct" value="20" min="1" max="100" step="0.5" oninput="saveProf()"></div>
-        <div class="acct-field"><label>Risk Tolerance</label>
-          <select id="p-risk" onchange="saveProf()">
-            <option value="conservative" selected>Conservative</option>
-            <option value="moderate">Moderate</option>
-            <option value="growth">Growth</option>
-          </select></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -476,7 +473,7 @@ var ACCTS = [
 
 // H: ETF Universe. curVal = current dollar value (null = not entered)
 var H = [
-  {t:'SGOV', n:'iShares 0-3 Month Treasury',    cat:'T-Bills',      bucket:1, it:'Ordinary',       y:5.1,  er:0.09, a:10, curVal:null, why:'Ordinary income sheltered. Cash-equivalent buffer in Bucket 1.'},
+  {t:'SGOV', n:'iShares 0-3 Month Treasury',    cat:'T-Bills',      bucket:1, it:'Ordinary',       y:3.54, er:0.09, a:10, curVal:null, why:'Ordinary income sheltered. Cash-equivalent buffer in Bucket 1.'},
   {t:'VTIP', n:'Vanguard Short-Term TIPS',       cat:'TIPS',         bucket:2, it:'Ordinary+Infl',  y:4.2,  er:0.04, a:8,  curVal:null, why:'Inflation protection in IRA shields annual taxable inflation adjustments.'},
   {t:'BSV',  n:'Vanguard Short-Term Bond',       cat:'Short Bond',   bucket:2, it:'Ordinary',       y:4.6,  er:0.04, a:10, curVal:null, why:'Steady ordinary income; IRA prevents annual tax drag on interest.'},
   {t:'SCHD', n:'Schwab US Dividend Equity',      cat:'Dividend',     bucket:1, it:'QDI',            y:3.7,  er:0.06, a:15, curVal:null, why:'QDI taxed 0-15% in Bucket 1 brokerage. Foreign tax credit preserved.'},
@@ -491,7 +488,7 @@ var H = [
 ];
 
 var CASH = [
-  {id:1,ticker:'SGOV', name:'iShares 0-3 Mo Treasury',  type:'ETF', shares:0,price:100, bal:0, yld:5.1, mat:'', note:'Bucket 1 – Schwab'},
+  {id:1,ticker:'SGOV', name:'iShares 0-3 Mo Treasury',  type:'ETF', shares:0,price:100, bal:0, yld:3.54, mat:'', note:'Bucket 1 – Schwab'},
   {id:2,ticker:'SWVXX',name:'Schwab Value Advantage MMF',type:'MMF', shares:0,price:1,   bal:0, yld:4.8, mat:'', note:'Bucket 1 – Schwab'},
   {id:3,ticker:'CD',   name:'Certificate of Deposit',   type:'CD',  shares:1,price:0,   bal:0, yld:4.5, mat:'2025-06-15', note:'June maturity'},
 ];
@@ -512,6 +509,20 @@ function gn(id){return parseFloat(gv(id))||0;}
 function el(tag,props,parent){var e=document.createElement(tag);if(props)Object.assign(e,props);if(parent)parent.appendChild(e);return e;}
 
 function bucketLabel(b){return b===1?'Bucket 1':b===2?'Bucket 2':'Bucket 3';}
+
+// ── THEME ──
+function toggleTheme(){
+  var isLight=document.body.classList.toggle('light');
+  var btn=document.getElementById('theme-toggle');
+  if(btn)btn.innerHTML=isLight?'&#9790; Dark':'&#9788; Light';
+  try{localStorage.setItem('pm_theme',isLight?'light':'dark');}catch(e){}
+}
+function loadTheme(){
+  try{
+    var t=localStorage.getItem('pm_theme');
+    if(t==='light'){document.body.classList.add('light');var btn=document.getElementById('theme-toggle');if(btn)btn.innerHTML='&#9790; Dark';}
+  }catch(e){}
+}
 function bucketClass(b){return b===1?'b1':b===2?'b2':'b3';}
 function bucketTagClass(b){return b===1?'tag-b1':b===2?'tag-b2':'tag-b3';}
 function acctForBucket(b){
@@ -566,8 +577,8 @@ function saveProf(){
     o1i:gv('p-o1i')||'JAB', o2i:gv('p-o2i')||'TAB',
     o1age:gn('p-o1age')||68, o2age:gn('p-o2age')||62,
     o1live:gn('p-o1live')||90, o2live:gn('p-o2live')||92,
-    port:gn('p-port')||1093000, income:gn('p-income')||44000,
-    maxpct:gn('p-maxpct')||20, risk:gv('p-risk')||'conservative'
+    port:Math.round(gn('p-port'))||1093000, income:Math.round(gn('p-income'))||44000,
+    maxpct:PROF.maxpct||20, risk:PROF.risk||'conservative'
   };
   ss(SK.prof,PROF);
 }
@@ -597,95 +608,16 @@ function loadAll(){
   pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
   pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
   pf('p-port',PROF.port);pf('p-income',PROF.income);
-  pf('p-maxpct',PROF.maxpct);pf('p-risk',PROF.risk);
 }
 
 // ══════════════════════════════════════════
 // CASH TABLE
 // ══════════════════════════════════════════
-function renderCash(){
-  var tbody=document.getElementById('cash-tbody');
-  tbody.innerHTML='';
-  CASH.forEach(function(c){
-    var isCD=c.type==='CD';
-    var tr=document.createElement('tr');
-    tr.className=isCD?'cd-row':c.type==='MMF'?'mmf-row':'etf-row';
-    // Ticker
-    var tdTk=el('td',null,tr);
-    var iTk=el('input',{type:'text',className:'inp',value:c.ticker,style:'width:72px;font-weight:500;color:var(--gold)'},tdTk);
-    iTk.addEventListener('input',function(){c.ticker=this.value.toUpperCase();this.value=c.ticker;saveCash();});
-    // Name
-    var tdN=el('td',null,tr);
-    var iN=el('input',{type:'text',className:'inp',value:c.name,style:'width:185px'},tdN);
-    iN.addEventListener('input',function(){c.name=this.value;saveCash();});
-    // Type
-    var tdTy=el('td',null,tr);
-    var sTy=el('select',{className:'csel',style:'width:78px'},tdTy);
-    ['ETF','MMF','CD','Treasury','Savings'].forEach(function(t){var o=el('option',{value:t,textContent:t},sTy);if(t===c.type)o.selected=true;});
-    sTy.addEventListener('change',function(){c.type=this.value;saveCash();renderCash();});
-    // Shares
-    var tdSh=el('td',{className:'r'},tr);
-    var iSh=el('input',{type:'number',className:'inp',value:c.shares||'',style:'width:82px;text-align:right',min:'0',step:'0.001'},tdSh);
-    iSh.addEventListener('input',function(){c.shares=parseFloat(this.value)||0;if(c.price>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
-    // Price
-    var tdPr=el('td',{className:'r'},tr);
-    var iPr=el('input',{type:'number',className:'inp',value:c.price||'',style:'width:74px;text-align:right',min:'0',step:'0.01'},tdPr);
-    iPr.addEventListener('input',function(){c.price=parseFloat(this.value)||0;if(c.shares>0){c.bal=+(c.shares*c.price).toFixed(2);iBal.value=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
-    // Balance
-    var tdBal=el('td',{className:'r'},tr);
-    var iBal=el('input',{type:'number',className:'inp',value:c.bal||'',style:'width:100px;text-align:right',min:'0',step:'100'},tdBal);
-    iBal.addEventListener('input',function(){c.bal=parseFloat(this.value)||0;if(c.price===1||c.type==='MMF'){c.shares=c.bal;}iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();renderDash();});
-    // Yield
-    var tdYl=el('td',{className:'r'},tr);
-    var iYl=el('input',{type:'number',className:'inp',value:c.yld,style:'width:58px;text-align:right',min:'0',max:'20',step:'0.05'},tdYl);
-    iYl.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;iInc.textContent=fmt(c.bal*c.yld/100);saveCash();renderCashMeta();});
-    // Inc (display)
-    var tdInc=el('td',{className:'r'},tr);
-    var iInc=el('span',{textContent:fmt(c.bal*c.yld/100)},tdInc);
-    iInc.style.cssText='font-family:"DM Mono",monospace;font-size:.76rem;color:var(--green)';
-    // Maturity
-    var tdMat=el('td',null,tr);
-    if(isCD){
-      var iMat=el('input',{type:'date',className:'inp',value:c.mat||'',style:'width:130px'},tdMat);
-      iMat.addEventListener('input',function(){c.mat=this.value;saveCash();var d=c.mat?Math.round((new Date(c.mat)-new Date())/86400000):-1;badge.textContent=c.mat?(d<0?'Matured':d+'d left'):'';badge.className='mat-badge '+(d<0?'past':d<60?'soon':'ok');});
-      var days=c.mat?Math.round((new Date(c.mat)-new Date())/86400000):-1;
-      el('span',{textContent:c.mat?(days<0?'Matured':days+'d left'):'',className:'mat-badge '+(days<0?'past':days<60?'soon':'ok')},tdMat);
-      // Use a reference — need to re-assign badge from tdMat's last child
-    }else{el('span',{textContent:'—',style:'color:var(--dim);font-size:.72rem'},tdMat);}
-    // Note
-    var tdNo=el('td',null,tr);
-    var iNo=el('input',{type:'text',className:'inp',value:c.note||'',style:'width:130px;font-size:.7rem'},tdNo);
-    iNo.placeholder='Note...';
-    iNo.addEventListener('input',function(){c.note=this.value;saveCash();});
-    // Delete
-    var tdDl=el('td',null,tr);
-    var bDl=el('button',{textContent:'\u2715',className:'del-btn',title:'Remove'},tdDl);
-    bDl.addEventListener('click',function(){CASH=CASH.filter(function(x){return x.id!==c.id;});renderCash();saveCash();renderDash();});
-    tbody.appendChild(tr);
-  });
-  renderCashTfoot();
-  renderCashMeta();
-}
-function renderCashTfoot(){
-  var tf=document.getElementById('cash-tfoot');
-  tf.innerHTML='';
-  var total=getCashTotal(),inc=getCashIncome();
-  var tr=document.createElement('tr');
-  tr.style.cssText='background:var(--surface3);font-weight:600';
-  var bs='padding:.45rem .65rem;font-family:"DM Mono",monospace;border-top:2px solid var(--border2);font-size:.72rem';
-  el('td',{textContent:'Totals',style:bs+';color:var(--muted)'},tr);
-  el('td',{style:bs},tr);el('td',{style:bs},tr); // name, type
-  el('td',{style:bs},tr);el('td',{style:bs},tr); // shares, price
-  el('td',{textContent:fmt(total),style:bs+';text-align:right;font-size:.78rem'},tr);
-  el('td',{style:bs},tr); // yield
-  el('td',{textContent:fmt(inc),style:bs+';text-align:right;font-size:.78rem;color:var(--green)'},tr);
-  el('td',{style:bs},tr);el('td',{style:bs},tr);el('td',{style:bs},tr); // mat,note,del
-  tf.appendChild(tr);
-}
-function renderCashMeta(){
-  var total=getCashTotal(),inc=getCashIncome();
-  document.getElementById('cash-hd-meta').textContent='Total: '+fmt(total)+' \u00B7 Income: '+fmt(inc)+'/yr';
-}
+function renderCash(){/* Cash now rendered inline inside renderDash() Bucket 1 section */}
+function renderCashTfoot(){/* no-op — tfoot rendered in renderDash */}
+function renderCashMeta(){/* no-op — header meta rendered in renderDash */}
+
+function renderCashMeta(){/* no-op - cash meta shown in renderDash bucket subtotals */}
 function addCashRow(){
   CASH.push({id:cashNextId++,ticker:'NEW',name:'New Position',type:'MMF',shares:0,price:1,bal:0,yld:4.5,mat:'',note:''});
   renderCash();
@@ -703,13 +635,58 @@ function renderDash(){
   // Group by bucket
   [1,2,3].forEach(function(bkt){
     var bktH=H.filter(function(h){return h.bucket===bkt;});
-    if(bktH.length===0)return;
+    if(bktH.length===0&&(bkt!==1||CASH.length===0))return;
     // Bucket header row
     var bHdr=document.createElement('tr');
     bHdr.className='bkt-hdr '+bucketClass(bkt);
-    var bhTd=el('td',{colSpan:13,textContent:bucketLabel(bkt)+' — '+acctForBucket(bkt)},bHdr);
+    el('td',{colSpan:14,textContent:bucketLabel(bkt)+' --- '+acctForBucket(bkt)},bHdr);
     tbody.appendChild(bHdr);
     var bCurVal=0,bTgtVal=0,bCurInc=0,bCurPct=0;
+    // Cash rows inside Bucket 1
+    if(bkt===1){
+      CASH.forEach(function(c){
+        var tr=document.createElement('tr');tr.style.background='rgba(74,143,232,.05)';
+        var tdTk=el('td',null,tr);
+        var iTk=el('input',{type:'text',className:'inp',value:c.ticker,style:'width:66px;font-weight:500;color:var(--b1)'},tdTk);
+        iTk.addEventListener('input',function(){c.ticker=this.value.toUpperCase();this.value=c.ticker;saveCash();});
+        var tdNm=el('td',{className:'tn'},tr);
+        var iNm=el('input',{type:'text',className:'inp',value:c.name,style:'width:160px;border-color:transparent;background:transparent'},tdNm);
+        iNm.addEventListener('focus',function(){this.style.borderColor='var(--gold)';});
+        iNm.addEventListener('blur',function(){this.style.borderColor='transparent';});
+        iNm.addEventListener('input',function(){c.name=this.value;saveCash();});
+        var tdCat=el('td',null,tr);
+        var sTy=el('select',{className:'csel',style:'width:66px;font-size:.64rem'},tdCat);
+        ['ETF','MMF','CD','Treasury','Savings'].forEach(function(t){var o=el('option',{value:t,textContent:t},sTy);if(t===c.type)o.selected=true;});
+        sTy.addEventListener('change',function(){c.type=this.value;saveCash();});
+        var tdBkt=el('td',null,tr);el('span',{className:'tag tag-b1',textContent:'B1 Cash'},tdBkt);
+        el('td',{textContent:'Interest/Div',style:'font-size:.65rem;color:var(--muted)'},tr);
+        var tdYl=el('td',{className:'r'},tr);
+        var iYl=el('input',{type:'number',className:'inp',value:c.yld,style:'width:50px;text-align:right',min:'0',max:'20',step:'0.05'},tdYl);
+        iYl.addEventListener('input',function(){c.yld=parseFloat(this.value)||0;saveCash();renderDash();});
+        el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
+        el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
+        el('td',{textContent:'--',className:'r',style:'color:var(--dim);font-family:"DM Mono",monospace;font-size:.7rem'},tr);
+        var tdBal=el('td',{className:'r'},tr);
+        var iBal=el('input',{type:'number',className:'inp wide',value:c.bal||'',style:'width:110px;text-align:right',min:'0',step:'100'},tdBal);
+        iBal.addEventListener('input',function(){c.bal=parseFloat(this.value)||0;if(c.type==='MMF'||c.price===1)c.shares=c.bal;saveCash();renderDash();});
+        var tdCP=el('td',{className:'r'},tr);
+        el('span',{textContent:portTotal>0&&c.bal>0?(c.bal/portTotal*100).toFixed(1)+'%':'--',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted)'},tdCP);
+        var cashInc=c.bal*c.yld/100;
+        el('td',{textContent:c.bal>0?fmt(cashInc):'--',className:'r',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--green)'},tr);
+        el('td',{textContent:c.bal>0?fmtP(c.yld):'--',className:'r',style:'font-family:"DM Mono",monospace;font-size:.72rem;color:var(--muted)'},tr);
+        var tdAct=el('td',null,tr);
+        if(c.type==='CD'&&c.mat){var d=Math.round((new Date(c.mat)-new Date())/86400000);el('span',{textContent:d<0?'Matured':d+'d',className:'mat-badge '+(d<0?'past':d<60?'soon':'ok')},tdAct);}
+        var bDl=el('button',{textContent:'x',className:'del-btn',title:'Remove'},tdAct);
+        bDl.addEventListener('click',function(){CASH=CASH.filter(function(x){return x.id!==c.id;});saveCash();renderDash();});
+        bCurVal+=c.bal;bCurInc+=cashInc;
+        tbody.appendChild(tr);
+      });
+      var addTr=document.createElement('tr');addTr.style.background='rgba(74,143,232,.03)';
+      var addTd=el('td',{colSpan:14},addTr);
+      var addBtn=el('button',{textContent:'+ Add Cash / MMF / CD',className:'add-row-btn'},addTd);
+      addBtn.style.marginTop='0';addBtn.addEventListener('click',addCashRow);
+      tbody.appendChild(addTr);
+    }
     bktH.forEach(function(h){
       var i=H.indexOf(h);
       ta+=h.a;
@@ -770,7 +747,11 @@ function renderDash(){
       // Ann. Income $
       el('td',{className:'r mono',textContent:hasPos&&curVal>0&&h.y>0?fmt(incVal):'—',style:'font-size:.76rem;color:var(--green)'},tr);
       // Ann. Income %
-      el('td',{className:'r',textContent:hasPos&&curVal>0&&h.y>0?fmtP(h.y):'—',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted)'},tr);
+      el('td',{className:'r',textContent:hasPos&&curVal>0&&h.y>0?fmtP(h.y):'--',style:'font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted)'},tr);
+      // Notes icon
+      var tdNt=el('td',{style:'text-align:center'},tr);
+      var bNt=el('button',{className:'note-btn'+(h.notes?' has-note':''),title:h.notes||'Add notes',textContent:h.notes?'[+]':'[.]'},tdNt);
+      (function(ni){bNt.addEventListener('click',function(){openNoteModal(ni);});})(i);
       tbody.appendChild(tr);
     });
     // Bucket subtotal row
@@ -1007,7 +988,11 @@ var YF_PROXY='https://query1.finance.yahoo.com/v8/finance/chart/';
 var YF_QUOTE='https://query2.finance.yahoo.com/v10/finance/quoteSummary/';
 
 function lookupTicker(ticker,cb,errCb){
-  // Use YF quoteSummary via a CORS proxy
+  // Use Anthropic API first — it fetches current SEC 30-day yield from fund fact sheets.
+  // Yahoo Finance returns TTM distribution yield (outdated, e.g. SGOV 5.1% vs actual 3.54%).
+  lookupViaAPI(ticker,cb,function(){ lookupViaYahoo(ticker,cb,errCb); });
+}
+function lookupViaYahoo(ticker,cb,errCb){
   var url='https://corsproxy.io/?'+encodeURIComponent(
     'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'+ticker+
     '?modules=summaryProfile,defaultKeyStatistics,summaryDetail,assetProfile,fundProfile,topHoldings'
@@ -1037,7 +1022,7 @@ function lookupTicker(ticker,cb,errCb){
 }
 
 function lookupViaAPI(ticker,cb,errCb){
-  var prompt='Look up ETF ticker '+ticker+'. Return ONLY raw JSON: {"name":"full name","category":"short category","bucket":1or2or3,"it":"QDI or Ordinary or ELNs or 60/40 Options or None","sec_yield":number_or_null,"er":number,"why":"one sentence tax rationale"}. Bucket: 1=Brokerage/taxable QDI, 2=IRA/ordinary income, 3=Roth/HSA long-term growth. SEC 30-day yield as percent number. ER as percent e.g. 0.35.';
+  var prompt='Look up ETF ticker '+ticker+' and find its current SEC 30-day standardized yield from the fund official website (iShares, Vanguard, Schwab, NEOS, etc.). The SEC 30-day yield is different from TTM distribution yield. Return ONLY raw JSON: {"name":"full fund name","category":"T-Bills/TIPS/Short Bond/Dividend/Covered Call/US Equity/Intl/Gold/Energy/Preferred/Bitcoin","bucket":1,2,or3,"it":"QDI or Ordinary or ELNs or 60-40 Options or None","sec_yield":sec_30day_yield_as_percent_number,"er":expense_ratio_as_percent,"why":"one sentence US retiree tax placement rationale"}. Buckets: 1=Brokerage, 2=IRA, 3=Roth/HSA. SGOV example: sec_yield approx 3.5. ER example: 0.09.';
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
@@ -1231,27 +1216,59 @@ function openProfileModal(){
   pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
   pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
   pf('p-port',PROF.port);pf('p-income',PROF.income);
-  pf('p-maxpct',PROF.maxpct);pf('p-risk',PROF.risk);
   document.getElementById('profile-modal').classList.add('open');
 }
 function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
 function saveAndCloseProfile(){saveProf();renderDash();closeProfileModal();}
+
+// ======================================
+// NOTES
+// ======================================
+var _noteIdx=-1;
+function openNoteModal(i){
+  _noteIdx=i;
+  document.getElementById('note-title').textContent=(H[i]?H[i].t:'')+ ' Notes';
+  document.getElementById('note-ta').value=(H[i]&&H[i].notes)||'';
+  document.getElementById('note-overlay').classList.add('open');
+  setTimeout(function(){document.getElementById('note-ta').focus();},60);
+}
+function closeNote(){document.getElementById('note-overlay').classList.remove('open');_noteIdx=-1;}
+function saveNote(){
+  if(_noteIdx<0||_noteIdx>=H.length)return;
+  H[_noteIdx].notes=document.getElementById('note-ta').value.trim();
+  saveH();closeNote();renderDash();
+}
 
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function init(){
   loadAll();
-  renderCash();renderDash();renderAccounts();renderEditorTable();
-  document.getElementById('add-cash-btn').addEventListener('click',addCashRow);
+  renderDash();
+  renderAccounts();
+  renderEditorTable();
   document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
+  document.getElementById('note-overlay').addEventListener('click',function(e){if(e.target===this)closeNote();});
   document.getElementById('profile-btn').addEventListener('click',openProfileModal);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
   document.getElementById('profile-save-btn').addEventListener('click',saveAndCloseProfile);
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
+  loadTheme();
 }
 init();
 })();
 </script>
+
+<!-- NOTES MODAL -->
+<div class="note-overlay" id="note-overlay">
+  <div class="note-box">
+    <h3 id="note-title">Notes</h3>
+    <textarea id="note-ta" placeholder="Your notes for this position..."></textarea>
+    <div class="note-foot">
+      <button class="btn btn-dim" onclick="closeNote()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveNote()">Save</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
