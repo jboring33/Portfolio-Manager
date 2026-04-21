@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>JAB/TMB Portfolio Manager v1776743455</title>
+<title>JAB/TMB Portfolio Manager v1776744356</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
@@ -1148,87 +1148,91 @@ function saveTickerEdits(){
 }
 
 // ══════════════════════════════════════════
-// TICKER LOOKUP
-// Primary: Anthropic API with web_search (accurate SEC 30-day yield, runs in claude.ai)
-// Fallback: Yahoo Finance via corsproxy.io (works from downloaded file, name/ER only)
+// TICKER LOOKUP — Yahoo Finance via allorigins.win proxy
+// Works from local file:// and Google Drive (CORS-safe)
+// Returns: name, sec_yield (TTM), er from Yahoo Finance
 // ══════════════════════════════════════════
 
 function lookupTicker(ticker, cb, errCb) {
-  // Try Anthropic API first (inside claude.ai — gets accurate SEC 30-day yield via web search)
-  lookupViaAnthropicAPI(ticker, cb, function(apiErr) {
-    console.warn('API lookup failed for '+ticker+', trying Yahoo:', apiErr&&apiErr.message);
-    // Fall back to Yahoo Finance proxy (works from downloaded file, returns name+ER+TTM yield)
-    lookupViaYahoo(ticker, cb, function(yhErr) {
-      console.error('Both lookups failed for '+ticker, yhErr);
-      if(errCb) errCb(new Error('Both API and Yahoo lookup failed for '+ticker+'. Open in claude.ai for full lookup capability.'));
-    });
+  lookupViaYahooProxy(ticker.toUpperCase(), cb, function(err) {
+    if (errCb) errCb(err || new Error('Lookup failed for ' + ticker + '. Check ticker symbol and try again.'));
   });
 }
 
-function lookupViaAnthropicAPI(ticker, cb, errCb) {
-  var prompt = 'Search the web and find the current SEC 30-day standardized yield and expense ratio for ETF ' + ticker + '. '
-    + 'Check the official fund website (iShares.com, Vanguard.com, Schwab.com, neosamalpha.com, etc.). '
-    + 'The SEC 30-day yield is on the fund fact sheet — it is NOT the same as TTM distribution yield. '
-    + 'Return ONLY a raw JSON object with no markdown or explanation: '
-    + '{"name":"full fund name","category":"T-Bills or TIPS or Short Bond or Dividend or Covered Call or US Equity or Intl or Gold or Energy or Preferred or Bitcoin","bucket":1,"it":"QDI or Ordinary or ELNs or 60-40 Options or None","sec_yield":number,"er":number,"why":"one sentence tax placement rationale for US retiree"} '
-    + 'bucket: 1=Brokerage/taxable (QDI preferred), 2=IRA (ordinary income sheltered), 3=Roth/HSA (long-term growth). '
-    + 'sec_yield and er are numbers like 3.54 and 0.09 — not strings, not percentages with % sign. '
-    + 'Example for SGOV: {"name":"iShares 0-3 Month Treasury Bond ETF","category":"T-Bills","bucket":1,"it":"Ordinary","sec_yield":3.54,"er":0.09,"why":"Ordinary income; brokerage ok for short-term cash position."}';
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 500,
-      tools: [{type: 'web_search_20250305', name: 'web_search'}],
-      messages: [{role: 'user', content: prompt}]
-    })
-  })
+function lookupViaYahooProxy(ticker, cb, errCb) {
+  // Step 1: get name + price from v8 chart (lightweight, fast)
+  var chartUrl  = 'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d';
+  var proxyChart = 'https://api.allorigins.win/get?url=' + encodeURIComponent(chartUrl);
+  fetch(proxyChart)
   .then(function(r) {
-    if (!r.ok) throw new Error('API HTTP ' + r.status);
+    if (!r.ok) throw new Error('Proxy returned HTTP ' + r.status);
     return r.json();
   })
-  .then(function(data) {
-    if (data.error) throw new Error(data.error.message || 'API error');
-    var raw = '';
-    (data.content || []).forEach(function(b) { if (b.type === 'text') raw += b.text; });
-    var s = raw.indexOf('{'), e = raw.lastIndexOf('}');
-    if (s < 0 || e < 0) throw new Error('No JSON in API response');
-    var result = JSON.parse(raw.slice(s, e + 1));
-    if (!result.name) throw new Error('Incomplete API response');
-    cb(result);
+  .then(function(wrapper) {
+    if (!wrapper.contents) throw new Error('Empty proxy response');
+    var data = JSON.parse(wrapper.contents);
+    var res0 = data.chart && data.chart.result && data.chart.result[0];
+    if (!res0) throw new Error('No data for ' + ticker + ' — check ticker symbol');
+    var name = (res0.meta && (res0.meta.longName || res0.meta.shortName)) || ticker;
+
+    // Step 2: get yield + ER from v10 quoteSummary
+    var summaryUrl  = 'https://query2.finance.yahoo.com/v10/finance/quoteSummary/' + ticker +
+                      '?modules=summaryDetail,fundProfile,summaryProfile';
+    var proxySummary = 'https://api.allorigins.win/get?url=' + encodeURIComponent(summaryUrl);
+    return fetch(proxySummary)
+    .then(function(r2) { return r2.json(); })
+    .then(function(w2) {
+      var yld = null, er = null, cat = null, it = null;
+      try {
+        var d2   = JSON.parse(w2.contents);
+        var res2 = d2.quoteSummary && d2.quoteSummary.result && d2.quoteSummary.result[0];
+        if (res2) {
+          var sd = res2.summaryDetail  || {};
+          var fp = res2.fundProfile    || {};
+          var sp = res2.summaryProfile || {};
+          name = fp.longName || sp.longName || name;
+          yld  = (sd.yield && sd.yield.raw != null)
+                   ? +(sd.yield.raw * 100).toFixed(2) : null;
+          er   = (fp.annualReportExpenseRatio && fp.annualReportExpenseRatio.raw != null)
+                   ? +(fp.annualReportExpenseRatio.raw * 100).toFixed(2) : null;
+          // Map Yahoo category → our tax-oriented categories
+          var yhCat = (fp.categoryName || '').toLowerCase();
+          var qtType = (res2.quoteType && res2.quoteType.quoteType || '').toUpperCase();
+          if      (/treasury|t-bill|cash|money market|ultra short/i.test(yhCat))   { cat='T-Bills';      it='Ordinary';      }
+          else if (/inflation|tips/i.test(yhCat))                                  { cat='TIPS';         it='Ordinary+Infl'; }
+          else if (/short.*bond|short.*term.*bond/i.test(yhCat))                   { cat='Short Bond';   it='Ordinary';      }
+          else if (/intermediate.*bond|bond|fixed income|corporate/i.test(yhCat))  { cat='Bond';         it='Ordinary';      }
+          else if (/covered call|option|derivative|buy.write/i.test(yhCat))        { cat='Covered Call'; it='ELNs';          }
+          else if (/preferred/i.test(yhCat))                                       { cat='Preferred';    it='Ordinary';      }
+          else if (/dividend|equity income|high yield equity/i.test(yhCat))        { cat='Dividend';     it='QDI';           }
+          else if (/gold|precious metal|commodity.*metal/i.test(yhCat))            { cat='Gold';         it='None';          }
+          else if (/commodity|natural resource|energy/i.test(yhCat))               { cat='Energy';       it='QDI';           }
+          else if (/real estate|reit/i.test(yhCat))                                { cat='REIT';         it='Ordinary';      }
+          else if (/emerging/i.test(yhCat))                                        { cat='Emerging';     it='QDI';           }
+          else if (/foreign|international|world|global|eafe|europe|pacific/i.test(yhCat)) { cat='Intl';  it='QDI';           }
+          else if (/large.*blend|large.*growth|large.*value|mid.*|small.*/i.test(yhCat))   { cat='US Equity'; it='QDI';      }
+          else if (/sector|technology|health|financial|utilities/i.test(yhCat))    { cat='US Equity';    it='QDI';           }
+          else if (qtType==='CRYPTOCURRENCY' || /bitcoin|crypto/i.test(yhCat))     { cat='Bitcoin';      it='None';          }
+          else if (qtType==='ETF' || qtType==='MUTUALFUND')                        { cat='US Equity';    it='QDI';           }
+        }
+      } catch(e) { /* parse failed — return what we have */ }
+      cb({ name: name.slice(0, 65), sec_yield: yld, er: er,
+           category: cat, it: it, _source: 'yahoo' });
+    })
+    .catch(function() {
+      // quoteSummary failed but we have the name — return partial
+      cb({ name: name.slice(0, 65), sec_yield: null, er: null, _source: 'yahoo_partial' });
+    });
   })
-  .catch(errCb);
+  .catch(function(err) {
+    if (errCb) errCb(err);
+  });
 }
 
-function lookupViaYahoo(ticker, cb, errCb) {
-  var url = 'https://corsproxy.io/?' + encodeURIComponent(
-    'https://query2.finance.yahoo.com/v10/finance/quoteSummary/' + ticker +
-    '?modules=summaryDetail,fundProfile,summaryProfile'
-  );
-  fetch(url, {headers: {'Accept': 'application/json'}})
-  .then(function(r) {
-    if (!r.ok) throw new Error('Yahoo HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function(data) {
-    var res = data.quoteSummary && data.quoteSummary.result && data.quoteSummary.result[0];
-    if (!res) throw new Error('No Yahoo data for ' + ticker);
-    var sd = res.summaryDetail || {};
-    var fp = res.fundProfile || {};
-    var sp = res.summaryProfile || {};
-    var name = (fp.longName || sp.longName || ticker).slice(0, 65);
-    // Yahoo yield = TTM distribution, not SEC 30-day — flag it
-    var yld = (sd.yield && sd.yield.raw != null) ? sd.yield.raw * 100 : null;
-    var er  = (fp.annualReportExpenseRatio && fp.annualReportExpenseRatio.raw != null)
-              ? fp.annualReportExpenseRatio.raw * 100 : null;
-    cb({name: name, sec_yield: yld, er: er, _source: 'yahoo_ttm'});
-  })
-  .catch(errCb);
-}
 
 function applyLookupToRow(d,i){
   function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!==''&&v!==undefined)e.value=v;}
+  var src=d._source||'';
   // Handle both YF format {name,er,yld} and API format {name,category,it,sec_yield,er,bucket}
   sv('e-n-'+i,d.name||d.n);
   if(d.category)sv('e-c-'+i,d.category);
@@ -1253,10 +1257,9 @@ function lookupRow(i){
   if(!ticker){alert('Enter a ticker first.');return;}
   setStatus(stEl,'...','var(--muted)');
   lookupTicker(ticker,
-    function(d){applyLookupToRow(d,i);setStatus(stEl,'OK','var(--green)',3000);},
+    function(d){applyLookupToRow(d,i);var lbl=d._source==='yahoo_partial'?'OK (name only — enter yield/ER)':'OK';setStatus(stEl,lbl,'var(--green)',5000);},
     function(err){
-      var isLocal=window.location.protocol==='file:';
-      var msg=isLocal?'Local file: open in claude.ai for lookup':(err&&err.message||'Error').slice(0,50);
+      var msg=(err&&err.message||'Not found — enter values manually').slice(0,80);
       setStatus(stEl,msg,'var(--yellow)',8000);
       console.error('Lookup error row '+i+':',err);
     }
@@ -1273,19 +1276,18 @@ function lookupNewTicker(){
   lookupTicker(ticker,
     function(d){
       function sv(id,v){var e=document.getElementById(id);if(e&&v!=null&&v!=='')e.value=v;}
-      sv('new-n',d.name||d.n);sv('new-cat',d.category);sv('new-it',d.it);
+      sv('new-n',d.name||d.n);
+      if(d.category)sv('new-cat',d.category);
+      if(d.it)sv('new-it',d.it);
       var yVal=d.sec_yield!=null?d.sec_yield:d.yld;
       if(yVal!=null)sv('new-y',(+yVal).toFixed(2));
       if(d.er!=null&&d.er>0)sv('new-er',(+d.er).toFixed(2));
       if(d.bucket){var bEl=document.getElementById('new-bkt');if(bEl){for(var k=0;k<bEl.options.length;k++)if(parseInt(bEl.options[k].value)===d.bucket){bEl.selectedIndex=k;break;}}}
-      setStatus(st,'Filled — review then + Add','var(--green)',5000);
+      var lbl2=d._source==='yahoo_partial'?'Name filled — enter yield/ER manually':'Filled — review then + Add';setStatus(st,lbl2,'var(--green)',5000);
       if(btn)btn.disabled=false;
     },
     function(err){
-      var isLocal=window.location.protocol==='file:';
-      var msg=isLocal
-        ? 'Running as local file: API lookup requires claude.ai. Yahoo fallback also failed. Enter values manually.'
-        : (err&&err.message?err.message.slice(0,80):'Lookup failed — check ticker symbol');
+      var msg=(err&&err.message||'Ticker not found — enter values manually').slice(0,80);
       setStatus(st,msg,'var(--yellow)',10000);
       if(btn)btn.disabled=false;
       console.error('New ticker lookup error:',err);
