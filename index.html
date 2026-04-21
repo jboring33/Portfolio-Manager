@@ -471,8 +471,8 @@ canvas{width:100%!important;}
 
       <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)">Portfolio Goals</div>
       <div class="pform" style="margin-bottom:1rem">
-        <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
-        <div class="acct-field"><label>Annual Income Target $</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="1000" oninput="this.value=Math.round(this.value)||this.value;saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Annual Income Target $</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="this.value=Math.round(this.value)||this.value;saveProf();renderDash()"></div>
         <div class="acct-field"><label>Overall Risk Tolerance</label>
           <select id="p-risk" onchange="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none">
             <option value="conservative">Conservative</option>
@@ -497,6 +497,19 @@ canvas{width:100%!important;}
     <div class="modal-foot">
       <button class="btn btn-gold" id="profile-save-btn">Save &amp; Close</button>
       <span class="modal-foot-note">Changes apply immediately to dashboard</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- NOTES MODAL -->
+<div class="note-overlay" id="note-overlay">
+  <div class="note-box">
+    <h3 id="note-title">Notes</h3>
+    <textarea id="note-ta" placeholder="Your notes for this position..."></textarea>
+    <div class="note-foot">
+      <button class="btn btn-dim" id="note-cancel-btn">Cancel</button>
+      <button class="btn btn-gold" id="note-save-btn">Save</button>
     </div>
   </div>
 </div>
@@ -1537,22 +1550,22 @@ function init(){
   renderDash();
   renderAccounts();
   renderEditorTable();
-  document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
-  document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
-  document.getElementById('note-overlay').addEventListener('click',function(e){if(e.target===this)closeNote();});
+  var _e_refresh_btn=document.getElementById('refresh-btn');if(_e_refresh_btn)_e_refresh_btn.addEventListener('click',refreshAllLookups);
+  var _e_theme_toggle=document.getElementById('theme-toggle');if(_e_theme_toggle)_e_theme_toggle.addEventListener('click',toggleTheme);
+  var _e_note_overlay=document.getElementById('note-overlay');if(_e_note_overlay)_e_note_overlay.addEventListener('click',function(e){if(e.target===this)closeNote();});
   var genBtn=document.getElementById('gen-suggest-btn');
   if(genBtn)genBtn.addEventListener('click',generateSuggestions);
   var addStyleBtn=document.getElementById('add-style-btn');
   if(addStyleBtn)addStyleBtn.addEventListener('click',addStyleStmt);
   var suggestTabBtn=document.getElementById('suggest-tab-btn');
   if(suggestTabBtn)suggestTabBtn.addEventListener('click',function(){showTab('suggest',this);renderStyleStmts();});
-  document.getElementById('note-cancel-btn').addEventListener('click',closeNote);
-  document.getElementById('note-save-btn').addEventListener('click',saveNote);
+  var ncb=document.getElementById('note-cancel-btn');if(ncb)ncb.addEventListener('click',closeNote);
+  var nsb=document.getElementById('note-save-btn');if(nsb)nsb.addEventListener('click',saveNote);
   // profile-tab-btn uses direct onclick
-  document.getElementById('edit-mode-btn').addEventListener('click',toggleEditMode);
-  document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
-  document.getElementById('profile-save-btn').addEventListener('click',saveAndCloseProfile);
-  document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
+  var _e_edit_mode_btn=document.getElementById('edit-mode-btn');if(_e_edit_mode_btn)_e_edit_mode_btn.addEventListener('click',toggleEditMode);
+  var _e_profile_close_btn=document.getElementById('profile-close-btn');if(_e_profile_close_btn)_e_profile_close_btn.addEventListener('click',closeProfileModal);
+  var _e_profile_save_btn=document.getElementById('profile-save-btn');if(_e_profile_save_btn)_e_profile_save_btn.addEventListener('click',saveAndCloseProfile);
+  var _e_profile_modal=document.getElementById('profile-modal');if(_e_profile_modal)_e_profile_modal.addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
   loadTheme();
 }
 // Expose ALL functions needed by inline HTML handlers or external calls
@@ -1576,16 +1589,5 @@ init();
 })();
 </script>
 
-<!-- NOTES MODAL -->
-<div class="note-overlay" id="note-overlay">
-  <div class="note-box">
-    <h3 id="note-title">Notes</h3>
-    <textarea id="note-ta" placeholder="Your notes for this position..."></textarea>
-    <div class="note-foot">
-      <button class="btn btn-dim" id="note-cancel-btn">Cancel</button>
-      <button class="btn btn-gold" id="note-save-btn">Save</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
