@@ -266,6 +266,7 @@ canvas{width:100%!important;}
   <button class="tab-btn"        onclick="showTab('dca',this)">DCA Plan</button>
   <button class="tab-btn"        onclick="showTab('projection',this)">Projection</button>
   <button class="tab-btn"        id="profile-tab-btn">Profile</button>
+  <button class="tab-btn"        id="suggest-tab-btn">Suggest ETFs</button>
 </div>
 
 <!-- ═══ D1: DASHBOARD ═══ -->
@@ -355,12 +356,11 @@ canvas{width:100%!important;}
   <div class="sec-hd">DCA Plan<small>Dollar-Cost Averaging by Bucket &amp; Ticker</small></div>
   <div class="dca-controls">
     <div class="dc-head">DCA Settings</div>
-    <div class="dc-field"><label>Signal</label>
-      <select id="dc-signal" onchange="buildDCA();saveSets()">
-        <option value="green">Full DCA (100%)</option>
-        <option value="yellow">Half DCA (50%)</option>
-        <option value="red">Hold Cash (0%)</option>
-      </select></div>
+    <div class="dc-field" style="background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:.5rem .8rem">
+      <label>Signal (synced from top bar)</label>
+      <div id="dc-signal-display" style="font-family:'DM Mono',monospace;font-size:.82rem;margin-top:.2rem;color:var(--gold)">Green — Full DCA</div>
+      <input type="hidden" id="dc-signal" value="green">
+    </div>
     <div class="dc-field"><label>Monthly Budget ($)</label><input type="number" id="dc-budget" value="2000" min="0" step="100" oninput="buildDCA();saveSets()"></div>
     <div class="dc-field"><label>Frequency</label>
       <select id="dc-freq" onchange="buildDCA();saveSets()">
@@ -407,13 +407,33 @@ canvas{width:100%!important;}
   </div>
   <div class="lon-card">
     <div><div class="lon-label">Survives To</div><div class="lon-val" id="lon-age">—</div></div>
-    <div><div class="lon-label">Balance at Age 95</div><div class="lon-val" id="lon-95">—</div></div>
+    <div><div class="lon-label" id="lon-95-lbl">Balance at Plan End</div><div class="lon-val" id="lon-95">—</div></div>
     <div><div class="lon-label">Min Return Needed</div><div class="lon-val" id="lon-req">—</div></div>
     <div><div class="lon-label">Income vs Target</div><div class="lon-val" id="lon-gap">—</div></div>
     <div><div class="lon-label">SS Cut Impact</div><div class="lon-val" id="lon-ss">—</div></div>
   </div>
   <div class="info-box" style="margin-top:1rem;font-size:.72rem"><strong>Sequence of returns risk:</strong> A -15% year 1 forces selling depressed assets to fund withdrawals. Bucket 1 (SGOV/SWVXX) provides 5 years of runway without touching Buckets 2-3.</div>
   <div class="disclaimer">Simplified linear projections. Not financial advice.</div>
+</div>
+
+<!-- ═══ SUGGEST ETFs ═══ -->
+<div class="tab-pane" id="tab-suggest">
+  <div class="sec-hd">Suggest ETFs<small>AI-powered recommendations based on your profile &amp; style</small></div>
+  <div class="info-box" style="font-size:.72rem">
+    Define up to 5 investment style statements below, then click <strong>Generate Suggestions</strong>.
+    Claude will search current market data and suggest ETFs ranked by 12-month outlook, grouped by best account,
+    accounting for your existing holdings and gaps. Click <strong>Add to Universe</strong> on any row to include it.
+  </div>
+  <div style="margin-bottom:1.1rem">
+    <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Investment Style Statements</div>
+    <div id="style-stmts" style="display:flex;flex-direction:column;gap:.5rem"></div>
+    <button class="add-row-btn" id="add-style-btn" style="margin-top:.5rem">+ Add Statement</button>
+  </div>
+  <div class="btn-row" style="margin-bottom:1rem">
+    <button class="btn btn-gold" id="gen-suggest-btn">&#10024; Generate Suggestions</button>
+    <span id="suggest-status" style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted)"></span>
+  </div>
+  <div id="suggest-results"></div>
 </div>
 
 <!-- ═══ L1 PROFILE MODAL ═══ -->
@@ -454,15 +474,15 @@ canvas{width:100%!important;}
 var PROF = {o1i:'JAB',o2i:'TAB',o1age:68,o2age:62,o1live:90,o2live:92,port:1093000,income:44000,maxpct:20,risk:'conservative'};
 
 var ACCTS = [
-  {id:'bk-schw-joint', name:'Schwab Joint Brokerage', bucket:1, owner:'Joint', type:'Brokerage', cust:'Schwab', bal:300000, tgt:300000},
-  {id:'bk-fidel-joint', name:'Fidelity Joint Brokerage',bucket:1, owner:'Joint', type:'Brokerage', cust:'Fidelity',bal:20000,  tgt:20000},
-  {id:'ira-jab',        name:'Schwab IRA – JAB',       bucket:2, owner:'JAB',   type:'IRA',        cust:'Schwab', bal:274000, tgt:274000},
-  {id:'ira-tab',        name:'Schwab IRA – TAB',       bucket:2, owner:'TAB',   type:'IRA',        cust:'Schwab', bal:267000, tgt:267000},
-  {id:'iira-jab',       name:'Schwab Inherited IRA – JAB',bucket:2,owner:'JAB', type:'IRA',        cust:'Schwab', bal:45000,  tgt:45000},
-  {id:'roth-jab',       name:'Schwab Roth – JAB',      bucket:3, owner:'JAB',   type:'Roth',       cust:'Schwab', bal:101000, tgt:101000},
-  {id:'roth-tab',       name:'Schwab Roth – TAB',      bucket:3, owner:'TAB',   type:'Roth',       cust:'Schwab', bal:36500,  tgt:36500},
-  {id:'hsa-jab',        name:'Fidelity HSA – JAB',     bucket:3, owner:'JAB',   type:'HSA',        cust:'Fidelity',bal:19500, tgt:19500},
-  {id:'hsa-tab',        name:'Fidelity HSA – TAB',     bucket:3, owner:'TAB',   type:'HSA',        cust:'Fidelity',bal:30000, tgt:30000},
+  {id:'bk-schw-joint', name:'Schwab Joint Brokerage',       bucket:1, owner:'Joint', type:'Brokerage', cust:'Schwab',   bal:300000, tgt:300000, risk:'conservative', pri:'income'},
+  {id:'bk-fidel-joint', name:'Fidelity Joint Brokerage',      bucket:1, owner:'Joint', type:'Brokerage', cust:'Fidelity', bal:20000,  tgt:20000,  risk:'conservative', pri:'income'},
+  {id:'ira-jab',        name:'Schwab IRA – JAB',               bucket:2, owner:'JAB',   type:'IRA',       cust:'Schwab',   bal:274000, tgt:274000, risk:'moderate',      pri:'balanced'},
+  {id:'ira-tab',        name:'Schwab IRA – TAB',               bucket:2, owner:'TAB',   type:'IRA',       cust:'Schwab',   bal:267000, tgt:267000, risk:'moderate',      pri:'balanced'},
+  {id:'iira-jab',       name:'Schwab Inherited IRA – JAB',     bucket:2, owner:'JAB',   type:'IRA',       cust:'Schwab',   bal:45000,  tgt:45000,  risk:'moderate',      pri:'income'},
+  {id:'roth-jab',       name:'Schwab Roth – JAB',              bucket:3, owner:'JAB',   type:'Roth',      cust:'Schwab',   bal:101000, tgt:101000, risk:'growth',        pri:'growth'},
+  {id:'roth-tab',       name:'Schwab Roth – TAB',              bucket:3, owner:'TAB',   type:'Roth',      cust:'Schwab',   bal:36500,  tgt:36500,  risk:'growth',        pri:'growth'},
+  {id:'hsa-jab',        name:'Fidelity HSA – JAB',             bucket:3, owner:'JAB',   type:'HSA',       cust:'Fidelity', bal:19500,  tgt:19500,  risk:'growth',        pri:'growth'},
+  {id:'hsa-tab',        name:'Fidelity HSA – TAB',             bucket:3, owner:'TAB',   type:'HSA',       cust:'Fidelity', bal:30000,  tgt:30000,  risk:'growth',        pri:'growth'},
 ];
 
 // H: ETF Universe. curVal = current dollar value (null = not entered)
@@ -554,7 +574,9 @@ function setSig(s){
     var b=document.getElementById('sig-'+c);
     b.className='sig-btn'+(s===c?' active-'+c:'');
   });
-  document.getElementById('dc-signal').value=s;
+  var dcSig=document.getElementById('dc-signal');if(dcSig)dcSig.value=s;
+  var dcDisp=document.getElementById('dc-signal-display');
+  if(dcDisp){var labels={green:'Green — Full DCA (100%)',yellow:'Yellow — Half DCA (50%)',red:'Red — Hold Cash'};dcDisp.textContent=labels[s]||s;dcDisp.style.color=s==='green'?'var(--green)':s==='yellow'?'var(--yellow)':'var(--red)';}
   var notes={green:'Full DCA — deploy full budget across all positions.',yellow:'Half DCA — 50% deployed, hold remainder in SGOV/SWVXX.',red:'Hold Cash — no DCA this period. Protect Bucket 1 reserve.'};
   document.getElementById('sig-note').textContent=notes[s];
   ss(SK.sig,s);buildDCA();
@@ -595,6 +617,7 @@ function loadAll(){
     if(sp.freq)document.getElementById('dc-freq').value=sp.freq;
     if(sp.pri)document.getElementById('dc-priority').value=sp.pri;
   }
+  loadStyleStmts();
   var s=sl(SK.sig,'green');setSig(s);
   // Pre-fill profile form
   function pf(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
@@ -757,7 +780,8 @@ function renderDash(){
   el('td',{textContent:fmt(tCurVal),style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--gold)'},tftr);
   el('td',{textContent:portTotal>0&&tCurVal>0?(tCurVal/portTotal*100).toFixed(1)+'%':'—',style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--gold)'},tftr);
   el('td',{textContent:fmt(tCurInc),style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--green)'},tftr);
-  el('td',{textContent:tCurVal>0&&tCurInc>0?fmtP(tCurInc/tCurVal*100):'—',style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--muted)'},tftr);
+  var totalWithCash=tCurVal+cashTotal;
+  el('td',{textContent:totalWithCash>0&&(tCurInc+getCashIncome())>0?fmtP((tCurInc+getCashIncome())/totalWithCash*100):'—',style:'text-align:right;padding:.5rem .65rem;font-family:"DM Mono",monospace;font-weight:700;border-top:2px solid var(--gold);color:var(--muted)'},tftr);
   tf.appendChild(tftr);
 
   // Summary cards
@@ -834,6 +858,25 @@ function renderAccounts(){
     oSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
     ['JAB','TAB','Joint'].forEach(function(o){var op=el('option',{value:o,textContent:o},oSel);if(o===acct.owner)op.selected=true;});
     oSel.addEventListener('change',function(){ACCTS[i].owner=this.value;saveAccts();});
+    // Custodian
+    var custf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Custodian'},custf);
+    var custI=el('input',{type:'text',value:acct.cust||''},custf);
+    custI.addEventListener('input',function(){ACCTS[i].cust=this.value;saveAccts();});
+    // Risk Tolerance
+    var rf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Risk Tolerance'},rf);
+    var rSel=el('select',{},rf);
+    rSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
+    [{v:'conservative',t:'Conservative'},{v:'moderate',t:'Moderate'},{v:'growth',t:'Growth'}].forEach(function(x){var op=el('option',{value:x.v,textContent:x.t},rSel);if(x.v===(acct.risk||'conservative'))op.selected=true;});
+    rSel.addEventListener('change',function(){ACCTS[i].risk=this.value;saveAccts();});
+    // Income Priority
+    var prf=el('div',{className:'acct-field'},card);
+    el('label',{textContent:'Income Priority'},prf);
+    var pSel=el('select',{},prf);
+    pSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
+    [{v:'income',t:'Income First'},{v:'balanced',t:'Growth + Income'},{v:'growth',t:'Growth'}].forEach(function(x){var op=el('option',{value:x.v,textContent:x.t},pSel);if(x.v===(acct.pri||'income'))op.selected=true;});
+    pSel.addEventListener('change',function(){ACCTS[i].pri=this.value;saveAccts();});
     // Current balance
     var cf=el('div',{className:'acct-field'},card);
     el('label',{textContent:'Current Balance ($)'},cf);
@@ -905,6 +948,8 @@ function renderEditorTable(){
     var tdAl=el('td',null,tr);
     var eAl=el('input',{type:'number',className:'ei num',value:h.a,min:0,max:PROF.maxpct,step:0.5,id:'e-al-'+i},tdAl);
     eAl.style.textAlign='right';
+    eAl.max=h.maxPct||PROF.maxpct||20;
+    eAl.title='Max: '+(h.maxPct||PROF.maxpct||20)+'%';
     // Max%
     var tdMx=el('td',null,tr);
     var eMx=el('input',{type:'number',className:'ei num',value:h.maxPct||PROF.maxpct,min:0,max:100,step:0.5,id:'e-mx-'+i},tdMx);
@@ -965,7 +1010,7 @@ function saveTickerEdits(){
     if(itEl&&itEl.value.trim())h.it=itEl.value.trim();
     if(yEl&&yEl.value.trim())h.y=parseFloat(yEl.value)||0;
     if(erEl&&erEl.value.trim())h.er=Math.min(99.99,parseFloat(erEl.value)||0);
-    if(alEl&&alEl.value.trim()!=='')h.a=Math.min(PROF.maxpct,parseFloat(alEl.value)||0);
+    if(alEl&&alEl.value.trim()!=='')h.a=Math.min(h.maxPct||PROF.maxpct||20,parseFloat(alEl.value)||0);
     if(mxEl&&mxEl.value.trim()!=='')h.maxPct=parseFloat(mxEl.value)||PROF.maxpct;
   });
   saveH();renderDash();updateAcctTotals();
@@ -1178,11 +1223,14 @@ function buildProjection(){
     if(m<12){var mg=Math.pow(1+gr,1/12)-1;ci+=bal*blendY/12;bal=bal*(1+mg)-(aw+ssE)/12;balSS=balSS*Math.pow(1+gr,1/12)-((aw+aw*.2)/12);}
   }
   var lr=Math.max(gr,.04),lb=total,la=PROF.o1age||68;
-  for(var y=0;y<60;y++){lb=lb*(1+lr)-aw;if(lb<=0){la=(PROF.o1age||68)+y;break;}if(y===59)la=130;}
-  var b95=total;for(y=0;y<(95-(PROF.o1age||68));y++)b95=b95*(1+lr)-aw;
-  var ai=total*blendY,gap=ai-aw;
-  var lae=document.getElementById('lon-age');lae.textContent=la>=130?'130+':'Age '+la;lae.className='lon-val '+(la>=95?'good':la>=(PROF.o2live||92)?'warn':'bad');
-  var b9e=document.getElementById('lon-95');b9e.textContent=fmt(b95);b9e.className='lon-val '+(b95>0?'good':'bad');
+  var planHorizon=Math.max(PROF.o1live||90,PROF.o2live||92);
+  var yearsToplan=planHorizon-(PROF.o1age||68);
+  for(var y=0;y<(yearsToplan+20);y++){lb=lb*(1+lr)-aw;if(lb<=0){la=(PROF.o1age||68)+y;break;}if(y>=(yearsToplan+19))la=planHorizon+20;}
+  var bPlan=total;for(y=0;y<yearsToplan;y++)bPlan=bPlan*(1+lr)-aw;
+  var planEnd=planHorizon;
+  var lae=document.getElementById('lon-age');lae.textContent=la>=(planEnd+15)?'Beyond plan':'Age '+la;lae.className='lon-val '+(la>=planEnd?'good':la>=(planEnd-5)?'warn':'bad');
+  var b9e=document.getElementById('lon-95');b9e.textContent=fmt(bPlan);b9e.className='lon-val '+(bPlan>0?'good':'bad');
+  var lbl95=document.getElementById('lon-95-lbl');if(lbl95)lbl95.textContent='Balance at Age '+planEnd;
   document.getElementById('lon-req').textContent=fmtP(aw/total*100);
   var lge=document.getElementById('lon-gap');lge.textContent=(gap>=0?'+':'')+fmt(gap)+'/yr';lge.className='lon-val '+(gap>=0?'good':'bad');
   var lse=document.getElementById('lon-ss');lse.textContent=SS?'-'+fmt(ssE)+'/yr':'Not modeled';lse.className='lon-val '+(SS?'bad':'good');
@@ -1210,6 +1258,172 @@ function openProfileModal(){
 }
 function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
 function saveAndCloseProfile(){saveProf();renderDash();closeProfileModal();}
+
+
+// ══════════════════════════════════════════
+// SUGGEST ETFs (L3.1)
+// ══════════════════════════════════════════
+var STYLE_STMTS = [
+  'Pay attention to the news, economy, sentiment and forward-looking factors — not past performance',
+  'Prefer flexible positioning; park in cash rather than take a 10-20% paper loss',
+  'Diversify ex-China: US, Foreign Developed, Emerging',
+  'Consider alternatives: Gold (buy near $3500), Bitcoin speculation in Fidelity brokerage',
+  'Short-term bonds only (under 5 years); skeptical of long duration given rate risk'
+];
+
+function renderStyleStmts(){
+  var container=document.getElementById('style-stmts');
+  if(!container)return;
+  container.innerHTML='';
+  STYLE_STMTS.forEach(function(stmt,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:.5rem;align-items:flex-start';
+    var num=document.createElement('span');
+    num.style.cssText='font-family:"DM Mono",monospace;font-size:.65rem;color:var(--muted);min-width:16px;padding-top:.45rem';
+    num.textContent=(i+1)+'.';
+    var inp=document.createElement('input');
+    inp.type='text';
+    inp.value=stmt;
+    inp.style.cssText='flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:.42rem .7rem;font-family:"DM Sans",sans-serif;font-size:.8rem;color:var(--text);outline:none';
+    inp.addEventListener('input',function(){STYLE_STMTS[i]=this.value;saveStyleStmts();});
+    inp.addEventListener('focus',function(){this.style.borderColor='var(--gold)';});
+    inp.addEventListener('blur',function(){this.style.borderColor='var(--border)';});
+    var del=document.createElement('button');
+    del.className='del-btn';del.textContent='x';del.title='Remove';
+    del.addEventListener('click',function(){STYLE_STMTS.splice(i,1);renderStyleStmts();saveStyleStmts();});
+    row.appendChild(num);row.appendChild(inp);row.appendChild(del);
+    container.appendChild(row);
+  });
+}
+
+function addStyleStmt(){
+  if(STYLE_STMTS.length>=5){alert('Maximum 5 style statements.');return;}
+  STYLE_STMTS.push('');renderStyleStmts();
+  // Focus the new input
+  var inputs=document.getElementById('style-stmts').querySelectorAll('input');
+  if(inputs.length)inputs[inputs.length-1].focus();
+}
+
+function saveStyleStmts(){try{localStorage.setItem('pm_style3',JSON.stringify(STYLE_STMTS));}catch(e){}}
+function loadStyleStmts(){
+  try{var s=localStorage.getItem('pm_style3');if(s)STYLE_STMTS=JSON.parse(s);}catch(e){}
+}
+
+function generateSuggestions(){
+  var btn=document.getElementById('gen-suggest-btn');
+  var status=document.getElementById('suggest-status');
+  var results=document.getElementById('suggest-results');
+  if(btn)btn.disabled=true;
+  if(status){status.textContent='Searching market data and generating recommendations...';status.style.color='var(--muted)';}
+  if(results)results.innerHTML='<div style="padding:1rem;font-family:\'DM Mono\',monospace;font-size:.75rem;color:var(--muted)">Analyzing your profile, holdings, and current market conditions...</div>';
+
+  // Build the prompt
+  var existing=H.map(function(h){return h.t+'('+h.cat+',B'+h.bucket+')';}).join(', ');
+  var b1tot=getBucketTotal(1),b2tot=getBucketTotal(2),b3tot=getBucketTotal(3);
+  var styleText=STYLE_STMTS.filter(function(s){return s.trim();}).map(function(s,i){return (i+1)+'. '+s;}).join('\n');
+  var holdings_gap='Total portfolio $'+fmt(PROF.port)+'. Income target $'+fmt(PROF.income)+'/yr. Bucket 1 Brokerage $'+fmt(b1tot)+', Bucket 2 IRA $'+fmt(b2tot)+', Bucket 3 Roth/HSA $'+fmt(b3tot)+'.';
+
+  var prompt = 'You are an ETF portfolio advisor for a conservative US retiree couple (JAB age '+(PROF.o1age||68)+', TAB age '+(PROF.o2age||62)+', planning to age '+(Math.max(PROF.o1live||90,PROF.o2live||92))+'). Their 3-bucket system:\n'
+    +'- Bucket 1 (Brokerage/Cash, 0-5yr): QDI/foreign tax credit preferred\n'
+    +'- Bucket 2 (IRA, 5-10yr): Ordinary income sheltered here\n'
+    +'- Bucket 3 (Roth/HSA, 10+yr): Long-term growth, highest risk ok\n\n'
+    +holdings_gap+'\n\n'
+    +'Existing holdings: '+existing+'\n\n'
+    +'Investment style:\n'+styleText+'\n\n'
+    +'Search the web for current ETF data. Suggest up to 20 ETFs NOT already in their holdings that would complement their portfolio TODAY. '
+    +'For each, consider current market conditions, valuations, yields, and 12-month outlook. '
+    +'Return ONLY a raw JSON array (no markdown) sorted by forecasted_12m_return descending:\n'
+    +'[{"t":"TICKER","n":"Full Name","cat":"Category","bucket":1or2or3,"it":"QDI/Ordinary/ELNs/None","sec_yield":number,"er":number,"a_suggest":suggested_target_pct,"forecasted_12m_return":estimated_pct,"rationale":"2-3 sentence rationale including why NOW and 12-month outlook","why":"one sentence tax placement reason"}]\n'
+    +'Be specific about timing — mention current macro factors. Include a mix of income and growth options appropriate per bucket.';
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:4000,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:prompt}]
+    })
+  })
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(data){
+    if(data.error)throw new Error(data.error.message);
+    var raw='';
+    (data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
+    var s=raw.indexOf('['),e=raw.lastIndexOf(']');
+    if(s<0||e<0)throw new Error('No JSON array in response');
+    var suggestions=JSON.parse(raw.slice(s,e+1));
+    renderSuggestions(suggestions);
+    if(status){status.textContent='Found '+suggestions.length+' suggestions';status.style.color='var(--green)';}
+  })
+  .catch(function(err){
+    if(status){status.textContent='Error: '+(err.message||'unknown');status.style.color='var(--red)';}
+    if(results)results.innerHTML='<div class="warn-box">Could not generate suggestions. Make sure you are running within the Claude.ai interface. Error: '+(err.message||'unknown')+'</div>';
+    console.error('Suggest error:',err);
+  })
+  .finally(function(){if(btn)btn.disabled=false;});
+}
+
+function renderSuggestions(suggestions){
+  var results=document.getElementById('suggest-results');
+  if(!results)return;
+  if(!suggestions||!suggestions.length){results.innerHTML='<div class="warn-box">No suggestions returned.</div>';return;}
+
+  // Group by bucket
+  var byBkt={1:[],2:[],3:[]};
+  suggestions.forEach(function(s){byBkt[s.bucket||1].push(s);});
+
+  var html='';
+  [1,2,3].forEach(function(bkt){
+    if(!byBkt[bkt].length)return;
+    var bktColors=['','var(--b1)','var(--b2)','var(--b3)'];
+    var bktNames=['','Bucket 1 — Brokerage/Cash','Bucket 2 — IRA','Bucket 3 — Roth/HSA'];
+    html+='<div style="margin-bottom:1rem;border-top:2px solid '+bktColors[bkt]+';padding-top:.6rem">';
+    html+='<div style="font-family:\'DM Mono\',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:'+bktColors[bkt]+';margin-bottom:.5rem">'+bktNames[bkt]+'</div>';
+    html+='<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse;font-size:.77rem"><thead><tr>';
+    ['Ticker','Name','Category','Income','Yield%','ER%','Suggest%','12m Forecast','Rationale',''].forEach(function(h){
+      html+='<th style="font-family:\'DM Mono\',monospace;font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:.35rem .5rem;border-bottom:1px solid var(--border2);text-align:'+(h===''||h==='12m Forecast'||h==='Yield%'||h==='ER%'||h==='Suggest%'?'right':'left')+';white-space:nowrap">'+h+'</th>';
+    });
+    html+='</tr></thead><tbody>';
+    byBkt[bkt].forEach(function(s){
+      var forecastColor=s.forecasted_12m_return>10?'var(--green)':s.forecasted_12m_return>0?'var(--yellow)':'var(--red)';
+      html+='<tr style="border-bottom:1px solid var(--border)">';
+      html+='<td style="font-family:\'DM Mono\',monospace;font-weight:500;color:var(--gold);padding:.4rem .5rem">'+s.t+'</td>';
+      html+='<td style="color:var(--muted);font-size:.72rem;padding:.4rem .5rem;max-width:160px">'+s.n+'</td>';
+      html+='<td style="font-size:.7rem;color:var(--muted);padding:.4rem .5rem">'+s.cat+'</td>';
+      html+='<td style="font-size:.68rem;color:var(--muted);padding:.4rem .5rem">'+s.it+'</td>';
+      html+='<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:.76rem;color:var(--green);padding:.4rem .5rem">'+(s.sec_yield||0).toFixed(2)+'%</td>';
+      html+='<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:.74rem;color:var(--muted);padding:.4rem .5rem">'+(s.er||0).toFixed(2)+'%</td>';
+      html+='<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:.76rem;padding:.4rem .5rem">'+(s.a_suggest||0)+'%</td>';
+      html+='<td style="text-align:right;font-family:\'DM Mono\',monospace;font-size:.78rem;font-weight:500;color:'+forecastColor+';padding:.4rem .5rem">'+(s.forecasted_12m_return>0?'+':'')+s.forecasted_12m_return+'%</td>';
+      html+='<td style="font-size:.69rem;color:var(--muted);padding:.4rem .5rem;max-width:260px;line-height:1.4">'+s.rationale+'</td>';
+      html+='<td style="padding:.4rem .5rem;text-align:right"><button onclick="addSuggestionToUniverse('+JSON.stringify(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+')" class="btn btn-dim" style="padding:.25rem .55rem;font-size:.62rem;white-space:nowrap">+ Add</button></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div></div>';
+  });
+  results.innerHTML=html;
+}
+
+function addSuggestionToUniverse(s){
+  // Check if already in universe
+  if(H.find(function(h){return h.t===s.t;})){
+    alert(s.t+' is already in your ETF Universe.');return;
+  }
+  H.push({
+    t:s.t, n:s.n||s.t, cat:s.cat||'Custom',
+    bucket:s.bucket||1, it:s.it||'See prospectus',
+    y:s.sec_yield||0, er:s.er||0,
+    a:Math.min(PROF.maxpct||20,s.a_suggest||0),
+    curVal:null, why:s.why||'Added from suggestions'
+  });
+  saveH();
+  // Refresh editor table if on that tab
+  if(document.getElementById('tab-universe').classList.contains('active'))renderEditorTable();
+  renderDash();
+  alert(s.t+' added to ETF Universe. Switch to ETF Universe tab to review and save.');
+}
 
 // ======================================
 // NOTES
@@ -1240,6 +1454,12 @@ function init(){
   document.getElementById('refresh-btn').addEventListener('click',refreshAllLookups);
   document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
   document.getElementById('note-overlay').addEventListener('click',function(e){if(e.target===this)closeNote();});
+  var genBtn=document.getElementById('gen-suggest-btn');
+  if(genBtn)genBtn.addEventListener('click',generateSuggestions);
+  var addStyleBtn=document.getElementById('add-style-btn');
+  if(addStyleBtn)addStyleBtn.addEventListener('click',addStyleStmt);
+  var suggestTabBtn=document.getElementById('suggest-tab-btn');
+  if(suggestTabBtn)suggestTabBtn.addEventListener('click',function(){showTab('suggest',this);renderStyleStmts();});
   document.getElementById('note-cancel-btn').addEventListener('click',closeNote);
   document.getElementById('note-save-btn').addEventListener('click',saveNote);
   document.getElementById('profile-tab-btn').addEventListener('click',openProfileModal);
