@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>JAB/TAB Portfolio Manager v1776737843</title>
+<title>JAB/TMB Portfolio Manager v1776737843</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
@@ -247,7 +247,7 @@ canvas{width:100%!important;}
 <body>
 
 <div class="hdr">
-  <div class="hdr-brand">JAB <em>/</em> TAB Portfolio <em>Manager</em></div>
+  <div class="hdr-brand">JAB <em>/</em> TMB Portfolio <em>Manager</em></div>
   <!-- bucket legend removed -->
   <button id="theme-toggle" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:.28rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;" title="Toggle light/dark mode">&#9788; Light</button>
 </div>
@@ -268,7 +268,7 @@ canvas{width:100%!important;}
   <button class="tab-btn"        onclick="showTab('universe',this)">ETF Universe</button>
   <button class="tab-btn"        onclick="showTab('dca',this)">DCA Plan</button>
   <button class="tab-btn"        onclick="showTab('projection',this)">Projection</button>
-  <button class="tab-btn"        id="profile-tab-btn">Profile</button>
+  <button class="tab-btn" id="profile-tab-btn" onclick="openProfileModal()" style="margin-left:auto;border-left:1px solid var(--border2)">&#9881; Profile</button>
   <button class="tab-btn"        id="suggest-tab-btn">Suggest ETFs</button>
 </div>
 
@@ -318,16 +318,26 @@ canvas{width:100%!important;}
 
 <!-- ═══ L2: ACCOUNTS ═══ -->
 <div class="tab-pane" id="tab-accounts">
-  <div class="sec-hd">L2 Investment Accounts</div>
-  <div class="info-box">Balances and settings per account. Buckets: 1=Brokerage/Cash (0-5yr) · 2=IRA (5-10yr) · 3=Roth/HSA (10+yr)</div>
-  <div class="accts-grid" id="accts-grid"></div>
-  <div class="cards">
+  <div class="sec-hd">Investment Accounts</div>
+  <div class="info-box" style="font-size:.72rem">Bucket 1=Brokerage/Cash (0-5yr) &nbsp;&middot;&nbsp; Bucket 2=IRA (5-10yr) &nbsp;&middot;&nbsp; Bucket 3=Roth/HSA (10+yr)</div>
+  <div class="tbl-wrap">
+    <table id="accts-table">
+      <thead><tr>
+        <th>Account Name</th><th>Bucket</th><th>Owner</th><th>Type</th><th>Custodian</th>
+        <th>Risk</th><th>Priority</th>
+        <th class="r">Balance $</th><th class="r">Target $</th>
+      </tr></thead>
+      <tbody id="accts-tbody"></tbody>
+      <tfoot id="accts-tfoot"></tfoot>
+    </table>
+  </div>
+  <div class="cards" style="margin-top:1rem">
     <div class="card"><div class="card-lbl">Bucket 1 Total</div><div class="card-val" style="color:var(--b1)" id="bk1-total">$320,000</div><div class="card-sub">Brokerage/Cash</div></div>
     <div class="card"><div class="card-lbl">Bucket 2 Total</div><div class="card-val" style="color:var(--b2)" id="bk2-total">$586,000</div><div class="card-sub">IRA</div></div>
     <div class="card"><div class="card-lbl">Bucket 3 Total</div><div class="card-val" style="color:var(--b3)" id="bk3-total">$187,000</div><div class="card-sub">Roth / HSA</div></div>
     <div class="card"><div class="card-lbl">Grand Total</div><div class="card-val gold" id="acct-grand">$1,093,000</div></div>
   </div>
-  <div class="warn-box" style="font-size:.72rem"><strong>Emergency Fund:</strong> Bucket 1 should maintain a minimum <strong>$80,000</strong> emergency reserve at all times. Current Bucket 1 balance: <span id="bk1-emerg">$320,000</span></div>
+  <div class="warn-box" style="font-size:.72rem"><strong>Emergency Fund:</strong> Bucket 1 minimum <strong>$80,000</strong> reserve. Current: <span id="bk1-emerg">$320,000</span></div>
 </div>
 
 <!-- ═══ L3: ETF UNIVERSE ═══ -->
@@ -450,7 +460,7 @@ canvas{width:100%!important;}
       <div class="info-box" style="font-size:.72rem;margin-bottom:.9rem">Profile values drive the Income Target and Max % per ETF on the dashboard.</div>
       <div class="pform">
         <div class="acct-field"><label>Owner 1 Initials</label><input type="text" id="p-o1i" value="JAB" maxlength="5" oninput="saveProf()"></div>
-        <div class="acct-field"><label>Owner 2 Initials</label><input type="text" id="p-o2i" value="TAB" maxlength="5" oninput="saveProf()"></div>
+        <div class="acct-field"><label>Owner 2 Initials</label><input type="text" id="p-o2i" value="TMB" maxlength="5" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 1 Current Age</label><input type="number" id="p-o1age" value="68" min="50" max="100" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 2 Current Age</label><input type="number" id="p-o2age" value="62" min="50" max="100" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 1 Live to Age</label><input type="number" id="p-o1live" value="90" min="70" max="120" oninput="saveProf()"></div>
@@ -474,18 +484,18 @@ canvas{width:100%!important;}
 // ══════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════
-var PROF = {o1i:'JAB',o2i:'TAB',o1age:68,o2age:62,o1live:90,o2live:92,port:1093000,income:44000,maxpct:20,risk:'conservative'};
+var PROF = {o1i:'JAB',o2i:'TMB',o1age:68,o2age:62,o1live:90,o2live:92,port:1093000,income:44000,maxpct:20,risk:'conservative'};
 
 var ACCTS = [
   {id:'bk-schw-joint', name:'Schwab Joint Brokerage',       bucket:1, owner:'Joint', type:'Brokerage', cust:'Schwab',   bal:300000, tgt:300000, risk:'conservative', pri:'income'},
   {id:'bk-fidel-joint', name:'Fidelity Joint Brokerage',      bucket:1, owner:'Joint', type:'Brokerage', cust:'Fidelity', bal:20000,  tgt:20000,  risk:'conservative', pri:'income'},
   {id:'ira-jab',        name:'Schwab IRA – JAB',               bucket:2, owner:'JAB',   type:'IRA',       cust:'Schwab',   bal:274000, tgt:274000, risk:'moderate',      pri:'balanced'},
-  {id:'ira-tab',        name:'Schwab IRA – TAB',               bucket:2, owner:'TAB',   type:'IRA',       cust:'Schwab',   bal:267000, tgt:267000, risk:'moderate',      pri:'balanced'},
+  {id:'ira-tab',        name:'Schwab IRA – TMB',               bucket:2, owner:'TMB',   type:'IRA',       cust:'Schwab',   bal:267000, tgt:267000, risk:'moderate',      pri:'balanced'},
   {id:'iira-jab',       name:'Schwab Inherited IRA – JAB',     bucket:2, owner:'JAB',   type:'IRA',       cust:'Schwab',   bal:45000,  tgt:45000,  risk:'moderate',      pri:'income'},
   {id:'roth-jab',       name:'Schwab Roth – JAB',              bucket:3, owner:'JAB',   type:'Roth',      cust:'Schwab',   bal:101000, tgt:101000, risk:'growth',        pri:'growth'},
-  {id:'roth-tab',       name:'Schwab Roth – TAB',              bucket:3, owner:'TAB',   type:'Roth',      cust:'Schwab',   bal:36500,  tgt:36500,  risk:'growth',        pri:'growth'},
+  {id:'roth-tab',       name:'Schwab Roth – TMB',              bucket:3, owner:'TMB',   type:'Roth',      cust:'Schwab',   bal:36500,  tgt:36500,  risk:'growth',        pri:'growth'},
   {id:'hsa-jab',        name:'Fidelity HSA – JAB',             bucket:3, owner:'JAB',   type:'HSA',       cust:'Fidelity', bal:19500,  tgt:19500,  risk:'growth',        pri:'growth'},
-  {id:'hsa-tab',        name:'Fidelity HSA – TAB',             bucket:3, owner:'TAB',   type:'HSA',       cust:'Fidelity', bal:30000,  tgt:30000,  risk:'growth',        pri:'growth'},
+  {id:'hsa-tab',        name:'Fidelity HSA – TMB',             bucket:3, owner:'TMB',   type:'HSA',       cust:'Fidelity', bal:30000,  tgt:30000,  risk:'growth',        pri:'growth'},
 ];
 
 // H: ETF Universe. curVal = current dollar value (null = not entered)
@@ -589,7 +599,7 @@ function saveCash(){ss(SK.cash,CASH);}
 function saveAccts(){ss(SK.accts,ACCTS);}
 function saveProf(){
   PROF={
-    o1i:gv('p-o1i')||'JAB', o2i:gv('p-o2i')||'TAB',
+    o1i:gv('p-o1i')||'JAB', o2i:gv('p-o2i')||'TMB',
     o1age:gn('p-o1age')||68, o2age:gn('p-o2age')||62,
     o1live:gn('p-o1live')||90, o2live:gn('p-o2live')||92,
     port:Math.round(gn('p-port'))||1093000, income:Math.round(gn('p-income'))||44000,
@@ -834,60 +844,72 @@ function toggleEditMode(){
 // ACCOUNTS (L2)
 // ══════════════════════════════════════════
 function renderAccounts(){
-  var grid=document.getElementById('accts-grid');
-  grid.innerHTML='';
+  var tbody=document.getElementById('accts-tbody');
+  var tfoot=document.getElementById('accts-tfoot');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  var inpStyle='background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:"DM Mono",monospace;font-size:.76rem;color:var(--text);outline:none;-webkit-appearance:none;width:100%';
   ACCTS.forEach(function(acct,i){
-    var card=document.createElement('div');
-    card.className='acct-card b'+acct.bucket;
-    var nm=el('div',{className:'acct-name',textContent:acct.name},card);
+    var tr=document.createElement('tr');
+    // Name (editable)
+    var tdN=el('td',null,tr);
+    var iN=el('input',{type:'text',value:acct.name,style:inpStyle+';min-width:160px'},tdN);
+    iN.addEventListener('input',function(){ACCTS[i].name=this.value;saveAccts();});
     // Bucket
-    var bf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Bucket'},bf);
-    var bSel=el('select',{className:''},bf);
-    bSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
-    [{v:1,t:'1 — Brokerage/Cash (0-5yr)'},{v:2,t:'2 — IRA (5-10yr)'},{v:3,t:'3 — Roth/HSA (10+yr)'}].forEach(function(x){
+    var tdB=el('td',null,tr);
+    var bSel=el('select',{style:inpStyle+';width:auto'},tdB);
+    [{v:1,t:'B1 Brokerage'},{v:2,t:'B2 IRA'},{v:3,t:'B3 Roth/HSA'}].forEach(function(x){
       var o=el('option',{value:x.v,textContent:x.t},bSel);
       if(x.v===acct.bucket)o.selected=true;
     });
-    bSel.addEventListener('change',function(){ACCTS[i].bucket=parseInt(this.value);saveAccts();renderAccounts();renderDash();});
+    bSel.addEventListener('change',function(){ACCTS[i].bucket=parseInt(this.value);saveAccts();renderDash();});
     // Owner
-    var of=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Owner'},of);
-    var oSel=el('select',{},of);
-    oSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
-    ['JAB','TAB','Joint'].forEach(function(o){var op=el('option',{value:o,textContent:o},oSel);if(o===acct.owner)op.selected=true;});
+    var tdO=el('td',null,tr);
+    var oSel=el('select',{style:inpStyle+';width:auto'},tdO);
+    ['JAB','TMB','Joint'].forEach(function(o){var op=el('option',{value:o,textContent:o},oSel);if(o===acct.owner)op.selected=true;});
     oSel.addEventListener('change',function(){ACCTS[i].owner=this.value;saveAccts();});
+    // Type
+    var tdT=el('td',null,tr);
+    var tSel=el('select',{style:inpStyle+';width:auto'},tdT);
+    ['Brokerage','IRA','Roth','HSA'].forEach(function(t){var op=el('option',{value:t,textContent:t},tSel);if(t===acct.type)op.selected=true;});
+    tSel.addEventListener('change',function(){ACCTS[i].type=this.value;saveAccts();});
     // Custodian
-    var custf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Custodian'},custf);
-    var custI=el('input',{type:'text',value:acct.cust||''},custf);
-    custI.addEventListener('input',function(){ACCTS[i].cust=this.value;saveAccts();});
-    // Risk Tolerance
-    var rf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Risk Tolerance'},rf);
-    var rSel=el('select',{},rf);
-    rSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
+    var tdC=el('td',null,tr);
+    var iC=el('input',{type:'text',value:acct.cust||'',style:inpStyle+';width:80px'},tdC);
+    iC.addEventListener('input',function(){ACCTS[i].cust=this.value;saveAccts();});
+    // Risk
+    var tdR=el('td',null,tr);
+    var rSel=el('select',{style:inpStyle+';width:auto'},tdR);
     [{v:'conservative',t:'Conservative'},{v:'moderate',t:'Moderate'},{v:'growth',t:'Growth'}].forEach(function(x){var op=el('option',{value:x.v,textContent:x.t},rSel);if(x.v===(acct.risk||'conservative'))op.selected=true;});
     rSel.addEventListener('change',function(){ACCTS[i].risk=this.value;saveAccts();});
-    // Income Priority
-    var prf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Income Priority'},prf);
-    var pSel=el('select',{},prf);
-    pSel.style.cssText='width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.33rem .6rem;font-family:"DM Mono",monospace;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none';
-    [{v:'income',t:'Income First'},{v:'balanced',t:'Growth + Income'},{v:'growth',t:'Growth'}].forEach(function(x){var op=el('option',{value:x.v,textContent:x.t},pSel);if(x.v===(acct.pri||'income'))op.selected=true;});
+    // Priority
+    var tdP=el('td',null,tr);
+    var pSel=el('select',{style:inpStyle+';width:auto'},tdP);
+    [{v:'income',t:'Income'},{v:'balanced',t:'Balanced'},{v:'growth',t:'Growth'}].forEach(function(x){var op=el('option',{value:x.v,textContent:x.t},pSel);if(x.v===(acct.pri||'income'))op.selected=true;});
     pSel.addEventListener('change',function(){ACCTS[i].pri=this.value;saveAccts();});
-    // Current balance
-    var cf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Current Balance ($)'},cf);
-    var ci=el('input',{type:'number',value:acct.bal,min:0,step:1000},cf);
-    ci.addEventListener('input',function(){ACCTS[i].bal=parseFloat(this.value)||0;saveAccts();updateAcctTotals();renderDash();});
-    // Target balance
-    var tf=el('div',{className:'acct-field'},card);
-    el('label',{textContent:'Target Balance ($)'},tf);
-    var ti=el('input',{type:'number',value:acct.tgt,min:0,step:1000},tf);
-    ti.addEventListener('input',function(){ACCTS[i].tgt=parseFloat(this.value)||0;saveAccts();});
-    grid.appendChild(card);
+    // Balance
+    var tdBal=el('td',{className:'r'},tr);
+    var iBal=el('input',{type:'number',value:acct.bal,min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdBal);
+    iBal.addEventListener('input',function(){ACCTS[i].bal=parseFloat(this.value)||0;saveAccts();updateAcctTotals();renderDash();});
+    // Target
+    var tdTgt=el('td',{className:'r'},tr);
+    var iTgt=el('input',{type:'number',value:acct.tgt,min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdTgt);
+    iTgt.addEventListener('input',function(){ACCTS[i].tgt=parseFloat(this.value)||0;saveAccts();});
+    tbody.appendChild(tr);
   });
+  // Totals footer
+  if(tfoot){
+    tfoot.innerHTML='';
+    var tftr=document.createElement('tr');
+    var bs='padding:.45rem .65rem;font-family:"DM Mono",monospace;font-size:.74rem;border-top:2px solid var(--border2);font-weight:600';
+    el('td',{textContent:'Totals',style:bs+';color:var(--muted)'},tftr);
+    for(var k=0;k<6;k++)el('td',{style:bs},tftr);
+    var grand=ACCTS.reduce(function(s,a){return s+a.bal;},0);
+    var grandTgt=ACCTS.reduce(function(s,a){return s+a.tgt;},0);
+    el('td',{textContent:fmt(grand),style:bs+';text-align:right;color:var(--gold)'},tftr);
+    el('td',{textContent:fmt(grandTgt),style:bs+';text-align:right;color:var(--muted)'},tftr);
+    tfoot.appendChild(tftr);
+  }
   updateAcctTotals();
 }
 function updateAcctTotals(){
@@ -917,7 +939,7 @@ function renderEditorTable(){
     var tdLk=el('td',null,tr);
     var bLk=el('button',{className:'ed-del',title:'Lookup from Yahoo Finance',textContent:'\uD83D\uDD0D'},tdLk);
     bLk.style.color='var(--gold)';bLk.style.fontSize='.9rem';
-    bLk.addEventListener('click',function(){lookupRow(i);});
+    (function(idx){bLk.addEventListener('click',function(){lookupRow(idx);});})(i);
     // Name
     var tdNm=el('td',null,tr);
     var eNm=el('input',{type:'text',className:'ei nm',value:h.n,id:'e-n-'+i},tdNm);
@@ -1016,59 +1038,79 @@ function saveTickerEdits(){
 }
 
 // ══════════════════════════════════════════
-// YAHOO FINANCE LOOKUP (CORS-safe via proxy)
+// TICKER LOOKUP
+// Primary: Anthropic API with web_search (accurate SEC 30-day yield, runs in claude.ai)
+// Fallback: Yahoo Finance via corsproxy.io (works from downloaded file, name/ER only)
 // ══════════════════════════════════════════
-var YF_PROXY='https://query1.finance.yahoo.com/v8/finance/chart/';
-var YF_QUOTE='https://query2.finance.yahoo.com/v10/finance/quoteSummary/';
 
-function lookupTicker(ticker,cb,errCb){
-  // Use Anthropic API first — it fetches current SEC 30-day yield from fund fact sheets.
-  // Yahoo Finance returns TTM distribution yield (outdated, e.g. SGOV 5.1% vs actual 3.54%).
-  lookupViaAPI(ticker,cb,function(){ lookupViaYahoo(ticker,cb,errCb); });
-}
-function lookupViaYahoo(ticker,cb,errCb){
-  var url='https://corsproxy.io/?'+encodeURIComponent(
-    'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'+ticker+
-    '?modules=summaryProfile,defaultKeyStatistics,summaryDetail,assetProfile,fundProfile,topHoldings'
-  );
-  fetch(url,{headers:{'Accept':'application/json'}})
-  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-  .then(function(data){
-    var res=data.quoteSummary&&data.quoteSummary.result&&data.quoteSummary.result[0];
-    if(!res)throw new Error('No data for '+ticker);
-    var sd=res.summaryDetail||{};
-    var fp=res.fundProfile||{};
-    var sp=res.summaryProfile||{};
-    var ks=res.defaultKeyStatistics||{};
-    // Extract what we can
-    var name=fp.longName||sp.longBusinessSummary||ticker;
-    if(name&&name.length>60)name=name.slice(0,60);
-    var er=(fp.annualReportExpenseRatio&&fp.annualReportExpenseRatio.raw!=null)?fp.annualReportExpenseRatio.raw*100:
-           (ks.annualHoldingsTurnover&&ks.annualHoldingsTurnover.raw!=null)?null:null;
-    var yld=(sd.yield&&sd.yield.raw!=null)?sd.yield.raw*100:
-            (sd.dividendYield&&sd.dividendYield.raw!=null)?sd.dividendYield.raw*100:null;
-    cb({name:name||ticker,er:er,yld:yld,raw:res});
-  })
-  .catch(function(err){
-    // Fallback: try the Anthropic API
-    lookupViaAPI(ticker,cb,errCb);
+function lookupTicker(ticker, cb, errCb) {
+  lookupViaAnthropicAPI(ticker, cb, function(apiErr) {
+    // API failed (e.g. running as downloaded file) — try Yahoo for basic data
+    lookupViaYahoo(ticker, cb, function(yhErr) {
+      // Both failed — call errCb with a helpful message
+      if(errCb) errCb(new Error('Lookup failed. Running inside claude.ai enables full lookup with SEC yields. Yahoo fallback also failed: ' + (yhErr&&yhErr.message||yhErr)));
+    });
   });
 }
 
-function lookupViaAPI(ticker,cb,errCb){
-  var prompt='Look up ETF ticker '+ticker+' and find its current SEC 30-day standardized yield from the fund official website (iShares, Vanguard, Schwab, NEOS, etc.). The SEC 30-day yield is different from TTM distribution yield. Return ONLY raw JSON: {"name":"full fund name","category":"T-Bills/TIPS/Short Bond/Dividend/Covered Call/US Equity/Intl/Gold/Energy/Preferred/Bitcoin","bucket":1,2,or3,"it":"QDI or Ordinary or ELNs or 60-40 Options or None","sec_yield":sec_30day_yield_as_percent_number,"er":expense_ratio_as_percent,"why":"one sentence US retiree tax placement rationale"}. Buckets: 1=Brokerage, 2=IRA, 3=Roth/HSA. SGOV example: sec_yield approx 3.5. ER example: 0.09.';
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
-      tools:[{type:'web_search_20250305',name:'web_search'}],
-      messages:[{role:'user',content:prompt}]})
+function lookupViaAnthropicAPI(ticker, cb, errCb) {
+  var prompt = 'Search the web and find the current SEC 30-day standardized yield and expense ratio for ETF ' + ticker + '. '
+    + 'Check the official fund website (iShares.com, Vanguard.com, Schwab.com, neosamalpha.com, etc.). '
+    + 'The SEC 30-day yield is on the fund fact sheet — it is NOT the same as TTM distribution yield. '
+    + 'Return ONLY a raw JSON object with no markdown or explanation: '
+    + '{"name":"full fund name","category":"T-Bills or TIPS or Short Bond or Dividend or Covered Call or US Equity or Intl or Gold or Energy or Preferred or Bitcoin","bucket":1,"it":"QDI or Ordinary or ELNs or 60-40 Options or None","sec_yield":number,"er":number,"why":"one sentence tax placement rationale for US retiree"} '
+    + 'bucket: 1=Brokerage/taxable (QDI preferred), 2=IRA (ordinary income sheltered), 3=Roth/HSA (long-term growth). '
+    + 'sec_yield and er are numbers like 3.54 and 0.09 — not strings, not percentages with % sign. '
+    + 'Example for SGOV: {"name":"iShares 0-3 Month Treasury Bond ETF","category":"T-Bills","bucket":1,"it":"Ordinary","sec_yield":3.54,"er":0.09,"why":"Ordinary income; brokerage ok for short-term cash position."}';
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 500,
+      tools: [{type: 'web_search_20250305', name: 'web_search'}],
+      messages: [{role: 'user', content: prompt}]
+    })
   })
-  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-  .then(function(data){
-    var raw='';(data.content||[]).forEach(function(b){if(b.type==='text')raw+=b.text;});
-    var s=raw.indexOf('{'),e=raw.lastIndexOf('}');
-    if(s<0||e<0)throw new Error('No JSON');
-    cb(JSON.parse(raw.slice(s,e+1)));
+  .then(function(r) {
+    if (!r.ok) throw new Error('API HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message || 'API error');
+    var raw = '';
+    (data.content || []).forEach(function(b) { if (b.type === 'text') raw += b.text; });
+    var s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+    if (s < 0 || e < 0) throw new Error('No JSON in API response');
+    var result = JSON.parse(raw.slice(s, e + 1));
+    if (!result.name) throw new Error('Incomplete API response');
+    cb(result);
+  })
+  .catch(errCb);
+}
+
+function lookupViaYahoo(ticker, cb, errCb) {
+  var url = 'https://corsproxy.io/?' + encodeURIComponent(
+    'https://query2.finance.yahoo.com/v10/finance/quoteSummary/' + ticker +
+    '?modules=summaryDetail,fundProfile,summaryProfile'
+  );
+  fetch(url, {headers: {'Accept': 'application/json'}})
+  .then(function(r) {
+    if (!r.ok) throw new Error('Yahoo HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    var res = data.quoteSummary && data.quoteSummary.result && data.quoteSummary.result[0];
+    if (!res) throw new Error('No Yahoo data for ' + ticker);
+    var sd = res.summaryDetail || {};
+    var fp = res.fundProfile || {};
+    var sp = res.summaryProfile || {};
+    var name = (fp.longName || sp.longName || ticker).slice(0, 65);
+    // Yahoo yield = TTM distribution, not SEC 30-day — flag it
+    var yld = (sd.yield && sd.yield.raw != null) ? sd.yield.raw * 100 : null;
+    var er  = (fp.annualReportExpenseRatio && fp.annualReportExpenseRatio.raw != null)
+              ? fp.annualReportExpenseRatio.raw * 100 : null;
+    cb({name: name, sec_yield: yld, er: er, _source: 'yahoo_ttm'});
   })
   .catch(errCb);
 }
@@ -1127,8 +1169,9 @@ function lookupNewTicker(){
       if(btn)btn.disabled=false;
     },
     function(err){
-      var msg=(err&&err.message||'').indexOf('fetch')>=0?'Network error — fill manually':'Error — fill manually';
-      setStatus(st,msg,'var(--red)',6000);
+      // API failed — show specific error, keep fields editable
+      var msg=err&&err.message?('Error: '+err.message.slice(0,60)):'Lookup failed — check ticker and try again';
+      setStatus(st,msg,'var(--red)',8000);
       if(btn)btn.disabled=false;
       console.error('New ticker lookup error:',err);
     }
@@ -1322,7 +1365,7 @@ function generateSuggestions(){
   var styleText=STYLE_STMTS.filter(function(s){return s.trim();}).map(function(s,i){return (i+1)+'. '+s;}).join('\n');
   var holdings_gap='Total portfolio $'+fmt(PROF.port)+'. Income target $'+fmt(PROF.income)+'/yr. Bucket 1 Brokerage $'+fmt(b1tot)+', Bucket 2 IRA $'+fmt(b2tot)+', Bucket 3 Roth/HSA $'+fmt(b3tot)+'.';
 
-  var prompt = 'You are an ETF portfolio advisor for a conservative US retiree couple (JAB age '+(PROF.o1age||68)+', TAB age '+(PROF.o2age||62)+', planning to age '+(Math.max(PROF.o1live||90,PROF.o2live||92))+'). Their 3-bucket system:\n'
+  var prompt = 'You are an ETF portfolio advisor for a conservative US retiree couple (JAB age '+(PROF.o1age||68)+', TMB age '+(PROF.o2age||62)+', planning to age '+(Math.max(PROF.o1live||90,PROF.o2live||92))+'). Their 3-bucket system:\n'
     +'- Bucket 1 (Brokerage/Cash, 0-5yr): QDI/foreign tax credit preferred\n'
     +'- Bucket 2 (IRA, 5-10yr): Ordinary income sheltered here\n'
     +'- Bucket 3 (Roth/HSA, 10+yr): Long-term growth, highest risk ok\n\n'
@@ -1461,7 +1504,7 @@ function init(){
   if(suggestTabBtn)suggestTabBtn.addEventListener('click',function(){showTab('suggest',this);renderStyleStmts();});
   document.getElementById('note-cancel-btn').addEventListener('click',closeNote);
   document.getElementById('note-save-btn').addEventListener('click',saveNote);
-  document.getElementById('profile-tab-btn').addEventListener('click',openProfileModal);
+  // profile-tab-btn uses direct onclick
   document.getElementById('edit-mode-btn').addEventListener('click',toggleEditMode);
   document.getElementById('profile-close-btn').addEventListener('click',closeProfileModal);
   document.getElementById('profile-save-btn').addEventListener('click',saveAndCloseProfile);
