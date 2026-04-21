@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>JAB/TMB Portfolio Manager v1776742720</title>
+<title>JAB/TMB Portfolio Manager v1776743455</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
@@ -179,7 +179,7 @@ tfoot tr td{background:var(--surface3);font-family:'DM Mono',monospace;font-size
 .ei{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--text);outline:none;width:100%;}
 .ei:focus{border-color:var(--gold);}
 .ei.tk{width:66px;text-transform:uppercase;font-weight:500;color:var(--gold);}
-.ei.nm{width:168px;}.ei.cat{width:118px;}.ei.it{width:148px;}.ei.num{width:54px;text-align:right;}
+.ei.nm{width:168px;}.ei.cat{width:118px;}.ei.it{width:148px;}.ei.num{width:72px;text-align:right;}
 .esel{background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;}
 .ed-del{background:transparent;border:none;color:var(--dim);font-size:.82rem;cursor:pointer;padding:0 .3rem;transition:color .15s;}
 .ed-del:hover{color:var(--red);}
@@ -294,14 +294,14 @@ canvas{width:100%!important;}
 
   <!-- Holdings table grouped by bucket -->
   <div class="tbl-wrap">
-    <table id="htable">
+    <table id="htable" class="ed-table">
       <thead><tr>
         <th>Ticker</th><th>Name</th><th>Category</th><th>Income Type</th>
         <th class="r">Yield%</th><th class="r">ER%</th>
         <th class="r">Target%</th><th class="r">Target $</th>
-        <th class="r">Current Value $</th>
-        <th class="r" style="color:var(--red)">Current %</th>
-        <th class="r">Ann. Income $</th><th class="r">Ann. Income %</th><th style="width:36px;text-align:center">Notes</th>
+        <th class="r">Current $</th>
+        <th class="r" style="color:var(--red)">Cur %</th>
+        <th class="r">Ann. Income</th><th class="r">Inc %</th><th style="width:32px"></th>
       </tr></thead>
       <tbody id="htbody"></tbody>
       <tfoot id="htfoot"></tfoot>
@@ -999,12 +999,12 @@ function renderAccounts(){
     pSel.addEventListener('change',function(){ACCTS[i].pri=this.value;saveAccts();});
     // Balance
     var tdBal=el('td',{className:'r'},tr);
-    var iBal=el('input',{type:'number',value:acct.bal,min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdBal);
-    iBal.addEventListener('input',function(){ACCTS[i].bal=parseFloat(this.value)||0;saveAccts();updateAcctTotals();renderDash();});
+    var iBal=el('input',{type:'number',value:Math.round(acct.bal),min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdBal);
+    iBal.addEventListener('input',function(){ACCTS[i].bal=Math.round(parseFloat(this.value)||0);saveAccts();updateAcctTotals();renderDash();});
     // Target
     var tdTgt=el('td',{className:'r'},tr);
-    var iTgt=el('input',{type:'number',value:acct.tgt,min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdTgt);
-    iTgt.addEventListener('input',function(){ACCTS[i].tgt=parseFloat(this.value)||0;saveAccts();});
+    var iTgt=el('input',{type:'number',value:Math.round(acct.tgt),min:0,step:1000,style:inpStyle+';width:110px;text-align:right'},tdTgt);
+    iTgt.addEventListener('input',function(){ACCTS[i].tgt=Math.round(parseFloat(this.value)||0);saveAccts();});
     tbody.appendChild(tr);
   });
   // Totals footer
@@ -1111,8 +1111,8 @@ function buildAddTickerRow(){
   var aBkt=el('select',{className:'esel',id:'new-bkt',style:'width:88px'},row);
   [{v:1,t:'B1 Brok'},{v:2,t:'B2 IRA'},{v:3,t:'B3 Roth'}].forEach(function(x){el('option',{value:x.v,textContent:x.t},aBkt);});
   el('input',{type:'text',className:'ei it',placeholder:'Income type',id:'new-it',style:'width:130px'},row);
-  el('input',{type:'number',className:'ei num',placeholder:'Yld%',id:'new-y',min:0,max:50,step:0.1,style:'width:60px;text-align:right'},row);
-  el('input',{type:'number',className:'ei num',placeholder:'ER%',id:'new-er',min:0,max:99.99,step:0.01,style:'width:55px;text-align:right'},row);
+  el('input',{type:'number',className:'ei num',placeholder:'Yld%',id:'new-y',min:0,max:50,step:0.1,style:'width:72px;text-align:right'},row);
+  el('input',{type:'number',className:'ei num',placeholder:'ER%',id:'new-er',min:0,max:99.99,step:0.01,style:'width:72px;text-align:right'},row);
   el('input',{type:'number',className:'ei num',placeholder:'Tgt%',id:'new-al',min:0,max:100,step:0.5,style:'width:55px;text-align:right'},row);
   var bAdd=el('button',{className:'btn btn-gold',textContent:'+ Add',style:'padding:.3rem .85rem;font-size:.68rem'},row);
   bAdd.addEventListener('click',addNewTicker);
@@ -1255,8 +1255,9 @@ function lookupRow(i){
   lookupTicker(ticker,
     function(d){applyLookupToRow(d,i);setStatus(stEl,'OK','var(--green)',3000);},
     function(err){
-      var msg=(err&&err.message||'').indexOf('fetch')>=0?'Network err':'Error';
-      setStatus(stEl,msg,'var(--red)',5000);
+      var isLocal=window.location.protocol==='file:';
+      var msg=isLocal?'Local file: open in claude.ai for lookup':(err&&err.message||'Error').slice(0,50);
+      setStatus(stEl,msg,'var(--yellow)',8000);
       console.error('Lookup error row '+i+':',err);
     }
   );
@@ -1281,9 +1282,11 @@ function lookupNewTicker(){
       if(btn)btn.disabled=false;
     },
     function(err){
-      // API failed — show specific error, keep fields editable
-      var msg=err&&err.message?('Error: '+err.message.slice(0,60)):'Lookup failed — check ticker and try again';
-      setStatus(st,msg,'var(--red)',8000);
+      var isLocal=window.location.protocol==='file:';
+      var msg=isLocal
+        ? 'Running as local file: API lookup requires claude.ai. Yahoo fallback also failed. Enter values manually.'
+        : (err&&err.message?err.message.slice(0,80):'Lookup failed — check ticker symbol');
+      setStatus(st,msg,'var(--yellow)',10000);
       if(btn)btn.disabled=false;
       console.error('New ticker lookup error:',err);
     }
