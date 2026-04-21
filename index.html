@@ -456,17 +456,42 @@ canvas{width:100%!important;}
       <h2>Profile</h2>
       <button class="modal-close" id="profile-close-btn">&#10005;</button>
     </div>
-    <div class="modal-body">
-      <div class="info-box" style="font-size:.72rem;margin-bottom:.9rem">Profile values drive the Income Target and Max % per ETF on the dashboard.</div>
-      <div class="pform">
+    <div class="modal-body" style="max-height:80vh;overflow-y:auto">
+      <div class="info-box" style="font-size:.72rem;margin-bottom:.9rem">These values drive the dashboard income target, projections, and ETF suggestions.</div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)">Owners</div>
+      <div class="pform" style="margin-bottom:1rem">
         <div class="acct-field"><label>Owner 1 Initials</label><input type="text" id="p-o1i" value="JAB" maxlength="5" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 2 Initials</label><input type="text" id="p-o2i" value="TMB" maxlength="5" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 1 Current Age</label><input type="number" id="p-o1age" value="68" min="50" max="100" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 2 Current Age</label><input type="number" id="p-o2age" value="62" min="50" max="100" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 1 Live to Age</label><input type="number" id="p-o1live" value="90" min="70" max="120" oninput="saveProf()"></div>
         <div class="acct-field"><label>Owner 2 Live to Age</label><input type="number" id="p-o2live" value="92" min="70" max="120" oninput="saveProf()"></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)">Portfolio Goals</div>
+      <div class="pform" style="margin-bottom:1rem">
         <div class="acct-field"><label>Total Target Portfolio $</label><input type="number" id="p-port" value="1093000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
         <div class="acct-field"><label>Annual Income Target $</label><input type="number" id="p-income" value="44000" min="0" step="1000" oninput="saveProf();renderDash()"></div>
+        <div class="acct-field"><label>Overall Risk Tolerance</label>
+          <select id="p-risk" onchange="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none">
+            <option value="conservative">Conservative</option>
+            <option value="moderate">Moderate</option>
+            <option value="growth">Growth</option>
+          </select></div>
+        <div class="acct-field"><label>Income Priority</label>
+          <select id="p-priority" onchange="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none">
+            <option value="income">Income First</option>
+            <option value="balanced">Growth + Income</option>
+            <option value="growth">Growth First</option>
+          </select></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)">Bucket Descriptions</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem">
+        <div class="acct-field"><label style="color:var(--b1)">Bucket 1 — Brokerage/Cash</label><input type="text" id="p-b1desc" value="0-5 years · Spending &amp; cash reserves · QDI/foreign tax credit" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none"></div>
+        <div class="acct-field"><label style="color:var(--b2)">Bucket 2 — IRA</label><input type="text" id="p-b2desc" value="5-10 years · Tax-deferred growth · Ordinary income sheltered" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none"></div>
+        <div class="acct-field"><label style="color:var(--b3)">Bucket 3 — Roth/HSA</label><input type="text" id="p-b3desc" value="10+ years · Tax-free growth · Highest risk appropriate" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none"></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -602,8 +627,14 @@ function saveProf(){
     o1i:gv('p-o1i')||'JAB', o2i:gv('p-o2i')||'TMB',
     o1age:gn('p-o1age')||68, o2age:gn('p-o2age')||62,
     o1live:gn('p-o1live')||90, o2live:gn('p-o2live')||92,
-    port:Math.round(gn('p-port'))||1093000, income:Math.round(gn('p-income'))||44000,
-    maxpct:PROF.maxpct||20, risk:PROF.risk||'conservative'
+    port:Math.round(gn('p-port'))||1093000,
+    income:Math.round(gn('p-income'))||44000,
+    maxpct:PROF.maxpct||20,
+    risk:gv('p-risk')||PROF.risk||'conservative',
+    priority:gv('p-priority')||PROF.priority||'income',
+    b1desc:gv('p-b1desc')||PROF.b1desc||'0-5 years',
+    b2desc:gv('p-b2desc')||PROF.b2desc||'5-10 years',
+    b3desc:gv('p-b3desc')||PROF.b3desc||'10+ years'
   };
   ss(SK.prof,PROF);
 }
@@ -634,6 +665,9 @@ function loadAll(){
   pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
   pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
   pf('p-port',PROF.port);pf('p-income',PROF.income);
+  pf('p-risk',PROF.risk||'conservative');
+  pf('p-priority',PROF.priority||'income');
+  pf('p-b1desc',PROF.b1desc);pf('p-b2desc',PROF.b2desc);pf('p-b3desc',PROF.b3desc);
 }
 
 // ══════════════════════════════════════════
@@ -1044,11 +1078,13 @@ function saveTickerEdits(){
 // ══════════════════════════════════════════
 
 function lookupTicker(ticker, cb, errCb) {
+  // Try Anthropic API first (inside claude.ai — gets accurate SEC 30-day yield via web search)
   lookupViaAnthropicAPI(ticker, cb, function(apiErr) {
-    // API failed (e.g. running as downloaded file) — try Yahoo for basic data
+    console.warn('API lookup failed for '+ticker+', trying Yahoo:', apiErr&&apiErr.message);
+    // Fall back to Yahoo Finance proxy (works from downloaded file, returns name+ER+TTM yield)
     lookupViaYahoo(ticker, cb, function(yhErr) {
-      // Both failed — call errCb with a helpful message
-      if(errCb) errCb(new Error('Lookup failed. Running inside claude.ai enables full lookup with SEC yields. Yahoo fallback also failed: ' + (yhErr&&yhErr.message||yhErr)));
+      console.error('Both lookups failed for '+ticker, yhErr);
+      if(errCb) errCb(new Error('Both API and Yahoo lookup failed for '+ticker+'. Open in claude.ai for full lookup capability.'));
     });
   });
 }
@@ -1296,6 +1332,14 @@ function openProfileModal(){
   pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
   pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
   pf('p-port',PROF.port);pf('p-income',PROF.income);
+  pf('p-risk',PROF.risk||'conservative');
+  pf('p-priority',PROF.priority||'income');
+  pf('p-b1desc',PROF.b1desc);pf('p-b2desc',PROF.b2desc);pf('p-b3desc',PROF.b3desc);
+  pf('p-risk',PROF.risk||'conservative');
+  pf('p-priority',PROF.priority||'income');
+  pf('p-b1desc',PROF.b1desc||'0-5 years · Spending & cash reserves · QDI/foreign tax credit');
+  pf('p-b2desc',PROF.b2desc||'5-10 years · Tax-deferred growth · Ordinary income sheltered');
+  pf('p-b3desc',PROF.b3desc||'10+ years · Tax-free growth · Highest risk appropriate');
   document.getElementById('profile-modal').classList.add('open');
 }
 function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
@@ -1511,28 +1555,22 @@ function init(){
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
   loadTheme();
 }
-// Expose functions to global scope (required for inline HTML event handlers)
-window.showTab=showTab;
-window.setSig=setSig;
-window.recalc=recalc;
-window.toggleEditMode=toggleEditMode;
-window.setScen=setScen;
-window.toggleSS=toggleSS;
-window.saveTickerEdits=saveTickerEdits;
-window.openProfileModal=openProfileModal;
-window.closeProfileModal=closeProfileModal;
-window.saveAndCloseProfile=saveAndCloseProfile;
-window.saveNote=saveNote;
-window.closeNote=closeNote;
-window.addSuggestionToUniverse=addSuggestionToUniverse;
-window.toggleTheme=toggleTheme;
-window.refreshAllLookups=refreshAllLookups;
-window.openNoteModal=openNoteModal;
-window.generateSuggestions=generateSuggestions;
-window.addStyleStmt=addStyleStmt;
-window.renderStyleStmts=renderStyleStmts;
-window.buildDCA=buildDCA;
+// Expose ALL functions needed by inline HTML handlers or external calls
+window.showTab=showTab; window.setSig=setSig; window.recalc=recalc;
+window.toggleEditMode=toggleEditMode; window.setScen=setScen; window.toggleSS=toggleSS;
+window.saveTickerEdits=saveTickerEdits; window.openProfileModal=openProfileModal;
+window.closeProfileModal=closeProfileModal; window.saveAndCloseProfile=saveAndCloseProfile;
+window.saveNote=saveNote; window.closeNote=closeNote;
+window.addSuggestionToUniverse=addSuggestionToUniverse; window.toggleTheme=toggleTheme;
+window.refreshAllLookups=refreshAllLookups; window.openNoteModal=openNoteModal;
+window.generateSuggestions=generateSuggestions; window.addStyleStmt=addStyleStmt;
+window.renderStyleStmts=renderStyleStmts; window.buildDCA=buildDCA;
 window.buildProjection=buildProjection;
+// These are called by oninput/onchange on form fields — must be global
+window.saveProf=saveProf; window.renderDash=renderDash; window.saveSets=saveSets;
+window.saveAccts=saveAccts; window.saveH=saveH; window.lookupRow=lookupRow;
+window.lookupNewTicker=lookupNewTicker; window.addCashRow=addCashRow;
+window.addNewTicker=addNewTicker;
 
 init();
 })();
