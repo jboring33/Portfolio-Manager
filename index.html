@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>JAB/TMB Portfolio Manager v1776737843</title>
+<title>JAB/TMB Portfolio Manager v1776741300</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
@@ -162,7 +162,7 @@ tfoot tr td{background:var(--surface3);font-family:'DM Mono',monospace;font-size
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
-.modal-overlay.open{display:flex;}
+.modal-overlay.open{display:flex!important;}
 .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:1100px;box-shadow:0 8px 40px rgba(0,0,0,.5);overflow:hidden;margin:auto;}
 .modal-box.narrow{max-width:680px;}
 .modal-head{background:var(--surface2);padding:.9rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
@@ -1341,21 +1341,22 @@ function buildProjection(){
 // ══════════════════════════════════════════
 function openProfileModal(){
   function pf(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v;}
-  pf('p-o1i',PROF.o1i);pf('p-o2i',PROF.o2i);
-  pf('p-o1age',PROF.o1age);pf('p-o2age',PROF.o2age);
-  pf('p-o1live',PROF.o1live);pf('p-o2live',PROF.o2live);
-  pf('p-port',PROF.port);pf('p-income',PROF.income);
+  pf('p-o1i',PROF.o1i); pf('p-o2i',PROF.o2i);
+  pf('p-o1age',PROF.o1age); pf('p-o2age',PROF.o2age);
+  pf('p-o1live',PROF.o1live); pf('p-o2live',PROF.o2live);
+  pf('p-port',PROF.port); pf('p-income',PROF.income);
   pf('p-risk',PROF.risk||'conservative');
   pf('p-priority',PROF.priority||'income');
-  pf('p-b1desc',PROF.b1desc);pf('p-b2desc',PROF.b2desc);pf('p-b3desc',PROF.b3desc);
-  pf('p-risk',PROF.risk||'conservative');
-  pf('p-priority',PROF.priority||'income');
-  pf('p-b1desc',PROF.b1desc||'0-5 years · Spending & cash reserves · QDI/foreign tax credit');
-  pf('p-b2desc',PROF.b2desc||'5-10 years · Tax-deferred growth · Ordinary income sheltered');
-  pf('p-b3desc',PROF.b3desc||'10+ years · Tax-free growth · Highest risk appropriate');
-  document.getElementById('profile-modal').classList.add('open');
+  pf('p-b1desc',PROF.b1desc||'0-5 years - Spending & cash reserves - QDI/foreign tax credit');
+  pf('p-b2desc',PROF.b2desc||'5-10 years - Tax-deferred growth - Ordinary income sheltered');
+  pf('p-b3desc',PROF.b3desc||'10+ years - Tax-free growth - Highest risk appropriate');
+  var m=document.getElementById('profile-modal');
+  if(m){m.style.display='flex';m.style.zIndex='9999';}
 }
-function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
+function closeProfileModal(){
+  var m=document.getElementById('profile-modal');
+  if(m)m.style.display='none';
+}
 function saveAndCloseProfile(){saveProf();renderDash();closeProfileModal();}
 
 
@@ -1532,10 +1533,10 @@ function openNoteModal(i){
   _noteIdx=i;
   document.getElementById('note-title').textContent=(H[i]?H[i].t:'')+ ' Notes';
   document.getElementById('note-ta').value=(H[i]&&H[i].notes)||'';
-  document.getElementById('note-overlay').classList.add('open');
+  var no=document.getElementById('note-overlay');if(no){no.style.display='flex';no.style.zIndex='9999';}
   setTimeout(function(){document.getElementById('note-ta').focus();},60);
 }
-function closeNote(){document.getElementById('note-overlay').classList.remove('open');_noteIdx=-1;}
+function closeNote(){var no=document.getElementById('note-overlay');if(no)no.style.display='none';_noteIdx=-1;}
 function saveNote(){
   if(_noteIdx<0||_noteIdx>=H.length)return;
   H[_noteIdx].notes=document.getElementById('note-ta').value.trim();
