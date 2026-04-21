@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>JAB/TMB Portfolio Manager v1776742198</title>
+<title>JAB/TMB Portfolio Manager v1776742720</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 :root{
@@ -499,6 +499,70 @@ canvas{width:100%!important;}
 </div>
 
 
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;">
+  <div class="modal-box narrow" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:680px;box-shadow:0 8px 40px rgba(0,0,0,.5);overflow:hidden;margin:auto;">
+    <div class="modal-head" style="background:var(--surface2);padding:.9rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);">Profile</h2>
+      <button id="profile-close-btn" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">&#10005;</button>
+    </div>
+    <div class="modal-body" style="padding:1.2rem 1.4rem;overflow-y:auto;max-height:72vh;">
+      <div style="background:rgba(74,143,232,.1);border:1px solid rgba(74,143,232,.25);border-radius:6px;padding:.75rem 1rem;font-size:.73rem;color:var(--blue);margin-bottom:1rem;">
+        These values drive the dashboard income target, projections, and ETF suggestions.
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);">Owners</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.1rem;">
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 1 Initials</label>
+          <input type="text" id="p-o1i" value="JAB" maxlength="5" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 2 Initials</label>
+          <input type="text" id="p-o2i" value="TMB" maxlength="5" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 1 Current Age</label>
+          <input type="number" id="p-o1age" value="68" min="50" max="100" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 2 Current Age</label>
+          <input type="number" id="p-o2age" value="62" min="50" max="100" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 1 Live to Age</label>
+          <input type="number" id="p-o1live" value="90" min="70" max="120" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Owner 2 Live to Age</label>
+          <input type="number" id="p-o2live" value="92" min="70" max="120" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);">Portfolio Goals</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.1rem;">
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Total Target Portfolio $</label>
+          <input type="number" id="p-port" value="1093000" min="0" step="1000" oninput="this.value=Math.round(+this.value)||+this.value;saveProf();renderDash()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Annual Income Target $</label>
+          <input type="number" id="p-income" value="44000" min="0" step="1000" oninput="this.value=Math.round(+this.value)||+this.value;saveProf();renderDash()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Overall Risk Tolerance</label>
+          <select id="p-risk" onchange="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none;">
+            <option value="conservative">Conservative</option>
+            <option value="moderate">Moderate</option>
+            <option value="growth">Growth</option>
+          </select></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Income Priority</label>
+          <select id="p-priority" onchange="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--text);outline:none;-webkit-appearance:none;">
+            <option value="income">Income First</option>
+            <option value="balanced">Growth + Income</option>
+            <option value="growth">Growth First</option>
+          </select></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);">Bucket Descriptions</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
+        <div><label style="display:block;font-size:.58rem;color:var(--b1);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Bucket 1 — Brokerage / Cash</label>
+          <input type="text" id="p-b1desc" value="0-5 years - Spending &amp; cash reserves - QDI/foreign tax credit" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.76rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--b2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Bucket 2 — IRA</label>
+          <input type="text" id="p-b2desc" value="5-10 years - Tax-deferred growth - Ordinary income sheltered" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.76rem;color:var(--text);outline:none;"></div>
+        <div><label style="display:block;font-size:.58rem;color:var(--b3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Bucket 3 — Roth / HSA</label>
+          <input type="text" id="p-b3desc" value="10+ years - Tax-free growth - Highest risk appropriate" oninput="saveProf()" style="width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:.38rem .6rem;font-family:'DM Mono',monospace;font-size:.76rem;color:var(--text);outline:none;"></div>
+      </div>
+    </div>
+    <div style="padding:.8rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);">
+      <button id="profile-save-btn" style="background:var(--gold);color:#000;font-weight:500;border:none;border-radius:5px;padding:.48rem 1rem;cursor:pointer;font-family:'DM Mono',monospace;font-size:.68rem;">Save &amp; Close</button>
+      <span style="font-size:.62rem;color:var(--muted);font-family:'DM Mono',monospace;">Changes saved to browser storage</span>
+    </div>
+  </div>
+</div>
 <!-- NOTES MODAL -->
 <div class="note-overlay" id="note-overlay">
   <div class="note-box">
