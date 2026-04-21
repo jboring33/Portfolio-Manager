@@ -501,12 +501,8 @@ var H = [
   {t:'FBTC', n:'Fidelity Wise Origin Bitcoin',   cat:'Bitcoin',      bucket:1, it:'None',           y:0,    er:0.25, a:0,  curVal:null, why:'Bitcoin speculation in Fidelity Brokerage. Park in MMF when not speculating.'},
 ];
 
-var CASH = [
-  {id:1,ticker:'SGOV', name:'iShares 0-3 Mo Treasury',  type:'ETF', shares:0,price:100, bal:0, yld:3.54, mat:'', note:'Bucket 1 – Schwab'},
-  {id:2,ticker:'SWVXX',name:'Schwab Value Advantage MMF',type:'MMF', shares:0,price:1,   bal:0, yld:4.8, mat:'', note:'Bucket 1 – Schwab'},
-  {id:3,ticker:'CD',   name:'Certificate of Deposit',   type:'CD',  shares:1,price:0,   bal:0, yld:4.5, mat:'2025-06-15', note:'June maturity'},
-];
-var cashNextId=4;
+var CASH = [];
+var cashNextId=1;
 
 var SIG='green', SCEN='flat', SS=false, projChart=null, EDIT_MODE=false;
 var SK={h:'pm_h3',cash:'pm_cash3',accts:'pm_accts3',prof:'pm_prof3',sig:'pm_sig3',cur:'pm_cur3',sets:'pm_sets3'};
@@ -1469,6 +1465,29 @@ function init(){
   document.getElementById('profile-modal').addEventListener('click',function(e){if(e.target===this)closeProfileModal();});
   loadTheme();
 }
+// Expose functions to global scope (required for inline HTML event handlers)
+window.showTab=showTab;
+window.setSig=setSig;
+window.recalc=recalc;
+window.toggleEditMode=toggleEditMode;
+window.setScen=setScen;
+window.toggleSS=toggleSS;
+window.saveTickerEdits=saveTickerEdits;
+window.openProfileModal=openProfileModal;
+window.closeProfileModal=closeProfileModal;
+window.saveAndCloseProfile=saveAndCloseProfile;
+window.saveNote=saveNote;
+window.closeNote=closeNote;
+window.addSuggestionToUniverse=addSuggestionToUniverse;
+window.toggleTheme=toggleTheme;
+window.refreshAllLookups=refreshAllLookups;
+window.openNoteModal=openNoteModal;
+window.generateSuggestions=generateSuggestions;
+window.addStyleStmt=addStyleStmt;
+window.renderStyleStmts=renderStyleStmts;
+window.buildDCA=buildDCA;
+window.buildProjection=buildProjection;
+
 init();
 })();
 </script>
